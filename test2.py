@@ -34,7 +34,7 @@ class ButtonInBox(QtWidgets.QPushButton):
 #             drag.setHotSpot(e.pos() - self.rect().topLeft())
 #
 #             drop = drag.exec(Qt.MoveAction)
-#
+
 
 
 class MainW(QtWidgets.QMainWindow, Ui_MainWindow):
