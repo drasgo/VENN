@@ -72,7 +72,35 @@ class Ui_MainWindow(object):
         self.OutputText.setObjectName("OutputText")
         self.MainStruct = QtWidgets.QWidget(self.tab)
         self.MainStruct.setGeometry(QtCore.QRect(310, 30, 931, 391))
+        self.MainStruct.setAcceptDrops(False)
+        self.MainStruct.setAutoFillBackground(False)
+        self.MainStruct.setStyleSheet("background-color: rgb(252, 175, 62);\n"
+"border: 1px solid black; \n"
+"border-radius: 10px;\n"
+"")
         self.MainStruct.setObjectName("MainStruct")
+        self.Blocks = QtWidgets.QWidget(self.MainStruct)
+        self.Blocks.setGeometry(QtCore.QRect(10, 319, 120, 61))
+        self.Blocks.setStyleSheet("background-color: rgb(114, 159, 207);\n"
+"border: 1px solid black; \n"
+"border-radius: 10px;")
+        self.Blocks.setObjectName("Blocks")
+        self.ChooseArrow = QtWidgets.QComboBox(self.MainStruct)
+        self.ChooseArrow.setGeometry(QtCore.QRect(160, 330, 321, 37))
+        self.ChooseArrow.setStyleSheet("border-radius: 3px;")
+        self.ChooseArrow.setObjectName("ChooseArrow")
+        self.DeleteArrow = QtWidgets.QPushButton(self.MainStruct)
+        self.DeleteArrow.setGeometry(QtCore.QRect(510, 330, 41, 36))
+        self.DeleteArrow.setObjectName("DeleteArrow")
+        self.InsertFirstBlock = QtWidgets.QLineEdit(self.MainStruct)
+        self.InsertFirstBlock.setEnabled(False)
+        self.InsertFirstBlock.setGeometry(QtCore.QRect(250, 160, 381, 51))
+        font = QtGui.QFont()
+        font.setPointSize(35)
+        self.InsertFirstBlock.setFont(font)
+        self.InsertFirstBlock.setStyleSheet("border-color: rgb(255, 255, 255);\n"
+"color: rgb(46, 52, 54);")
+        self.InsertFirstBlock.setObjectName("InsertFirstBlock")
         self.tabWidget.addTab(self.tab, "")
         self.tab_2 = QtWidgets.QWidget()
         self.tab_2.setObjectName("tab_2")
@@ -110,6 +138,8 @@ class Ui_MainWindow(object):
         self.TimeSe.setText(_translate("MainWindow", "Time-Series"))
         self.CommSave.setText(_translate("MainWindow", "Commit n\' Save Structure"))
         self.Output.setTitle(_translate("MainWindow", "Output"))
+        self.DeleteArrow.setText(_translate("MainWindow", "PushButton"))
+        self.InsertFirstBlock.setText(_translate("MainWindow", "Insert first block!"))
         self.tabWidget.setTabText(self.tabWidget.indexOf(self.tab), _translate("MainWindow", "Let\'s Roll"))
         self.textBrowser.setHtml(_translate("MainWindow", "<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 4.0//EN\" \"http://www.w3.org/TR/REC-html40/strict.dtd\">\n"
 "<html><head><meta name=\"qrichtext\" content=\"1\" /><style type=\"text/css\">\n"

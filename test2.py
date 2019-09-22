@@ -37,6 +37,56 @@ class ButtonInBox(QtWidgets.QPushButton):
 
 # !!
 
+
+class SingleEvents:
+
+    def mouseMoveEvent(par, e):
+        if e.buttons() != Qt.LeftButton:
+            return
+
+        mimeData = QMimeData()
+
+        drag = QDrag(par)
+        drag.setMimeData(mimeData)
+        drag.setHotSpot(e.pos())
+        # - self.rect().topLeft())
+        dropAction = drag.exec_(Qt.MoveAction)
+
+    def mousePressEvent(par, e):
+
+        if e.button() == Qt.RightButton:
+            print('press')
+        else:
+            global posit
+            posit = par.pos()
+
+    def dragEnterEvent(e):
+        # if self is window.MainStruct:
+        #     dragMainStruct = True
+        print("in drag")
+        e.accept()
+
+    def dragMoveEvent(e, obj):
+        position = e.pos()
+        obj.move(position)
+        e.setDropAction(Qt.MoveAction)
+        e.accept()
+
+    def dropEvent(par, e, obj):
+        # if self is window.MainStruct:
+        #     dragMainStruct = False
+        position = e.pos()
+        button = ButtonInBox(par, "nuovo bottone")
+        button.move(position - QtCore.QPoint(button.width() / 2, button.height() / 2))
+        button.show()
+        global posit
+        obj.move(posit)
+        print("in drop")
+        e.setDropAction(Qt.MoveAction)
+        e.accept()
+        posit = None
+
+
 class MainW(QtWidgets.QMainWindow, Ui_MainWindow):
 
     def __init__(self):
@@ -50,51 +100,6 @@ class MainW(QtWidgets.QMainWindow, Ui_MainWindow):
     #     NewWindow.exec()
     #     print("shown")
 
-def mouseMoveEvent(self, e):
-    if e.buttons() != Qt.LeftButton:
-        return
-
-    mimeData = QMimeData()
-
-    drag = QDrag(self)
-    drag.setMimeData(mimeData)
-    drag.setHotSpot(e.pos())
-    # - self.rect().topLeft())
-    dropAction = drag.exec_(Qt.MoveAction)
-
-def mousePressEvent(self, e):
-
-    if e.button() == Qt.RightButton:
-        print('press')
-    else:
-        global posit
-        posit = self.pos()
-
-def dragEnterEvent(self, e):
-    # if self is window.MainStruct:
-    #     dragMainStruct = True
-    print("in drag")
-    e.accept()
-
-def dragMoveEvent(self, e, obj):
-    position = e.pos()
-    obj.move(position)
-    e.setDropAction(Qt.MoveAction)
-    e.accept()
-
-def dropEvent(self, e, obj):
-    # if self is window.MainStruct:
-    #     dragMainStruct = False
-    position = e.pos()
-    button = ButtonInBox(self, "nuovo bottone")
-    button.move(position - QtCore.QPoint(button.width()/2, button.height()/2))
-    button.show()
-    global posit
-    obj.move(posit)
-    print("in drop")
-    e.setDropAction(Qt.MoveAction)
-    e.accept()
-    posit = None
 
 #
 # def dragLeaveEvent(self, e):
@@ -110,6 +115,7 @@ def dropEvent(self, e, obj):
 # dragMainStruct = False
 
 global posit
+posit = None
 
 app = QtWidgets.QApplication(sys.argv)
 
@@ -119,17 +125,17 @@ window.show()
 
 # window.CommSave.pressed.connect(window.commPressed)
 
-window.CommSave.mouseMoveEvent = lambda event: mouseMoveEvent(window.CommSave, event)
-window.CommSave.mousePressEvent = lambda event: mousePressEvent(window.CommSave, event)
+window.CommSave.mouseMoveEvent = lambda event: SingleEvents.mouseMoveEvent(window.CommSave, event)
+window.CommSave.mousePressEvent = lambda event: SingleEvents.mousePressEvent(window.CommSave, event)
 
 # window.tab.setAcceptDrops(True)
 window.MainStruct.setAcceptDrops(True)
 
 # window.tab.dragEnterEvent = lambda event: dragEnterEvent(window.tab, event)
 # window.tab.dropEvent = lambda event: dropEvent(window.tab, event, window.CommSave)
-window.MainStruct.dragEnterEvent = lambda event: dragEnterEvent(window.MainStruct, event)
-window.MainStruct.dropEvent = lambda event: dropEvent(window.MainStruct, event, window.CommSave)
-window.MainStruct.dragMoveEvent = lambda event: dragMoveEvent(window.MainStruct, event, window.CommSave)
+window.MainStruct.dragEnterEvent = lambda event: SingleEvents.dragEnterEvent(event)
+window.MainStruct.dropEvent = lambda event: SingleEvents.dropEvent(window.MainStruct, event, window.CommSave)
+window.MainStruct.dragMoveEvent = lambda event: SingleEvents.dragMoveEvent(event, window.CommSave)
 
 # window.MainStruct.mouseMoveEvent = lambda event: mouseMoveEvent2(window.MainStruct, event)
 # window.MainStruct.dragLeaveEvent = lambda event: dragLeaveEvent(window.MainStruct, event)
