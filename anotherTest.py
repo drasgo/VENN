@@ -14,37 +14,42 @@ class SingleEvents:
     def dragEnterMainStruct(event):
         event.accept()
 
-    def dragMoveMainStruct(event, obj):
+    def dragMoveMainStruct(event):
+        global tempBlock
         position = event.pos()
-        
-        obj.move(position)
+        # obj = event.source()
+        print("in dragmoveevent " + tempBlock.accessibleName())
+        tempBlock.move(position)
         event.setDropAction(Qt.MoveAction)
         event.accept()
 
-    def dropMainStruct(caller, event, obj):
-        if obj.objectName() == "Blocks":
+    def dropMainStruct(caller, event):
+        global tempBlock
+        if tempBlock.objectName() == "Blocks":
             global posit
             print("in drop first block")
 
             global nBlocks
-            print("in dropmainstruct " + obj.objectName())
+            print("in dropmainstruct " + tempBlock.objectName())
             position = event.pos()
-            newBlock = StructBlock(caller, str(nBlocks) + "block", obj)
+            newBlock = StructBlock(caller, str(nBlocks) + "block", tempBlock)
             print("creato nuovo blocco")
             newBlock.move(position - QtCore.QPoint(newBlock.width() / 2, newBlock.height() / 2))
             newBlock.show()
             layers.append(newBlock)
             nBlocks = nBlocks + 1
         else:
-            posit = event.pos() - QtCore.QPoint(obj.width() / 2, obj.height() / 2)
+            posit = event.pos() - QtCore.QPoint(tempBlock.width() / 2, tempBlock.height() / 2)
             print(str(posit))
 
-        obj.move(posit)
+        tempBlock.move(posit)
         event.setDropAction(Qt.MoveAction)
         event.accept()
+        tempBlock = None
 
     def mouseMove(event, parent):
         mimeData = QMimeData()
+
         drag = QDrag(parent)
         drag.setMimeData(mimeData)
         drag.setHotSpot(event.pos())
@@ -55,6 +60,8 @@ class SingleEvents:
         print("in mopuse press " + caller.objectName() + " " + str(QtCore.QPoint(1,     1)))
         global posit
         posit = caller.pos()
+        global tempBlock
+        tempBlock = caller
         print(str(posit))
 
 
@@ -63,8 +70,9 @@ class TextInStructBox(QtWidgets.QLineEdit):
 
     def __init__(self, parent, text=defaultText):
         self.text = text
-        self.setAccessibleName(self.text)
         super().__init__(self.defaultText + self.text, parent)
+
+        self.setAccessibleName(self.text)
         self.setEnabled(False)
         self.setAlignment(Qt.AlignCenter)
         self.show()
@@ -108,13 +116,17 @@ class StructBlock(QtWidgets.QFrame):
     #     if e.button() == Qt.LeftButton:
     #         self.neurons.setEnabled(True)
 
-        if e.button() == Qt.LeftButton:
+        if e.buttons() == Qt.LeftButton:
             print("moving")
+            global tempBlock
+            tempBlock = self
 
     def mouseMoveEvent(self, e):
-        if e.button() == Qt.LeftButton:
-            print("in mousemoveevent nuovo blocco")
-            SingleEvents.mouseMove(e, self.parent)
+        # print("in moousemoveevent nuovo blocco " + str(e.button()))
+        if e.buttons() != Qt.LeftButton:
+            return
+        print("in mousemoveevent nuovo blocco dopo if")
+        SingleEvents.mouseMove(e, self.parent)
     #
     # def keyPressEvent(self, e):
     #     print("in key press event")
@@ -130,18 +142,21 @@ class MainW(QtWidgets.QMainWindow, Ui_MainWindow):
         self.setupUi(self)
 
         self.Blocks.mouseMoveEvent = lambda event: SingleEvents.mouseMove(event, self.MainStruct)
-        self.Blocks.mousePressEvent = SingleEvents.mousePress(self.Blocks)
+        self.Blocks.mousePressEvent = lambda event: SingleEvents.mousePress(self.Blocks)
+        self.Blocks.setAccessibleName("Blocks")
 
         self.MainStruct.setAcceptDrops(True)
         self.MainStruct.dragEnterEvent = lambda event: SingleEvents.dragEnterMainStruct(event)
-        self.MainStruct.dragMoveEvent = lambda event: SingleEvents.dragMoveMainStruct(event, self.Blocks)
-        self.MainStruct.dropEvent = lambda event: SingleEvents.dropMainStruct(self.MainStruct, event, self.Blocks)
+        self.MainStruct.dragMoveEvent = lambda event: SingleEvents.dragMoveMainStruct(event)
+        self.MainStruct.dropEvent = lambda event: SingleEvents.dropMainStruct(self.MainStruct, event)
 
 
 global posit
 posit = None
 global nBlocks
 nBlocks = 0
+global tempBlock
+tempBlock = None
 layers = []
 
 app = QtWidgets.QApplication(sys.argv)
