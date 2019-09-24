@@ -79,7 +79,7 @@ class Ui_MainWindow(object):
 "border-radius: 10px;\n"
 "")
         self.MainStruct.setObjectName("MainStruct")
-        self.Blocks = QtWidgets.QWidget(self.MainStruct)
+        self.Blocks = QtWidgets.QFrame(self.MainStruct)
         self.Blocks.setGeometry(QtCore.QRect(10, 319, 120, 61))
         self.Blocks.setStyleSheet("background-color: rgb(114, 159, 207);\n"
 "border: 1px solid black; \n"
