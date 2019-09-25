@@ -12,25 +12,42 @@ blockSelected = "background-color: black;"
 blockUnSelected = "background-color: rgb(114, 159, 207);"
 
 
-def CheckMultipleSelection(widget1, widget2):
-    # if widget1.geometry()
-    pass
+def CheckMultipleSelection(self):
+    for widget in self.findChildren(QtWidgets.QFrame):
+        if widget.geometry() in MultipleSelect[0].geometry() and widget.objectName() != "Blocks":
+            # print(str(self.objectName()) + ": main wdget; " + str(widget.objectName()) + ": child widget; " + "widget in selezione")
+            SelectBlock(widget)
+        else:
+            # print("nothing in selezione. Widget presente: " + str(widget.objectName()))
+            # print(str(widget.geometry()))
+            UnselectBlock(widget)
 
 
 def SelectBlock(widget):
-    widget.setStyleSheet(blockSelected)
+    if widget not in selectedLayer:
+        widget.setStyleSheet(blockSelected)
+        selectedLayer.append(widget)
 
 
-def UnselectBlock(widget):
-    widget.setStyleSheet(blockUnSelected)
+def UnselectBlock(wid=None):
+    if wid is None:
+        print("num di elementi in selectedlayers: " + str(len(selectedLayer)))
+        print("elem in selected layer: " + str(selectedLayer))
+        for widget in selectedLayer:
+            widget.setStyleSheet(blockUnSelected)
+            print("elem in selectedlayers" + str(widget.objectName()))
+        selectedLayer.clear()
+    elif wid in selectedLayer:
+        wid.setStyleSheet(blockUnSelected)
+        selectedLayer.remove(wid)
 
 
 # Function for Mouse Press Event for multiple selection in MainStruct
 def SelectionmousePressEvent(self, event):
-    if event.buttons() == Qt.LeftButton and all(event.pos() not in j.geometry() for j in self.findChildren(QtWidgets.QFrame)):
+    if event.buttons() == Qt.LeftButton:
+        UnselectBlock()
+
         global MultipleSelect
-        for j in self.findChildren(QtWidgets.QFrame):
-            UnselectBlock(j)
         MultipleSelect[1] = QtCore.QPoint(event.pos())
         MultipleSelect[0].setGeometry(QtCore.QRect(MultipleSelect[1], QtCore.QSize()))
         MultipleSelect[0].show()
@@ -43,22 +60,15 @@ def SelectionmouseMoveEvent(self, event):
     # print(str(MultipleSelect[0].geometry()))
     if not MultipleSelect[1].isNull():
         MultipleSelect[0].setGeometry(QtCore.QRect(MultipleSelect[1], event.pos()).normalized())
+        CheckMultipleSelection(self)
         # print("in Selectionmouse move event")
 
 
 # Function for Mouse Release Event for multiple selection in MainStruct
 def SelectionmouseReleaseEvent(self, event):
     if event.button() == 1:
-        print("in Selectionmouse release event")
+        # print("in Selectionmouse release event")
         global MultipleSelect
-
-        for j in self.findChildren(QtWidgets.QFrame):
-            if j.geometry() in MultipleSelect[0].geometry():
-                print(str(self.objectName()) + ": main wdget; " + str(j.objectName()) + ": child widget; " + "widget in selezione")
-                SelectBlock(j)
-            else:
-                print("nothing in selezione. Widget presente: " + str(j.objectName()))
-                print(str(j.geometry()))
 
         MultipleSelect[0].hide()
         MultipleSelect[0].setGeometry(QtCore.QRect(QtCore.QPoint(), QtCore.QPoint()))
@@ -138,6 +148,10 @@ def mousePress(caller):
     posit = caller.pos()
     global tempBlock
     tempBlock = caller
+
+
+def Cancel(selectedLayers):
+    pass
 
 
 class Window(QtWidgets.QLabel):
@@ -228,13 +242,11 @@ class MainW(QtWidgets.QMainWindow, Ui_MainWindow):
 
 
 # Global variables for original position of a moved widget and block which is dropped after a drag event
-global posit
-global tempBlock
-global MultipleSelect
 posit = None
 tempBlock = None
 MultipleSelect = {}
 layers = []
+selectedLayer = []
 
 app = QtWidgets.QApplication(sys.argv)
 
