@@ -3,10 +3,65 @@ from PyQt5.QtCore import Qt, QMimeData
 from PyQt5.QtGui import QDrag
 from PyQt5 import QtGui
 from PyQt5 import QtCore
-
 import sys
 
 from mainwindow import Ui_MainWindow
+
+
+blockSelected = "background-color: black;"
+blockUnSelected = "background-color: rgb(114, 159, 207);"
+
+
+def CheckMultipleSelection(widget1, widget2):
+    # if widget1.geometry()
+    pass
+
+
+def SelectBlock(widget):
+    widget.setStyleSheet(blockSelected)
+
+
+def UnselectBlock(widget):
+    widget.setStyleSheet(blockUnSelected)
+
+
+# Function for Mouse Press Event for multiple selection in MainStruct
+def SelectionmousePressEvent(self, event):
+    if event.buttons() == Qt.LeftButton and all(event.pos() not in j.geometry() for j in self.findChildren(QtWidgets.QFrame)):
+        global MultipleSelect
+        for j in self.findChildren(QtWidgets.QFrame):
+            UnselectBlock(j)
+        MultipleSelect[1] = QtCore.QPoint(event.pos())
+        MultipleSelect[0].setGeometry(QtCore.QRect(MultipleSelect[1], QtCore.QSize()))
+        MultipleSelect[0].show()
+        # print("in Selectionmouse press event")
+
+
+# Function for Mouse Move Event for multiple selection in MainStruct
+def SelectionmouseMoveEvent(self, event):
+    global MultipleSelect
+    # print(str(MultipleSelect[0].geometry()))
+    if not MultipleSelect[1].isNull():
+        MultipleSelect[0].setGeometry(QtCore.QRect(MultipleSelect[1], event.pos()).normalized())
+        # print("in Selectionmouse move event")
+
+
+# Function for Mouse Release Event for multiple selection in MainStruct
+def SelectionmouseReleaseEvent(self, event):
+    if event.button() == 1:
+        print("in Selectionmouse release event")
+        global MultipleSelect
+
+        for j in self.findChildren(QtWidgets.QFrame):
+            if j.geometry() in MultipleSelect[0].geometry():
+                print(str(self.objectName()) + ": main wdget; " + str(j.objectName()) + ": child widget; " + "widget in selezione")
+                SelectBlock(j)
+            else:
+                print("nothing in selezione. Widget presente: " + str(j.objectName()))
+                print(str(j.geometry()))
+
+        MultipleSelect[0].hide()
+        MultipleSelect[0].setGeometry(QtCore.QRect(QtCore.QPoint(), QtCore.QPoint()))
 
 
 # Returns the number of generated layer blocks
@@ -85,6 +140,12 @@ def mousePress(caller):
     tempBlock = caller
 
 
+class Window(QtWidgets.QLabel):
+    def __init__(self, parent=None):
+        QtWidgets.QLabel.__init__(self, parent)
+        self.rubberBand = QtWidgets.QRubberBand(QtWidgets.QRubberBand.Rectangle, self)
+
+
 # Class for the two labels (layer number * and number of neurons) in each generated block
 class TextInStructBox(QtWidgets.QLineEdit):
     defaultText = "** "
@@ -93,7 +154,7 @@ class TextInStructBox(QtWidgets.QLineEdit):
         self.text = text
         super().__init__(self.defaultText + self.text, parent)
 
-        self.setAccessibleName(self.text)
+        self.setObjectName(self.text)
         self.setEnabled(False)
         self.setAlignment(Qt.AlignCenter)
         self.show()
@@ -104,10 +165,9 @@ class StructBlock(QtWidgets.QFrame):
 
     # It initializes its informations: its parent, its prefab, its geometry and its two labels
     def __init__(self, parent, name, MainBlock):
-        self.parent = parent
         self.name = name
         QtWidgets.QWidget.__init__(self, parent=parent)
-        self.setAccessibleName(self.name)
+        self.setObjectName(self.name)
         self.setStyleSheet(MainBlock.styleSheet())
         self.layout = QtWidgets.QVBoxLayout(self)
 
@@ -123,7 +183,7 @@ class StructBlock(QtWidgets.QFrame):
     # Mouse Press Event function: if its right button or double-click left button it allows changing label for the number of neurons
     # If it's single left button it starts saving itself as moving block, because it is starting the dragging event
     def mousePressEvent(self, e):
-        if e.button() == Qt.RightButton or (e.type() == QtCore.QEvent.MouseButtonDblClick and e.buttons() == Qt.LeftButton):
+        if e.buttons() == Qt.RightButton or (e.type() == QtCore.QEvent.MouseButtonDblClick and e.buttons() == Qt.LeftButton):
             self.neurons.setEnabled(True)
 
         if e.buttons() == Qt.LeftButton:
@@ -135,7 +195,7 @@ class StructBlock(QtWidgets.QFrame):
     def mouseMoveEvent(self, e):
         if e.buttons() != Qt.LeftButton or (e.type() == QtCore.QEvent.MouseButtonDblClick and e.buttons() == Qt.LeftButton):
             pass
-        mouseMove(e, self.parent)
+        mouseMove(e, self.parent())
 
     # Key Press Event funciton: If the number of neurons label was active than if it is pressed the enter key it will be disabled
     def keyPressEvent(self, e):
@@ -150,22 +210,30 @@ class MainW(QtWidgets.QMainWindow, Ui_MainWindow):
         super(MainW, self).__init__()
         self.setupUi(self)
 
+        global MultipleSelect
+        MultipleSelect[0] = QtWidgets.QRubberBand(QtWidgets.QRubberBand.Rectangle, self.MainStruct)
+        MultipleSelect[1] = QtCore.QPoint()
+
         self.Blocks.mouseMoveEvent = lambda event: mouseMove(event, self.MainStruct)
         self.Blocks.mousePressEvent = lambda event: mousePress(self.Blocks)
-        self.Blocks.setAccessibleName("Blocks")
+        self.Blocks.setObjectName("Blocks")
 
         self.MainStruct.setAcceptDrops(True)
         self.MainStruct.dragEnterEvent = lambda event: dragEnterMainStruct(event)
         self.MainStruct.dragMoveEvent = lambda event: dragMoveMainStruct(event)
         self.MainStruct.dropEvent = lambda event: dropMainStruct(self.MainStruct, event, self)
+        self.MainStruct.mousePressEvent = lambda event: SelectionmousePressEvent(self.MainStruct, event)
+        self.MainStruct.mouseMoveEvent = lambda event: SelectionmouseMoveEvent(self.MainStruct, event)
+        self.MainStruct.mouseReleaseEvent = lambda event: SelectionmouseReleaseEvent(self.MainStruct, event)
 
 
 # Global variables for original position of a moved widget and block which is dropped after a drag event
 global posit
 global tempBlock
+global MultipleSelect
 posit = None
 tempBlock = None
-
+MultipleSelect = {}
 layers = []
 
 app = QtWidgets.QApplication(sys.argv)

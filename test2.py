@@ -1,146 +1,65 @@
-from PyQt5 import QtWidgets
-from PyQt5.QtCore import Qt, QMimeData
-from PyQt5.QtGui import QDrag
-from PyQt5 import QtGui
-from PyQt5 import QtCore
-
 import sys
-
-from mainwindow import Ui_MainWindow
-
-
-class ButtonInBox(QtWidgets.QPushButton):
-    def __init__(self, parent, title):
-        super().__init__(title, parent)
+from PyQt5.QtCore import *
+from PyQt5.QtGui import *
+from PyQt5 import QtWidgets
+from PyQt5.QtWidgets import *
 
 
-    def mousePressEvent(self, e):
-        print("nuovo bottone in box")
+# Utile per singlo widget cliccabile
 
-#
-# class StructBox(QtWidgets.QWidget):
-#
-#     def __init__(self, parent):
-#         super().__init__(parent)
-#
-#         self.setGeometry(10,10,500,600)
-#
-#     def mouseMoveEvent(self, e):
-#         if e.buttons() == Qt.RightButton:
-#             mime = QMimeData()
-#
-#             drag = QDrag(self)
-#             drag.setMimeData(mime)
-#             drag.setHotSpot(e.pos() - self.rect().topLeft())
-#
-#             drop = drag.exec(Qt.MoveAction)
+def clickable(widget):
 
-# !!
+    class Filter(QObject):
 
+       clicked = pyqtSignal()
 
-class SingleEvents:
+       def eventFilter(self, obj, event):
 
-    def mouseMoveEvent(par, e):
-        if e.buttons() != Qt.LeftButton:
-            return
+          if obj == widget:
+               if event.type() == QEvent.MouseButtonRelease:
+                   if obj.rect().contains(event.pos()):
+                       self.clicked.emit()
+                       # The developer can opt for .emit(obj) to get the object within the slot.
+                       return True
 
-        mimeData = QMimeData()
+          return False
 
-        drag = QDrag(par)
-        drag.setMimeData(mimeData)
-        drag.setHotSpot(e.pos())
-        # - self.rect().topLeft())
-        dropAction = drag.exec_(Qt.MoveAction)
-
-    def mousePressEvent(par, e):
-
-        if e.button() == Qt.RightButton:
-            print('press')
-        else:
-            global posit
-            posit = par.pos()
-
-    def dragEnterEvent(e):
-        # if self is window.MainStruct:
-        #     dragMainStruct = True
-        print("in drag")
-        e.accept()
-
-    def dragMoveEvent(e, obj):
-        position = e.pos()
-        obj.move(position)
-        e.setDropAction(Qt.MoveAction)
-        e.accept()
-
-    def dropEvent(par, e, obj):
-        # if self is window.MainStruct:
-        #     dragMainStruct = False
-        position = e.pos()
-        button = ButtonInBox(par, "nuovo bottone")
-        button.move(position - QtCore.QPoint(button.width() / 2, button.height() / 2))
-        button.show()
-        global posit
-        obj.move(posit)
-        print("in drop")
-        e.setDropAction(Qt.MoveAction)
-        e.accept()
-        posit = None
+    filter = Filter(widget)
+    widget.installEventFilter(filter)
+    return filter.clicked
 
 
-class MainW(QtWidgets.QMainWindow, Ui_MainWindow):
+class Window(QWidget):
 
-    def __init__(self):
-        super(MainW, self).__init__()
-        self.setupUi(self)
-        # self.box = StructBox(self)
+   def __init__(self, parent = None):
 
-    #
-    # def commPressed(self):
-    #     NewWindow = QtWidgets.QDialog()
-    #     NewWindow.exec()
-    #     print("shown")
+      QWidget.__init__(self, parent)
+
+      label1 = QLabel(self.tr("Hello world!"))
+      label2 = QLabel(self.tr("ABC DEF GHI"))
+      label3 = QLabel(self.tr("Hello PyQt!"))
+      clickable(label1).connect(self.showText1)
+      clickable(label2).connect(self.showText2)
+      clickable(label3).connect(self.showText3)
+
+      layout = QHBoxLayout(self)
+      layout.addWidget(label1)
+      layout.addWidget(label2)
+      layout.addWidget(label3)
+
+   def showText1(self):
+      print ("Label 1 clicked")
+
+   def showText2(self):
+      print ("Label 2 clicked")
+
+   def showText3(self):
+      print ("Label 3 clicked")
 
 
-#
-# def dragLeaveEvent(self, e):
-#     if self is window.MainStruct:
-#         dragMainStruct = False
-#
-# def mouseMoveEvent2(self, e):
-#     if dragMainStruct is True and e.button() == Qt.RightButton:
+if __name__ == "__main__":
 
-
-#
-# global dragMainStruct
-# dragMainStruct = False
-
-global posit
-posit = None
-
-app = QtWidgets.QApplication(sys.argv)
-
-window = MainW()
-
-window.show()
-
-# window.CommSave.pressed.connect(window.commPressed)
-
-window.CommSave.mouseMoveEvent = lambda event: SingleEvents.mouseMoveEvent(window.CommSave, event)
-window.CommSave.mousePressEvent = lambda event: SingleEvents.mousePressEvent(window.CommSave, event)
-
-# window.tab.setAcceptDrops(True)
-window.MainStruct.setAcceptDrops(True)
-
-# window.tab.dragEnterEvent = lambda event: dragEnterEvent(window.tab, event)
-# window.tab.dropEvent = lambda event: dropEvent(window.tab, event, window.CommSave)
-window.MainStruct.dragEnterEvent = lambda event: SingleEvents.dragEnterEvent(event)
-window.MainStruct.dropEvent = lambda event: SingleEvents.dropEvent(window.MainStruct, event, window.CommSave)
-window.MainStruct.dragMoveEvent = lambda event: SingleEvents.dragMoveEvent(event, window.CommSave)
-
-# window.MainStruct.mouseMoveEvent = lambda event: mouseMoveEvent2(window.MainStruct, event)
-# window.MainStruct.dragLeaveEvent = lambda event: dragLeaveEvent(window.MainStruct, event)
-
-# # window.MainStruct.
-# window.MainStruct.setDropIndicatorShown(True)
-# window.MainStruct.setDragDropMode(QtGui.QAbstractItemView.DragDrop)
-app.exec()
+   app = QApplication(sys.argv)
+   window = Window()
+   window.show()
+   sys.exit(app.exec_())

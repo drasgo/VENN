@@ -1,53 +1,70 @@
-
+import random, sys
+from PyQt5.QtCore import QPoint, QRect, QSize, Qt
 from PyQt5.QtGui import *
 from PyQt5.QtWidgets import *
-from PyQt5.QtCore import *
-
-import time
-
-class MainWindow(QMainWindow):
 
 
-    def __init__(self, *args, **kwargs):
-        super(MainWindow, self).__init__(*args, **kwargs)
+# Utile per selezionare più elementi
+class Window(QLabel):
 
-        self.counter = 0
+    def __init__(self, parent = None):
 
-        layout = QVBoxLayout()
+        QLabel.__init__(self, parent)
+        self.rubberBand = QRubberBand(QRubberBand.Rectangle, self)
+        self.origin = QPoint()
 
-        self.l = QLabel("Start")
-        b = QPushButton("DANGER!")
-        b.pressed.connect(self.oh_no)
+    def mousePressEvent(self, event):
 
-        layout.addWidget(self.l)
-        layout.addWidget(b)
+         if event.button() == Qt.LeftButton:
 
-        w = QWidget()
-        w.setLayout(layout)
+            self.origin = QPoint(event.pos())
+            self.rubberBand.setGeometry(QRect(self.origin, QSize()))
+            self.rubberBand.show()
 
-        self.setCentralWidget(w)
+    def mouseMoveEvent(self, event):
 
-        self.show()
+         if not self.origin.isNull():
+             self.rubberBand.setGeometry(QRect(self.origin, event.pos()).normalized())
 
-        self.timer = QTimer()
-        self.timer.setInterval(1000)
-        self.timer.timeout.connect(self.recurring_timer)
-        self.timer.start()
+    def mouseReleaseEvent(self, event):
 
-    def oh_no(self):
-        self.thpool = QThread()
-        self.thpool.start(thr())
+        if event.button() == Qt.LeftButton:
+             self.rubberBand.hide()
 
-    def recurring_timer(self):
-        self.counter += 1
-        self.l.setText("Counter: %d" % self.counter)
+# Grafica poligonale creativa generata randomicamente
+# def create_pixmap():
+#
+#      def color():
+#          r = random.randrange(0, 255)
+#          g = random.randrange(0, 255)
+#          b = random.randrange(0, 255)
+#          return QColor(r, g, b)
+#
+#      def point():
+#          return QPoint(random.randrange(0, 400), random.randrange(0, 300))
+#
+#      pixmap = QPixmap(400, 300)
+#      pixmap.fill(color())
+#      painter = QPainter()
+#      painter.begin(pixmap)
+#      i = 0
+#      while i < 1000:
+#          painter.setBrush(color())
+#          painter.drawPolygon(QPolygon([point(), point(), point()]))
+#          i += 1
+#
+#      painter.end()
+#      return pixmap
 
-class thr (QRunnable):
-    @pyqtSlot()
-    def run(self):
-        print("funge")
-        time.sleep(5)
 
-app = QApplication([])
-window = MainWindow()
-app.exec_()
+if __name__ == "__main__":
+
+      app = QApplication(sys.argv)
+      random.seed()
+
+      window = Window()
+      # window.setPixmap(create_pixmap())
+      window.resize(400, 300)
+      window.show()
+
+      sys.exit(app.exec_())
