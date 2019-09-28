@@ -31,7 +31,7 @@ class Window(QLabel):
         if event.button() == Qt.LeftButton:
              self.rubberBand.hide()
 
-# Grafica poligonale creativa generata randomicamente
+# Grafica poligonale creawidgettiva generata randomicamente
 # def create_pixmap():
 #
 #      def color():

@@ -81,7 +81,7 @@ class Ui_MainWindow(object):
 "")
         self.MainStruct.setObjectName("MainStruct")
         self.Blocks = QtWidgets.QFrame(self.MainStruct)
-        self.Blocks.setGeometry(QtCore.QRect(10, 319, 120, 61))
+        self.Blocks.setGeometry(QtCore.QRect(10, 320, 120, 61))
         self.Blocks.setStyleSheet("background-color: rgb(114, 159, 207);\n"
 "border: 1px solid black; \n"
 "border-radius: 10px;")
@@ -91,6 +91,7 @@ class Ui_MainWindow(object):
         self.ChooseArrow.setGeometry(QtCore.QRect(160, 330, 321, 37))
         self.ChooseArrow.setStyleSheet("border-radius: 3px;")
         self.ChooseArrow.setObjectName("ChooseArrow")
+        self.ChooseArrow.addItem("")
         self.Delete = QtWidgets.QPushButton(self.MainStruct)
         self.Delete.setGeometry(QtCore.QRect(510, 330, 41, 36))
         self.Delete.setObjectName("Delete")
@@ -103,6 +104,9 @@ class Ui_MainWindow(object):
         self.InsertFirstBlock.setStyleSheet("border-color: rgb(255, 255, 255);\n"
 "color: rgb(46, 52, 54);")
         self.InsertFirstBlock.setObjectName("InsertFirstBlock")
+        self.MainArrow = QtWidgets.QGraphicsView(self.MainStruct)
+        self.MainArrow.setGeometry(QtCore.QRect(680, 360, 221, 20))
+        self.MainArrow.setObjectName("MainArrow")
         self.Log = QtWidgets.QLabel(self.tab)
         self.Log.setGeometry(QtCore.QRect(310, 480, 910, 80))
         self.Log.setMinimumSize(QtCore.QSize(910, 80))
@@ -145,6 +149,7 @@ class Ui_MainWindow(object):
         self.TimeSe.setText(_translate("MainWindow", "Time-Series"))
         self.CommSave.setText(_translate("MainWindow", "Commit n\' Save Structure"))
         self.Output.setTitle(_translate("MainWindow", "Output"))
+        self.ChooseArrow.setItemText(0, _translate("MainWindow", "Tansig"))
         self.Delete.setText(_translate("MainWindow", "Delete"))
         self.InsertFirstBlock.setText(_translate("MainWindow", "Insert first block!"))
         self.Log.setText(_translate("MainWindow", "TextLabel"))

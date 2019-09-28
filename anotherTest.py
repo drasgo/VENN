@@ -32,6 +32,8 @@ def UnselectBlock(wid=None):
     if wid is None:
         for widget in selectedMultipleLayer:
             widget.setStyleSheet(blockUnSelected)
+            if widget.isSelected():
+                widget.unselect()
         selectedMultipleLayer.clear()
     else:
         wid.setStyleSheet(blockUnSelected)
@@ -171,6 +173,65 @@ class TextInStructBox(QtWidgets.QLineEdit):
         self.show()
 
 
+# TODO
+class Arrow:
+
+    def __init__(self, parent, initBlock, finalBlock):
+        self.parent = parent
+        # QtCore.QLine.__init__(self)
+        # self.setStyleSheet(self.parent.MainArrow.styleSheet())
+
+        print(self.parent.objectName())
+        self.activationFunc = None
+        self.initBlock = initBlock
+        self.finalBlock = finalBlock
+        # self.setP1(QtCore.QPoint(400,100))
+        # self.setP2(QtCore.QPoint(100,100))
+        self.line = QtCore.QLine(QtCore.QPoint(400,100), QtCore.QPoint(100,100))
+        # self.setLine(400,100,100,100)
+        # self.setLine(self.xArrow(self.initBlock, self.finalBlock), self.yArrow(self.initBlock, self.finalBlock), self.xArrow(self.finalBlock, self.initBlock), self.yArrow(self.finalBlock, self.initBlock))
+        painter = QtGui.QPainter(self.parent)
+        pen = QtGui.QPen(Qt.red, 3)
+        painter.setPen(pen)
+        painter.drawLine(self.line)
+
+    def yArrow(self, block1, block2):
+        print("in yArrow")
+        print(str(block1.objectName()) + " y: " + str(block1.y()))
+        print(str(block2.objectName()) + " y: " + str(block2.y()))
+        if block1.y() > block2.y():
+            return block1.y()
+        elif (block1.y() + block1.height()) < block2.y():
+            return block1.y() + block1.height()
+        else:
+            return block1.y() + block1.height()/2
+
+    def xArrow(self, block1, block2):
+        print("in xArrow")
+        print(str(block1.objectName()) + " x: " + str(block1.x()))
+        print(str(block2.objectName()) + " x: " + str(block2.x()))
+        if block1.x() > (block2.x() + block2.width()):
+            return block1.x()
+        elif (block1.x() + block1.width()) < block2.x():
+            return block1.x() + block1.width()
+        else:
+            return block1.x() + block1.width()/2
+
+    # def paintEvent(self, e):
+    #     print("in painting arrow")
+    #     #
+    #     # painter = QtGui.QPainter()
+    #     # painter.begin(self)
+    #     # painter.setRenderHint(QtGui.QPainter.Antialiasing)
+    #     # painter.setPen(QtCore.Qt.red)
+    #     # painter.setBrush(QtCore.Qt.white)
+    #     self.setLine(self.xArrow(self.initBlock, self.finalBlock), self.yArrow(self.initBlock, self.finalBlock), self.xArrow(self.finalBlock, self.initBlock), self.yArrow(self.finalBlock, self.initBlock))
+
+        # painter.drawLine(400,100,100,100)
+        # painter.drawLine(150, 150, 100, 100)
+        # painter.drawLine(150, 50, 100, 100)
+        # painter.end()
+
 # Class for generating new layer blocks. Inside it has two labels: one for layer number and one for number of neurons
 class StructBlock(QtWidgets.QFrame):
 
@@ -189,8 +250,8 @@ class StructBlock(QtWidgets.QFrame):
         self.setFixedHeight(MainBlock.height())
         self.layer = TextInStructBox(self, "Layer")
         self.neurons = TextInStructBox(self, "Neurons")
-        self.layout.addWidget(self.layer)
-        self.layout.addWidget(self.neurons)
+        self.layout.addWidget(self.layer, alignment=Qt.AlignCenter)
+        self.layout.addWidget(self.neurons, alignment=Qt.AlignCenter)
 
         self.show()
 
@@ -205,8 +266,16 @@ class StructBlock(QtWidgets.QFrame):
         SelectBlock(widget=self)
         self.select = True
 
+        # TODO
+        for block in layers:
+            if block.objectName() != self.objectName() and block.isSelected():
+                print("in pre chiamata a creazione arrow")
+                # print(str(block.objectName()) + " self: " + str(self.objectName()))
+                self.PrevArch = Arrow(self.parent(), block, self)
+                block.SuccArch = self.PrevArch
+
     def unselect(self):
-        UnselectBlock(wid=self)
+        self.setStyleSheet(blockUnSelected)
         self.select = False
 
     # Mouse Press Event function: if its right button or double-click left button it allows changing label for the number of neurons
@@ -237,40 +306,6 @@ class StructBlock(QtWidgets.QFrame):
             self.neurons.setEnabled(False)
 
 
-# # Grafica poligonale creativa generata randomicamente
-# def create_pixmap(widget):
-#
-#      def color():
-#          r = random.randrange(0, 255)
-#          g = random.randrange(0, 255)
-#          b = random.randrange(0, 255)
-#          return QtGui.QColor(r, g, b)
-#
-#      def point(width, height):
-#          return QtCore.QPoint(random.randrange(0, width), random.randrange(0, height))
-#
-#      pixmap = QtGui.QPixmap(widget.width(), widget.height())
-#      pixmap.fill(color())
-#      painter = QtGui.QPainter()
-#      painter.begin(pixmap)
-#      i = 0
-#      while i < 3000:
-#          painter.setBrush(color())
-#          painter.drawPolygon(QtGui.QPolygon([point(widget.width(), widget.height()), point(widget.width(), widget.height()), point(widget.width(), widget.height())]))
-#          i += 1
-#
-#      painter.end()
-#      return pixmap
-#
-# def setPixmap(widget):
-#     time.sleep(5)
-#
-#     widget.setPixmap(create_pixmap(widget))
-#     print("dopo setpixmap")
-
-# It loads the original UI from the file mainwindow.py. It also sets the event functions for the MainStruct and the original block
-
-
 class MainW(QtWidgets.QMainWindow, Ui_MainWindow):
 
     def __init__(self):
@@ -294,8 +329,6 @@ class MainW(QtWidgets.QMainWindow, Ui_MainWindow):
         self.MainStruct.mouseReleaseEvent = lambda event: SelectionmouseReleaseEvent(self.MainStruct, event)
 
         self.Delete.mousePressEvent = lambda event: Cancel(event)
-        # x = threading.Thread(target=setPixmap,  args=(self.Log, ))
-        # x.start()¯
 
 
 # Global variables for original position of a moved widget and block which is dropped after a drag event

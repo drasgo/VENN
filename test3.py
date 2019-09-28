@@ -1,6 +1,9 @@
 from PyQt5.QtWidgets import QPushButton, QWidget, QApplication
 from PyQt5.QtCore import Qt, QMimeData
 from PyQt5.QtGui import QDrag
+from PyQt5 import QtWidgets
+from PyQt5 import QtGui
+from PyQt5 import QtCore
 import sys
 
 
@@ -27,7 +30,12 @@ class Button(QPushButton):
         super().mousePressEvent(e)
 
         if e.button() == Qt.LeftButton:
-            print('press')
+            line = QtWidgets.QFrame()
+
+            line.setGeometry(QtCore.QRect(10, 10, 20, 20))
+            line.setFrameShape(QtWidgets.QFrame.HLine)
+            line.setFrameShadow(QtWidgets.QFrame.Sunken)
+            line.show()
 
 
 class Example(QWidget):
