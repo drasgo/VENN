@@ -13,11 +13,11 @@ from PyQt5 import QtCore, QtGui, QtWidgets
 class Ui_MainWindow(object):
     def setupUi(self, MainWindow):
         MainWindow.setObjectName("MainWindow")
-        MainWindow.resize(1261, 605)
+        MainWindow.resize(1261, 654)
         self.centralwidget = QtWidgets.QWidget(MainWindow)
         self.centralwidget.setObjectName("centralwidget")
         self.tabWidget = QtWidgets.QTabWidget(self.centralwidget)
-        self.tabWidget.setGeometry(QtCore.QRect(0, 0, 1261, 561))
+        self.tabWidget.setGeometry(QtCore.QRect(0, 0, 1261, 611))
         self.tabWidget.setObjectName("tabWidget")
         self.tab = QtWidgets.QWidget()
         self.tab.setObjectName("tab")
@@ -40,6 +40,7 @@ class Ui_MainWindow(object):
         self.Input.setObjectName("Input")
         self.InputText = QtWidgets.QPlainTextEdit(self.Input)
         self.InputText.setGeometry(QtCore.QRect(3, 19, 271, 131))
+        self.InputText.setLineWidth(15)
         self.InputText.setObjectName("InputText")
         self.horizontalLayoutWidget = QtWidgets.QWidget(self.tab)
         self.horizontalLayoutWidget.setGeometry(QtCore.QRect(20, 390, 251, 120))
@@ -69,13 +70,13 @@ class Ui_MainWindow(object):
         self.Output.setObjectName("Output")
         self.OutputText = QtWidgets.QPlainTextEdit(self.Output)
         self.OutputText.setGeometry(QtCore.QRect(0, 20, 271, 111))
+        self.OutputText.setLineWidth(15)
         self.OutputText.setObjectName("OutputText")
         self.MainStruct = QtWidgets.QWidget(self.tab)
         self.MainStruct.setGeometry(QtCore.QRect(310, 30, 931, 391))
         self.MainStruct.setAcceptDrops(False)
         self.MainStruct.setAutoFillBackground(False)
-        self.MainStruct.setStyleSheet("background-color: rgb(252, 175, 62);\n"
-"border: 1px solid black; \n"
+        self.MainStruct.setStyleSheet("border: 1px solid black; \n"
 "border-radius: 10px;\n"
 "")
         self.MainStruct.setObjectName("MainStruct")
@@ -84,14 +85,15 @@ class Ui_MainWindow(object):
         self.Blocks.setStyleSheet("background-color: rgb(114, 159, 207);\n"
 "border: 1px solid black; \n"
 "border-radius: 10px;")
+        self.Blocks.setLineWidth(15)
         self.Blocks.setObjectName("Blocks")
         self.ChooseArrow = QtWidgets.QComboBox(self.MainStruct)
         self.ChooseArrow.setGeometry(QtCore.QRect(160, 330, 321, 37))
         self.ChooseArrow.setStyleSheet("border-radius: 3px;")
         self.ChooseArrow.setObjectName("ChooseArrow")
-        self.DeleteArrow = QtWidgets.QPushButton(self.MainStruct)
-        self.DeleteArrow.setGeometry(QtCore.QRect(510, 330, 41, 36))
-        self.DeleteArrow.setObjectName("DeleteArrow")
+        self.Delete = QtWidgets.QPushButton(self.MainStruct)
+        self.Delete.setGeometry(QtCore.QRect(510, 330, 41, 36))
+        self.Delete.setObjectName("Delete")
         self.InsertFirstBlock = QtWidgets.QLineEdit(self.MainStruct)
         self.InsertFirstBlock.setEnabled(False)
         self.InsertFirstBlock.setGeometry(QtCore.QRect(250, 160, 381, 51))
@@ -101,6 +103,11 @@ class Ui_MainWindow(object):
         self.InsertFirstBlock.setStyleSheet("border-color: rgb(255, 255, 255);\n"
 "color: rgb(46, 52, 54);")
         self.InsertFirstBlock.setObjectName("InsertFirstBlock")
+        self.Log = QtWidgets.QLabel(self.tab)
+        self.Log.setGeometry(QtCore.QRect(310, 480, 910, 80))
+        self.Log.setMinimumSize(QtCore.QSize(910, 80))
+        self.Log.setMaximumSize(QtCore.QSize(910, 80))
+        self.Log.setObjectName("Log")
         self.tabWidget.addTab(self.tab, "")
         self.tab_2 = QtWidgets.QWidget()
         self.tab_2.setObjectName("tab_2")
@@ -138,8 +145,9 @@ class Ui_MainWindow(object):
         self.TimeSe.setText(_translate("MainWindow", "Time-Series"))
         self.CommSave.setText(_translate("MainWindow", "Commit n\' Save Structure"))
         self.Output.setTitle(_translate("MainWindow", "Output"))
-        self.DeleteArrow.setText(_translate("MainWindow", "PushButton"))
+        self.Delete.setText(_translate("MainWindow", "Delete"))
         self.InsertFirstBlock.setText(_translate("MainWindow", "Insert first block!"))
+        self.Log.setText(_translate("MainWindow", "TextLabel"))
         self.tabWidget.setTabText(self.tabWidget.indexOf(self.tab), _translate("MainWindow", "Let\'s Roll"))
         self.textBrowser.setHtml(_translate("MainWindow", "<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 4.0//EN\" \"http://www.w3.org/TR/REC-html40/strict.dtd\">\n"
 "<html><head><meta name=\"qrichtext\" content=\"1\" /><style type=\"text/css\">\n"

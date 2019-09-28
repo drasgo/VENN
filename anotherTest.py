@@ -3,7 +3,9 @@ from PyQt5.QtCore import Qt, QMimeData
 from PyQt5.QtGui import QDrag
 from PyQt5 import QtGui
 from PyQt5 import QtCore
+# from PyQt5.QtCore import QTimer
 import sys
+# import threading, time, random
 
 from mainwindow import Ui_MainWindow
 
@@ -15,31 +17,26 @@ blockUnSelected = "background-color: rgb(114, 159, 207);"
 def CheckMultipleSelection(self):
     for widget in self.findChildren(QtWidgets.QFrame):
         if widget.geometry() in MultipleSelect[0].geometry() and widget.objectName() != "Blocks":
-            # print(str(self.objectName()) + ": main wdget; " + str(widget.objectName()) + ": child widget; " + "widget in selezione")
             SelectBlock(widget)
         else:
-            # print("nothing in selezione. Widget presente: " + str(widget.objectName()))
-            # print(str(widget.geometry()))
             UnselectBlock(widget)
 
 
 def SelectBlock(widget):
-    if widget not in selectedLayer:
-        widget.setStyleSheet(blockSelected)
-        selectedLayer.append(widget)
+    widget.setStyleSheet(blockSelected)
+    if widget not in selectedMultipleLayer:
+        selectedMultipleLayer.append(widget)
 
 
 def UnselectBlock(wid=None):
     if wid is None:
-        print("num di elementi in selectedlayers: " + str(len(selectedLayer)))
-        print("elem in selected layer: " + str(selectedLayer))
-        for widget in selectedLayer:
+        for widget in selectedMultipleLayer:
             widget.setStyleSheet(blockUnSelected)
-            print("elem in selectedlayers" + str(widget.objectName()))
-        selectedLayer.clear()
-    elif wid in selectedLayer:
+        selectedMultipleLayer.clear()
+    else:
         wid.setStyleSheet(blockUnSelected)
-        selectedLayer.remove(wid)
+        if wid in selectedMultipleLayer:
+            selectedMultipleLayer.remove(wid)
 
 
 # Function for Mouse Press Event for multiple selection in MainStruct
@@ -51,23 +48,19 @@ def SelectionmousePressEvent(self, event):
         MultipleSelect[1] = QtCore.QPoint(event.pos())
         MultipleSelect[0].setGeometry(QtCore.QRect(MultipleSelect[1], QtCore.QSize()))
         MultipleSelect[0].show()
-        # print("in Selectionmouse press event")
 
 
 # Function for Mouse Move Event for multiple selection in MainStruct
 def SelectionmouseMoveEvent(self, event):
     global MultipleSelect
-    # print(str(MultipleSelect[0].geometry()))
     if not MultipleSelect[1].isNull():
         MultipleSelect[0].setGeometry(QtCore.QRect(MultipleSelect[1], event.pos()).normalized())
         CheckMultipleSelection(self)
-        # print("in Selectionmouse move event")
 
 
 # Function for Mouse Release Event for multiple selection in MainStruct
 def SelectionmouseReleaseEvent(self, event):
     if event.button() == 1:
-        # print("in Selectionmouse release event")
         global MultipleSelect
 
         MultipleSelect[0].hide()
@@ -150,10 +143,14 @@ def mousePress(caller):
     tempBlock = caller
 
 
-def Cancel(selectedLayers):
-    pass
+def Cancel(e):
+    for block in selectedMultipleLayer:
+        layers.remove(block)
+        block.__del__()
+    selectedMultipleLayer.clear()
 
 
+# Label for multiple selection (this is the actual blue rectangle which is used for selecting multiple elements)
 class Window(QtWidgets.QLabel):
     def __init__(self, parent=None):
         QtWidgets.QLabel.__init__(self, parent)
@@ -179,9 +176,12 @@ class StructBlock(QtWidgets.QFrame):
 
     # It initializes its informations: its parent, its prefab, its geometry and its two labels
     def __init__(self, parent, name, MainBlock):
-        self.name = name
+        self.PrevArch = None
+        self.SuccArch = None
+        self.select = False
+
         QtWidgets.QWidget.__init__(self, parent=parent)
-        self.setObjectName(self.name)
+        self.setObjectName(name)
         self.setStyleSheet(MainBlock.styleSheet())
         self.layout = QtWidgets.QVBoxLayout(self)
 
@@ -194,15 +194,35 @@ class StructBlock(QtWidgets.QFrame):
 
         self.show()
 
+    def __del__(self):
+        self.hide()
+
+    def isSelected(self):
+        return self.select
+
+    def selected(self):
+        self.neurons.setEnabled(False)
+        SelectBlock(widget=self)
+        self.select = True
+
+    def unselect(self):
+        UnselectBlock(wid=self)
+        self.select = False
+
     # Mouse Press Event function: if its right button or double-click left button it allows changing label for the number of neurons
     # If it's single left button it starts saving itself as moving block, because it is starting the dragging event
     def mousePressEvent(self, e):
-        if e.buttons() == Qt.RightButton or (e.type() == QtCore.QEvent.MouseButtonDblClick and e.buttons() == Qt.LeftButton):
+        self.unselect()
+
+        if e.type() == QtCore.QEvent.MouseButtonDblClick and e.buttons() == Qt.LeftButton:
             self.neurons.setEnabled(True)
 
-        if e.buttons() == Qt.LeftButton:
+        elif e.buttons() == Qt.LeftButton:
             global tempBlock
             tempBlock = self
+
+        elif e.buttons() == Qt.RightButton:
+            self.selected()
 
     # Mouse Move Event function: if it single left button it calls the original block Mouse Move Event function
     # Unless it does nothing
@@ -217,7 +237,40 @@ class StructBlock(QtWidgets.QFrame):
             self.neurons.setEnabled(False)
 
 
+# # Grafica poligonale creativa generata randomicamente
+# def create_pixmap(widget):
+#
+#      def color():
+#          r = random.randrange(0, 255)
+#          g = random.randrange(0, 255)
+#          b = random.randrange(0, 255)
+#          return QtGui.QColor(r, g, b)
+#
+#      def point(width, height):
+#          return QtCore.QPoint(random.randrange(0, width), random.randrange(0, height))
+#
+#      pixmap = QtGui.QPixmap(widget.width(), widget.height())
+#      pixmap.fill(color())
+#      painter = QtGui.QPainter()
+#      painter.begin(pixmap)
+#      i = 0
+#      while i < 3000:
+#          painter.setBrush(color())
+#          painter.drawPolygon(QtGui.QPolygon([point(widget.width(), widget.height()), point(widget.width(), widget.height()), point(widget.width(), widget.height())]))
+#          i += 1
+#
+#      painter.end()
+#      return pixmap
+#
+# def setPixmap(widget):
+#     time.sleep(5)
+#
+#     widget.setPixmap(create_pixmap(widget))
+#     print("dopo setpixmap")
+
 # It loads the original UI from the file mainwindow.py. It also sets the event functions for the MainStruct and the original block
+
+
 class MainW(QtWidgets.QMainWindow, Ui_MainWindow):
 
     def __init__(self):
@@ -240,13 +293,17 @@ class MainW(QtWidgets.QMainWindow, Ui_MainWindow):
         self.MainStruct.mouseMoveEvent = lambda event: SelectionmouseMoveEvent(self.MainStruct, event)
         self.MainStruct.mouseReleaseEvent = lambda event: SelectionmouseReleaseEvent(self.MainStruct, event)
 
+        self.Delete.mousePressEvent = lambda event: Cancel(event)
+        # x = threading.Thread(target=setPixmap,  args=(self.Log, ))
+        # x.start()¯
+
 
 # Global variables for original position of a moved widget and block which is dropped after a drag event
 posit = None
 tempBlock = None
 MultipleSelect = {}
 layers = []
-selectedLayer = []
+selectedMultipleLayer = []
 
 app = QtWidgets.QApplication(sys.argv)
 
