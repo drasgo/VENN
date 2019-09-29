@@ -104,9 +104,6 @@ class Ui_MainWindow(object):
         self.InsertFirstBlock.setStyleSheet("border-color: rgb(255, 255, 255);\n"
 "color: rgb(46, 52, 54);")
         self.InsertFirstBlock.setObjectName("InsertFirstBlock")
-        self.MainArrow = QtWidgets.QGraphicsView(self.MainStruct)
-        self.MainArrow.setGeometry(QtCore.QRect(680, 360, 221, 20))
-        self.MainArrow.setObjectName("MainArrow")
         self.Log = QtWidgets.QLabel(self.tab)
         self.Log.setGeometry(QtCore.QRect(310, 480, 910, 80))
         self.Log.setMinimumSize(QtCore.QSize(910, 80))
