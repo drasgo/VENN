@@ -74,6 +74,10 @@ def NumberofGeneratedBlocks():
     return len(layers)
 
 
+def NumberofGeneratedArchs():
+    return len(archs)
+
+
 # If number of generated layer blocks is equal to one it sets the Insert First Block to visible
 def CheckNumbOfLayers(parent):
     if NumberofGeneratedBlocks() > 0:
@@ -109,7 +113,7 @@ def dropMainStruct(self, event, parent):
     if tempBlock.objectName() == "Blocks":
         global posit
         position = event.pos()
-        newBlock = StructBlock(self, str(NumberofGeneratedBlocks()) + "block", tempBlock)
+        newBlock = StructBlock(self, tempBlock)
         newBlock.move(position - QtCore.QPoint(newBlock.width() / 2, newBlock.height() / 2))
         newBlock.show()
         layers.append(newBlock)
@@ -177,38 +181,25 @@ class TextInStructBox(QtWidgets.QLineEdit):
 class Arrow(QtWidgets.QFrame):
 
     def __init__(self, parent, initBlock, finalBlock):
-
         self.initBlock = initBlock
         self.finalBlock = finalBlock
-        self.line = None
         self.horizontalLayout = True
-
+        self.upRightLayout = True
+        self.startPoint = QtCore.QPoint()
+        self.endPoint = QtCore.QPoint()
 
         QtWidgets.QFrame.__init__(self, parent=parent)
+        self.setObjectName(str(NumberofGeneratedArchs()) + "arch")
 
         self.lineWidth = 25
-
-        # if self.initBlock.x() < self.finalBlock.x():
-        #     xIn = self.xArrow(self.initBlock)
-        #     xFin = self.xArrow(None, self.finalBlock) - xIn
-        # else:
-        #     xIn = self.xArrow(self.finalBlock )
-        #     xFin = self.xArrow(None, self.initBlock) - xIn
-        #
-        # yIn = self.yArrow(self.initBlock) - self.lineWidth/2
-
-        self.drawArrow()
 
         self.setStyleSheet("border: white; background-color: blue;")
 
         self.layout = QtWidgets.QVBoxLayout(self)
 
-        # self.activationFunc = QtWidgets.QLineEdit(self, "None")
-
         self.activationFunc = QtWidgets.QLineEdit()
         self.activationFunc.setText("None")
-        # self.activationFunc.setFixedHeight(self.height()-self.lineWidth/5)
-        # self.activationFunc.setFixedWidth(self.width())
+
         self.activationFunc.setEnabled(False)
 
         self.activationFunc.setAlignment(Qt.AlignTop | Qt.AlignCenter)
@@ -218,52 +209,72 @@ class Arrow(QtWidgets.QFrame):
 
         self.show()
 
-    def Update(self):
-        self.drawArrow()
+    def __del__(self):
+        self.hide()
+        self.initBlock.SuccArch = None
+        self.finalBlock.PrevArch = None
 
-    def yArrow(self, block1):
-        return block1.y() + block1.height()/2
-
-    def xArrow(self, block1, block2=None):
-
-        if block2 is None:
-            return block1.x() + block1.width()
+    def Update(self, block):
+        if block.objectName() == self.initBlock.objectName():
+            self.initBlock = block
         else:
-            return block2.x()
+            self.finalBlock = block
+        self.drawArrow()
 
     def drawArrow(self):
         if abs(self.initBlock.y() - self.finalBlock.y()) <= abs(self.initBlock.x()-self.finalBlock.x()):
-            yIn = self.yArrow(self.initBlock) - self.lineWidth / 2
+            self.lineWidth = 25
+            yIn = self.initBlock.y() + self.initBlock.height()/2 - self.lineWidth / 2
+            self.horizontalLayout = True
+
             if self.initBlock.x() < self.finalBlock.x():
-                xIn = self.xArrow(self.initBlock)
-                xFin = self.xArrow(None, self.finalBlock) - xIn
+                self.upRightLayout = False
+                xIn = self.initBlock.x() + self.initBlock.width()
+                xFin = self.finalBlock.x() - xIn
+                self.endPoint = QtCore.QPoint(self.finalBlock.x(), yIn + self.lineWidth/2)
+
             else:
-                xIn = self.xArrow(self.finalBlock )
-                xFin = self.xArrow(None, self.initBlock) - xIn
+                self.upRightLayout = True
+                xIn = self.finalBlock.x() + self.finalBlock.width()
+                xFin = self.initBlock.x() - xIn
+                self.endPoint = QtCore.QPoint(self.finalBlock.x() + self.finalBlock.width(), yIn + self.lineWidth/2)
+
         else:
+            self.horizontalLayout = False
             xIn = self.initBlock.x() + self.initBlock.width()/2
             xFin = self.lineWidth
+
             if self.initBlock.y() > self.finalBlock.y():
-                yIn = self.finalBlock.y() + self.finalBlock.height()
+                self.upRightLayout = True
+                yIn = self.initBlock.y()
                 self.lineWidth = self.initBlock.y() - (self.finalBlock.y() + self.finalBlock.height())
+                self.endPoint = QtCore.QPoint(xIn, self.finalBlock.y() - self.finalBlock.height())
+
+            # TODO Bug here when creating arrow when 2 block is over first one
             else:
+                self.upRightLayout = False
                 yIn = self.initBlock.y() + self.initBlock.height()
                 self.lineWidth = self.finalBlock.y() - (self.initBlock.y() + self.initBlock.height())
+                self.endPoint = QtCore.QPoint(xIn, self.finalBlock.y())
+
+        self.startPoint = QtCore.QPoint(xIn, yIn)
 
         self.setGeometry(xIn, yIn, xFin, self.lineWidth)
+
+        self.finalBlock.updatePosition(self.endPoint)
 
 
 # Class for generating new layer blocks. Inside it has two labels: one for layer number and one for number of neurons
 class StructBlock(QtWidgets.QFrame):
 
     # It initializes its informations: its parent, its prefab, its geometry and its two labels
-    def __init__(self, parent, name, MainBlock):
+    def __init__(self, parent, MainBlock):
         self.PrevArch = None
         self.SuccArch = None
         self.select = False
 
         QtWidgets.QWidget.__init__(self, parent=parent)
-        self.setObjectName(name)
+        self.setObjectName(str(NumberofGeneratedBlocks()) + "block")
         self.setStyleSheet(MainBlock.styleSheet())
         self.layout = QtWidgets.QVBoxLayout(self)
 
@@ -287,13 +298,29 @@ class StructBlock(QtWidgets.QFrame):
         SelectBlock(widget=self)
         self.select = True
 
-        # TODO
         for block in layers:
+
             if block.objectName() != self.objectName() and block.isSelected():
-                print("in pre chiamata a creazione arrow")
-                # print(str(block.objectName()) + " self: " + str(self.objectName()))
                 self.PrevArch = Arrow(self.parent(), block, self)
                 block.SuccArch = self.PrevArch
+                self.PrevArch.drawArrow()
+
+    def updatePosition(self, point):
+        if self.PrevArch.horizontalLayout:
+
+            if self.PrevArch.upRightLayout:
+                self.move(point - QtCore.QPoint(self.width(), self.height()/2))
+
+            else:
+                self.move(point - QtCore.QPoint(0, self.height()/2))
+
+        else:
+            # TODO Bug here for arrow creation when 2 block is over first one
+            if self.PrevArch.upRightLayout:
+                self.move(point - QtCore.QPoint(self.width()/2, self.height()))
+
+            else:
+                self.move(point - QtCore.QPoint(self.width()/2, 0))
 
     def unselect(self):
         self.setStyleSheet(blockUnSelected)
@@ -320,6 +347,12 @@ class StructBlock(QtWidgets.QFrame):
         if e.buttons() != Qt.LeftButton or (e.type() == QtCore.QEvent.MouseButtonDblClick and e.buttons() == Qt.LeftButton):
             pass
         mouseMove(e, self.parent())
+
+        if self.PrevArch is not None:
+            self.PrevArch.Update(self)
+
+        if self.SuccArch is not None:
+            self.SuccArch.Update(self)
 
     # Key Press Event funciton: If the number of neurons label was active than if it is pressed the enter key it will be disabled
     def keyPressEvent(self, e):
@@ -356,6 +389,7 @@ class MainW(QtWidgets.QMainWindow, Ui_MainWindow):
 posit = None
 tempBlock = None
 MultipleSelect = {}
+archs = []
 layers = []
 selectedMultipleLayer = []
 
