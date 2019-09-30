@@ -181,21 +181,24 @@ class Arrow(QtWidgets.QFrame):
         self.initBlock = initBlock
         self.finalBlock = finalBlock
         self.line = None
+        self.horizontalLayout = True
+
 
         QtWidgets.QFrame.__init__(self, parent=parent)
 
         self.lineWidth = 25
 
-        if self.initBlock.x() < self.finalBlock.x():
-            xIn = self.xArrow(self.initBlock)
-            xFin = self.xArrow(None, self.finalBlock) - xIn
-        else:
-            xIn = self.xArrow(self.finalBlock)
-            xFin = self.xArrow(None, self.initBlock) - xIn
+        # if self.initBlock.x() < self.finalBlock.x():
+        #     xIn = self.xArrow(self.initBlock)
+        #     xFin = self.xArrow(None, self.finalBlock) - xIn
+        # else:
+        #     xIn = self.xArrow(self.finalBlock )
+        #     xFin = self.xArrow(None, self.initBlock) - xIn
+        #
+        # yIn = self.yArrow(self.initBlock) - self.lineWidth/2
 
-        yIn = self.yArrow(self.initBlock) - self.lineWidth/2
+        self.drawArrow()
 
-        self.setGeometry(xIn, yIn, xFin, self.lineWidth)
         self.setStyleSheet("border: white; background-color: blue;")
 
         self.layout = QtWidgets.QVBoxLayout(self)
@@ -204,8 +207,8 @@ class Arrow(QtWidgets.QFrame):
 
         self.activationFunc = QtWidgets.QLineEdit()
         self.activationFunc.setText("None")
-        self.activationFunc.setFixedHeight(self.height()-self.lineWidth/5)
-        self.activationFunc.setFixedWidth(self.width())
+        # self.activationFunc.setFixedHeight(self.height()-self.lineWidth/5)
+        # self.activationFunc.setFixedWidth(self.width())
         self.activationFunc.setEnabled(False)
 
         self.activationFunc.setAlignment(Qt.AlignTop | Qt.AlignCenter)
@@ -216,18 +219,10 @@ class Arrow(QtWidgets.QFrame):
         self.show()
 
     def Update(self):
-        self.update()
+        self.drawArrow()
 
     def yArrow(self, block1):
-
         return block1.y() + block1.height()/2
-
-        # if block1.y() > block2.y():
-        #     return block1.y()
-        # elif (block1.y() + block1.height()) < block2.y():
-        #     return block1.y() + block1.height()
-        # else:
-        #     return block1.y() + block1.height()/2
 
     def xArrow(self, block1, block2=None):
 
@@ -235,34 +230,27 @@ class Arrow(QtWidgets.QFrame):
             return block1.x() + block1.width()
         else:
             return block2.x()
-        # if block1.x() > (block2.x() + block2.width()):
-        #     return block1.x()
-        # elif (block1.x() + block1.width()) < block2.x():
-        #     return block1.x() + block1.width()
-        # else:
-        #     return block1.x() + block1.width()/2
 
-    def paintEvent(self, e):
+    def drawArrow(self):
+        if abs(self.initBlock.y() - self.finalBlock.y()) <= abs(self.initBlock.x()-self.finalBlock.x()):
+            yIn = self.yArrow(self.initBlock) - self.lineWidth / 2
+            if self.initBlock.x() < self.finalBlock.x():
+                xIn = self.xArrow(self.initBlock)
+                xFin = self.xArrow(None, self.finalBlock) - xIn
+            else:
+                xIn = self.xArrow(self.finalBlock )
+                xFin = self.xArrow(None, self.initBlock) - xIn
+        else:
+            xIn = self.initBlock.x() + self.initBlock.width()/2
+            xFin = self.lineWidth
+            if self.initBlock.y() > self.finalBlock.y():
+                yIn = self.finalBlock.y() + self.finalBlock.height()
+                self.lineWidth = self.initBlock.y() - (self.finalBlock.y() + self.finalBlock.height())
+            else:
+                yIn = self.initBlock.y() + self.initBlock.height()
+                self.lineWidth = self.finalBlock.y() - (self.initBlock.y() + self.initBlock.height())
 
-        xInit = self.xArrow(self.initBlock)
-        yInit = self.yArrow(self.initBlock)
-        xFin = self.xArrow(None, self.finalBlock)
-
-        self.line = QtCore.QLine()
-        self.line.setP1(QtCore.QPoint(xInit, yInit))
-        self.line.setP2(QtCore.QPoint(xFin, yInit))
-
-        painter = QtGui.QPainter(self)
-
-        # painter.setRenderHint(QtGui.QPainter.Antialiasing)
-        painter.setPen(QtGui.QPen(Qt.red, 3))
-
-        painter.drawLine(self.line)
-
-
-        # painter.drawLine(xInit, yInit, xFin, yInit)
-
-        painter.end()
+        self.setGeometry(xIn, yIn, xFin, self.lineWidth)
 
 
 # Class for generating new layer blocks. Inside it has two labels: one for layer number and one for number of neurons
