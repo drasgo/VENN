@@ -118,7 +118,7 @@ def dropMainStruct(self, event, parent):
         newBlock.move(position - QtCore.QPoint(newBlock.width() / 2, newBlock.height() / 2))
         newBlock.show()
         layers.append(newBlock)
-
+        UnselectBlock()
     else:
         posit = event.pos() - QtCore.QPoint(tempBlock.width() / 2, tempBlock.height() / 2)
 
@@ -178,7 +178,7 @@ class TextInStructBox(QtWidgets.QLineEdit):
         self.show()
 
 
-# TODO
+# TODO bug when updating position second block
 class Arrow(QtWidgets.QFrame):
 
     def __init__(self, parent, initBlock, finalBlock):
@@ -212,8 +212,6 @@ class Arrow(QtWidgets.QFrame):
 
     def __del__(self):
         self.hide()
-        self.initBlock.SuccArch = None
-        self.finalBlock.PrevArch = None
 
     def Update(self, block):
         if block.objectName() == self.initBlock.objectName():
@@ -243,7 +241,7 @@ class Arrow(QtWidgets.QFrame):
         else:
             self.horizontalLayout = False
             xIn = self.initBlock.x() + self.initBlock.width()/2 - costants.LINE_WIDTH / 2
-            xFin = self.lineWidth
+            xFin = costants.LINE_WIDTH
 
             if self.initBlock.y() > self.finalBlock.y():
                 self.upRightLayout = True
@@ -261,7 +259,9 @@ class Arrow(QtWidgets.QFrame):
 
         self.setGeometry(xIn, yIn, xFin, self.lineWidth)
 
-        self.finalBlock.updatePosition(self.endPoint)
+        self.finalBlock.updatePosition(self, self.endPoint)
+
+        UnselectBlock()
 
 
 # Class for generating new layer blocks. Inside it has two labels: one for layer number and one for number of neurons
@@ -269,10 +269,9 @@ class StructBlock(QtWidgets.QFrame):
 
     # It initializes its informations: its parent, its prefab, its geometry and its two labels
     def __init__(self, parent, MainBlock):
-        self.PrevArch = None
-        self.SuccArch = None
+        self.PrevArch = []
+        self.SuccArch = []
         self.select = False
-
         QtWidgets.QWidget.__init__(self, parent=parent)
         self.setObjectName(str(NumberofGeneratedBlocks()) + "block")
         self.setStyleSheet(MainBlock.styleSheet())
@@ -289,6 +288,10 @@ class StructBlock(QtWidgets.QFrame):
 
     def __del__(self):
         self.hide()
+        for arch in self.PrevArch:
+            arch.__del__()
+        for arch in self.SuccArch:
+            arch.__del__()
 
     def isSelected(self):
         return self.select
@@ -301,22 +304,27 @@ class StructBlock(QtWidgets.QFrame):
         for block in layers:
 
             if block.objectName() != self.objectName() and block.isSelected():
-                self.PrevArch = Arrow(self.parent(), block, self)
-                block.SuccArch = self.PrevArch
-                self.PrevArch.drawArrow()
+                prevArch = Arrow(self.parent(), block, self)
+                block.SuccArch.append(prevArch)
+                self.PrevArch.append(prevArch)
+                prevArch.drawArrow()
+                self.updateArches()
+                # self.updatePosition(prevArch, prevArch.endPoint)
 
-    def updatePosition(self, point):
-        if self.PrevArch.horizontalLayout:
 
-            if self.PrevArch.upRightLayout:
+    # TODO bug when updating position of second block
+    def updatePosition(self, arch, point):
+        if arch.horizontalLayout:
+
+            if arch.upRightLayout:
                 self.move(point - QtCore.QPoint(self.width(), self.height()/2))
 
             else:
                 self.move(point - QtCore.QPoint(0, self.height()/2))
 
         else:
-            # TODO Bug here for arrow creation when 2 block is over first one
-            if self.PrevArch.upRightLayout:
+
+            if arch.upRightLayout:
                 self.move(point - QtCore.QPoint(self.width()/2, self.height()))
 
             else:
@@ -341,6 +349,13 @@ class StructBlock(QtWidgets.QFrame):
         elif e.buttons() == Qt.RightButton:
             self.selected()
 
+    def updateArches(self):
+        for arch in self.PrevArch:
+            arch.Update(self)
+
+        for arch in self.SuccArch:
+            arch.Update(self)
+
     # Mouse Move Event function: if it single left button it calls the original block Mouse Move Event function
     # Unless it does nothing
     def mouseMoveEvent(self, e):
@@ -348,11 +363,7 @@ class StructBlock(QtWidgets.QFrame):
             pass
         mouseMove(e, self.parent())
 
-        if self.PrevArch is not None:
-            self.PrevArch.Update(self)
-
-        if self.SuccArch is not None:
-            self.SuccArch.Update(self)
+        self.updateArches()
 
     # Key Press Event funciton: If the number of neurons label was active than if it is pressed the enter key it will be disabled
     def keyPressEvent(self, e):
