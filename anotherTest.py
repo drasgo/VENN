@@ -116,8 +116,6 @@ def dropMainStruct(self, event, parent):
         position = event.pos()
         newBlock = StructBlock(self, tempBlock)
         newBlock.move(position - QtCore.QPoint(newBlock.width() / 2, newBlock.height() / 2))
-        newBlock.show()
-        layers.append(newBlock)
         UnselectBlock()
     else:
         posit = event.pos() - QtCore.QPoint(tempBlock.width() / 2, tempBlock.height() / 2)
@@ -152,7 +150,10 @@ def mousePress(caller):
 
 def Cancel(e):
     for block in selectedMultipleLayer:
-        layers.remove(block)
+        if block in layers:
+            layers.remove(block)
+        elif block in archs:
+            archs.remove(block)
         block.__del__()
     selectedMultipleLayer.clear()
 
@@ -188,30 +189,32 @@ class Arrow(QtWidgets.QFrame):
         self.upRightLayout = True
         self.startPoint = QtCore.QPoint()
         self.endPoint = QtCore.QPoint()
+        self.lineWidth = costants.LINE_WIDTH
+        self.selected = False
 
         QtWidgets.QFrame.__init__(self, parent=parent)
+
         self.setObjectName(str(NumberofGeneratedArchs()) + "arch")
-
-        self.lineWidth = costants.LINE_WIDTH
-
         self.setStyleSheet("border: white; background-color: blue;")
-
-        self.layout = QtWidgets.QVBoxLayout(self)
 
         self.activationFunc = QtWidgets.QLineEdit()
         self.activationFunc.setText("None")
-
         self.activationFunc.setEnabled(False)
-
         self.activationFunc.setAlignment(Qt.AlignTop | Qt.AlignCenter)
 
+        self.layout = QtWidgets.QVBoxLayout(self)
         self.layout.addWidget(self.activationFunc, alignment=Qt.AlignTop)
         self.layout.setContentsMargins(0, self.lineWidth/10, 0, self.lineWidth/10)
 
+        archs.append(self)
         self.show()
 
     def __del__(self):
         self.hide()
+        if self in self.initBlock.SuccArch:
+            self.initBlock.SuccArch.remove(self)
+        if self in self.finalBlock.PrevArch:
+            self.finalBlock.PrevArch.remove(self)
 
     def Update(self, block):
         if block.objectName() == self.initBlock.objectName():
@@ -263,6 +266,14 @@ class Arrow(QtWidgets.QFrame):
 
         UnselectBlock()
 
+    def isSelected(self):
+        return self.selected
+
+    def mousePressEvent(self, e):
+        if e.buttons() == Qt.LeftButton:
+            self.selected = True
+            SelectBlock(self)
+
 
 # Class for generating new layer blocks. Inside it has two labels: one for layer number and one for number of neurons
 class StructBlock(QtWidgets.QFrame):
@@ -272,7 +283,9 @@ class StructBlock(QtWidgets.QFrame):
         self.PrevArch = []
         self.SuccArch = []
         self.select = False
+
         QtWidgets.QWidget.__init__(self, parent=parent)
+
         self.setObjectName(str(NumberofGeneratedBlocks()) + "block")
         self.setStyleSheet(MainBlock.styleSheet())
         self.layout = QtWidgets.QVBoxLayout(self)
@@ -284,13 +297,12 @@ class StructBlock(QtWidgets.QFrame):
         self.layout.addWidget(self.layer, alignment=Qt.AlignCenter)
         self.layout.addWidget(self.neurons, alignment=Qt.AlignCenter)
 
+        layers.append(self)
         self.show()
 
     def __del__(self):
         self.hide()
-        for arch in self.PrevArch:
-            arch.__del__()
-        for arch in self.SuccArch:
+        for arch in self.PrevArch + self.SuccArch:
             arch.__del__()
 
     def isSelected(self):
@@ -311,7 +323,6 @@ class StructBlock(QtWidgets.QFrame):
                 self.updateArches()
                 # self.updatePosition(prevArch, prevArch.endPoint)
 
-
     # TODO bug when updating position of second block
     def updatePosition(self, arch, point):
         if arch.horizontalLayout:
@@ -329,6 +340,8 @@ class StructBlock(QtWidgets.QFrame):
 
             else:
                 self.move(point - QtCore.QPoint(self.width()/2, 0))
+
+        # self.updateArches()
 
     def unselect(self):
         self.setStyleSheet(blockUnSelected)
@@ -350,18 +363,20 @@ class StructBlock(QtWidgets.QFrame):
             self.selected()
 
     def updateArches(self):
-        for arch in self.PrevArch:
-            arch.Update(self)
-
-        for arch in self.SuccArch:
+        for arch in self.SuccArch + self.PrevArch:
             arch.Update(self)
 
     # Mouse Move Event function: if it single left button it calls the original block Mouse Move Event function
     # Unless it does nothing
     def mouseMoveEvent(self, e):
-        if e.buttons() != Qt.LeftButton or (e.type() == QtCore.QEvent.MouseButtonDblClick and e.buttons() == Qt.LeftButton):
-            pass
+        if e.buttons() != Qt.LeftButton:
+            return
+
         mouseMove(e, self.parent())
+
+        if len(self.SuccArch) > 0:
+            for arch in self.PrevArch:
+                arch.__del__()
 
         self.updateArches()
 
