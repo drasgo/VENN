@@ -5,6 +5,7 @@ from PyQt5 import QtGui
 from PyQt5 import QtCore
 # from PyQt5.QtCore import QTimer
 import sys
+import costants
 # import threading, time, random
 
 from mainwindow import Ui_MainWindow
@@ -191,7 +192,7 @@ class Arrow(QtWidgets.QFrame):
         QtWidgets.QFrame.__init__(self, parent=parent)
         self.setObjectName(str(NumberofGeneratedArchs()) + "arch")
 
-        self.lineWidth = 25
+        self.lineWidth = costants.LINE_WIDTH
 
         self.setStyleSheet("border: white; background-color: blue;")
 
@@ -223,8 +224,8 @@ class Arrow(QtWidgets.QFrame):
 
     def drawArrow(self):
         if abs(self.initBlock.y() - self.finalBlock.y()) <= abs(self.initBlock.x()-self.finalBlock.x()):
-            self.lineWidth = 25
-            yIn = self.initBlock.y() + self.initBlock.height()/2 - self.lineWidth / 2
+            self.lineWidth = costants.LINE_WIDTH
+            yIn = self.initBlock.y() + self.initBlock.height()/2 - costants.LINE_WIDTH / 2
             self.horizontalLayout = True
 
             if self.initBlock.x() < self.finalBlock.x():
@@ -241,21 +242,20 @@ class Arrow(QtWidgets.QFrame):
 
         else:
             self.horizontalLayout = False
-            xIn = self.initBlock.x() + self.initBlock.width()/2
+            xIn = self.initBlock.x() + self.initBlock.width()/2 - costants.LINE_WIDTH / 2
             xFin = self.lineWidth
 
             if self.initBlock.y() > self.finalBlock.y():
                 self.upRightLayout = True
-                yIn = self.initBlock.y()
+                yIn = self.finalBlock.y() + self.finalBlock.height()
                 self.lineWidth = self.initBlock.y() - (self.finalBlock.y() + self.finalBlock.height())
-                self.endPoint = QtCore.QPoint(xIn, self.finalBlock.y() - self.finalBlock.height())
+                self.endPoint = QtCore.QPoint(xIn + costants.LINE_WIDTH / 2, self.finalBlock.y() + self.finalBlock.height())
 
-            # TODO Bug here when creating arrow when 2 block is over first one
             else:
                 self.upRightLayout = False
                 yIn = self.initBlock.y() + self.initBlock.height()
                 self.lineWidth = self.finalBlock.y() - (self.initBlock.y() + self.initBlock.height())
-                self.endPoint = QtCore.QPoint(xIn, self.finalBlock.y())
+                self.endPoint = QtCore.QPoint(xIn + costants.LINE_WIDTH / 2, self.finalBlock.y())
 
         self.startPoint = QtCore.QPoint(xIn, yIn)
 
