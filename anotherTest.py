@@ -179,7 +179,6 @@ class TextInStructBox(QtWidgets.QLineEdit):
         self.show()
 
 
-# TODO bug when updating position second block
 class Arrow(QtWidgets.QFrame):
 
     def __init__(self, parent, initBlock, finalBlock):
@@ -323,7 +322,6 @@ class StructBlock(QtWidgets.QFrame):
                 self.updateArches()
                 # self.updatePosition(prevArch, prevArch.endPoint)
 
-    # TODO bug when updating position of second block
     def updatePosition(self, arch, point):
         if arch.horizontalLayout:
 
@@ -341,7 +339,7 @@ class StructBlock(QtWidgets.QFrame):
             else:
                 self.move(point - QtCore.QPoint(self.width()/2, 0))
 
-        # self.updateArches()
+        self.updateArches(True)
 
     def unselect(self):
         self.setStyleSheet(blockUnSelected)
@@ -362,9 +360,13 @@ class StructBlock(QtWidgets.QFrame):
         elif e.buttons() == Qt.RightButton:
             self.selected()
 
-    def updateArches(self):
-        for arch in self.SuccArch + self.PrevArch:
-            arch.Update(self)
+    def updateArches(self, succ=False):
+        if succ is False:
+            for arch in self.SuccArch + self.PrevArch:
+                arch.Update(self)
+        else:
+            for arch in self.SuccArch:
+                arch.Update(self)
 
     # Mouse Move Event function: if it single left button it calls the original block Mouse Move Event function
     # Unless it does nothing
