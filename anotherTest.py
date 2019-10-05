@@ -3,10 +3,8 @@ from PyQt5.QtCore import Qt, QMimeData
 from PyQt5.QtGui import QDrag
 from PyQt5 import QtGui
 from PyQt5 import QtCore
-# from PyQt5.QtCore import QTimer
 import sys
 import costants
-# import threading, time, random
 
 from mainwindow import Ui_MainWindow
 
@@ -148,6 +146,16 @@ def mousePress(caller):
     tempBlock = caller
 
 
+# TODO change combobox name and color
+def changeComboBox(self, pos):
+    global selectedMultipleLayer
+    print("in  change combo box")
+    item = self.model().item(pos)
+    for arch in [arch for arch in selectedMultipleLayer if "arch" in arch.objectName()]:
+        print("in for change combo box")
+        arch.changeColor(item.foreground(), item.text())
+
+
 def Cancel(e):
     for block in selectedMultipleLayer:
         if block in layers:
@@ -190,16 +198,19 @@ class Arrow(QtWidgets.QFrame):
         self.endPoint = QtCore.QPoint()
         self.lineWidth = costants.LINE_WIDTH
         self.selected = False
+        self.name = "None"
+        self.color = "white"
 
         QtWidgets.QFrame.__init__(self, parent=parent)
 
         self.setObjectName(str(NumberofGeneratedArchs()) + "arch")
-        self.setStyleSheet("border: white; background-color: blue;")
+        self.setStyleSheet("border-color: black; background-color: " + self.color + ";")
 
         self.activationFunc = QtWidgets.QLineEdit()
-        self.activationFunc.setText("None")
+        self.activationFunc.setText(self.name)
         self.activationFunc.setEnabled(False)
         self.activationFunc.setAlignment(Qt.AlignTop | Qt.AlignCenter)
+        self.activationFunc.setStyleSheet("border-color: " + self.color + ";")
 
         self.layout = QtWidgets.QVBoxLayout(self)
         self.layout.addWidget(self.activationFunc, alignment=Qt.AlignTop)
@@ -272,6 +283,19 @@ class Arrow(QtWidgets.QFrame):
         if e.buttons() == Qt.LeftButton:
             self.selected = True
             SelectBlock(self)
+
+    # TODO COMBOBOX select arrow name and color
+    def changeColor(self, color, name):
+        print("in arrow change color")
+        self.name = name
+        self.color = str(color)
+        self.activationFunc.setText(self.name)
+        self.setStyleSheet("background-color: " + self.color + ";")
+
+    def unselect(self):
+        self.setStyleSheet(blockUnSelected)
+        self.selected = False
+        # TODO
 
 
 # Class for generating new layer blocks. Inside it has two labels: one for layer number and one for number of neurons
@@ -411,6 +435,14 @@ class MainW(QtWidgets.QMainWindow, Ui_MainWindow):
         self.MainStruct.mouseReleaseEvent = lambda event: SelectionmouseReleaseEvent(self.MainStruct, event)
 
         self.Delete.mousePressEvent = lambda event: Cancel(event)
+
+        self.ChooseArrow.currentIndexChanged.connect(lambda: changeComboBox(self.ChooseArrow, self.ChooseArrow.currentIndex()))
+
+        for transFunc in costants.ACTIVATION_FUNCTIONS:
+            item = QtGui.QStandardItem(str(transFunc))
+            item.setForeground(QtGui.QColor(str(costants.ACTIVATION_FUNCTIONS[transFunc])))
+            mod = self.ChooseArrow.model()
+            mod.appendRow(item)
 
 
 # Global variables for original position of a moved widget and block which is dropped after a drag event
