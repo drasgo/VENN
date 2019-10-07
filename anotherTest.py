@@ -30,14 +30,16 @@ def SelectBlock(widget):
 def UnselectBlock(wid=None):
     if wid is None:
         for widget in selectedMultipleLayer:
-            widget.setStyleSheet(blockUnSelected)
+            # widget.setStyleSheet(blockUnSelected)
             if widget.isSelected():
                 widget.unselect()
         selectedMultipleLayer.clear()
     else:
-        wid.setStyleSheet(blockUnSelected)
+        # wid.setStyleSheet(blockUnSelected)
         if wid in selectedMultipleLayer:
-            selectedMultipleLayer.remove(wid)
+            if wid.isSelected():
+                wid.unselect()
+                selectedMultipleLayer.remove(wid)
 
 
 # Function for Mouse Press Event for multiple selection in MainStruct
@@ -153,7 +155,8 @@ def changeComboBox(self, pos):
     item = self.model().item(pos)
     for arch in [arch for arch in selectedMultipleLayer if "arch" in arch.objectName()]:
         print("in for change combo box")
-        arch.changeColor(item.foreground(), item.text())
+
+        arch.changeColor(costants.ACTIVATION_FUNCTIONS[item.text()], item.text())
 
 
 def Cancel(e):
@@ -200,11 +203,12 @@ class Arrow(QtWidgets.QFrame):
         self.selected = False
         self.name = "None"
         self.color = "white"
+        self.stylesheet = "border-color: black; background-color: " + self.color + ";"
 
         QtWidgets.QFrame.__init__(self, parent=parent)
 
         self.setObjectName(str(NumberofGeneratedArchs()) + "arch")
-        self.setStyleSheet("border-color: black; background-color: " + self.color + ";")
+        self.setStyleSheet(self.stylesheet)
 
         self.activationFunc = QtWidgets.QLineEdit()
         self.activationFunc.setText(self.name)
@@ -286,14 +290,17 @@ class Arrow(QtWidgets.QFrame):
 
     # TODO COMBOBOX select arrow name and color
     def changeColor(self, color, name):
-        print("in arrow change color")
+        # print("in arrow change color")
         self.name = name
         self.color = str(color)
         self.activationFunc.setText(self.name)
-        self.setStyleSheet("background-color: " + self.color + ";")
+        # print("color: " + self.color + "; name: " + self.name)
+        self.stylesheet = "border-color: " + self.color + "; background-color: " + self.color + ";"
+        self.setStyleSheet(self.stylesheet)
 
     def unselect(self):
-        self.setStyleSheet(blockUnSelected)
+        # print(self.stylesheet)
+        self.setStyleSheet(self.stylesheet)
         self.selected = False
         # TODO
 
