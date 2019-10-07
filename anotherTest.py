@@ -31,15 +31,13 @@ def UnselectBlock(wid=None):
     if wid is None:
         for widget in selectedMultipleLayer:
             # widget.setStyleSheet(blockUnSelected)
-            if widget.isSelected():
-                widget.unselect()
+            widget.unselect()
         selectedMultipleLayer.clear()
     else:
         # wid.setStyleSheet(blockUnSelected)
         if wid in selectedMultipleLayer:
-            if wid.isSelected():
-                wid.unselect()
-                selectedMultipleLayer.remove(wid)
+            wid.unselect()
+            selectedMultipleLayer.remove(wid)
 
 
 # Function for Mouse Press Event for multiple selection in MainStruct
@@ -156,7 +154,14 @@ def changeComboBox(self, pos):
     for arch in [arch for arch in selectedMultipleLayer if "arch" in arch.objectName()]:
         print("in for change combo box")
 
-        arch.changeColor(costants.ACTIVATION_FUNCTIONS[item.text()], item.text())
+        arch.changeColor(costants.ACTIVATION_FUNCTIONS[item.text()], item.text(), self)
+
+    UnselectBlock()
+
+
+def changeArchChangeComboBox(combo, name):
+    if combo is not None:
+        combo.setCurrentText(name)
 
 
 def Cancel(e):
@@ -204,6 +209,7 @@ class Arrow(QtWidgets.QFrame):
         self.name = "None"
         self.color = "white"
         self.stylesheet = "border-color: black; background-color: " + self.color + ";"
+        self.combo = None
 
         QtWidgets.QFrame.__init__(self, parent=parent)
 
@@ -287,13 +293,15 @@ class Arrow(QtWidgets.QFrame):
         if e.buttons() == Qt.LeftButton:
             self.selected = True
             SelectBlock(self)
+            changeArchChangeComboBox(self.combo, self.name)
 
     # TODO COMBOBOX select arrow name and color
-    def changeColor(self, color, name):
+    def changeColor(self, color, name, combo):
         # print("in arrow change color")
         self.name = name
         self.color = str(color)
         self.activationFunc.setText(self.name)
+        self.combo = combo
         # print("color: " + self.color + "; name: " + self.name)
         self.stylesheet = "border-color: " + self.color + "; background-color: " + self.color + ";"
         self.setStyleSheet(self.stylesheet)
