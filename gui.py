@@ -176,9 +176,12 @@ def Cancel(e):
 # TODO
 def structureCommit():
     structure = mainNN.NNStructure(blocks=layers, arrows=archs)
-    structure.checkTopology()
-    structure.commitTopology()
-    structure.saveTopology()
+    if structure.checkTopology():
+        print("tutto ok")
+        # structure.commitTopology()
+        # structure.saveTopology()
+    else:
+        print("qualcosa è andato starto")
 
 
 # TODO check get external file
@@ -204,10 +207,10 @@ class TextInStructBox(QtWidgets.QLineEdit):
     defaultText = "** "
 
     def __init__(self, parent, text=defaultText):
-        self.text = text
-        super().__init__(self.defaultText + self.text, parent)
 
-        self.setObjectName(self.text)
+        super().__init__(self.defaultText + text, parent)
+
+        self.setObjectName(text)
         self.setEnabled(False)
         self.setAlignment(Qt.AlignCenter)
         self.show()
@@ -473,6 +476,8 @@ class MainW(QtWidgets.QMainWindow, Ui_MainWindow):
             item.setForeground(QtGui.QColor(str(costants.ACTIVATION_FUNCTIONS[transFunc])))
             mod = self.ChooseArrow.model()
             mod.appendRow(item)
+
+        self.CommSave.clicked.connect(structureCommit)
 
 
 # Global variables for original position of a moved widget and block which is dropped after a drag event
