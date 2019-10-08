@@ -3,10 +3,9 @@ from PyQt5.QtCore import Qt, QMimeData
 from PyQt5.QtGui import QDrag
 from PyQt5 import QtGui
 from PyQt5 import QtCore
-import sys
 import costants
-
 from mainwindow import Ui_MainWindow
+import mainNN
 
 
 blockSelected = "background-color: black;"
@@ -54,6 +53,7 @@ def SelectionmousePressEvent(self, event):
 # Function for Mouse Move Event for multiple selection in MainStruct
 def SelectionmouseMoveEvent(self, event):
     global MultipleSelect
+
     if not MultipleSelect[1].isNull():
         MultipleSelect[0].setGeometry(QtCore.QRect(MultipleSelect[1], event.pos()).normalized())
         CheckMultipleSelection(self)
@@ -62,8 +62,8 @@ def SelectionmouseMoveEvent(self, event):
 # Function for Mouse Release Event for multiple selection in MainStruct
 def SelectionmouseReleaseEvent(self, event):
     if event.button() == 1:
-        global MultipleSelect
 
+        global MultipleSelect
         MultipleSelect[0].hide()
         MultipleSelect[0].setGeometry(QtCore.QRect(QtCore.QPoint(), QtCore.QPoint()))
 
@@ -115,6 +115,7 @@ def dropMainStruct(self, event, parent):
         newBlock = StructBlock(self, tempBlock)
         newBlock.move(position - QtCore.QPoint(newBlock.width() / 2, newBlock.height() / 2))
         UnselectBlock()
+
     else:
         posit = event.pos() - QtCore.QPoint(tempBlock.width() / 2, tempBlock.height() / 2)
 
@@ -149,11 +150,9 @@ def mousePress(caller):
 # TODO change combobox name and color
 def changeComboBox(self, pos):
     global selectedMultipleLayer
-    print("in  change combo box")
     item = self.model().item(pos)
-    for arch in [arch for arch in selectedMultipleLayer if "arch" in arch.objectName()]:
-        print("in for change combo box")
 
+    for arch in [arch for arch in selectedMultipleLayer if "arch" in arch.objectName()]:
         arch.changeColor(costants.ACTIVATION_FUNCTIONS[item.text()], item.text(), self)
 
     UnselectBlock()
@@ -172,6 +171,25 @@ def Cancel(e):
             archs.remove(block)
         block.__del__()
     selectedMultipleLayer.clear()
+
+
+# TODO
+def structureCommit():
+    structure = mainNN.NNStructure(blocks=layers, arrows=archs)
+    structure.checkTopology()
+    structure.commitTopology()
+    structure.saveTopology()
+
+
+# TODO check get external file
+def structureLoad():
+    # structure = mainNN.NNStructure(file=...)
+    pass
+
+
+# TODO
+class BlockSettings:
+    pass
 
 
 # Label for multiple selection (this is the actual blue rectangle which is used for selecting multiple elements)
@@ -297,17 +315,14 @@ class Arrow(QtWidgets.QFrame):
 
     # TODO COMBOBOX select arrow name and color
     def changeColor(self, color, name, combo):
-        # print("in arrow change color")
         self.name = name
         self.color = str(color)
         self.activationFunc.setText(self.name)
         self.combo = combo
-        # print("color: " + self.color + "; name: " + self.name)
         self.stylesheet = "border-color: " + self.color + "; background-color: " + self.color + ";"
         self.setStyleSheet(self.stylesheet)
 
     def unselect(self):
-        # print(self.stylesheet)
         self.setStyleSheet(self.stylesheet)
         self.selected = False
         # TODO
@@ -467,10 +482,3 @@ MultipleSelect = {}
 archs = []
 layers = []
 selectedMultipleLayer = []
-
-app = QtWidgets.QApplication(sys.argv)
-
-window = MainW()
-window.show()
-
-app.exec()
