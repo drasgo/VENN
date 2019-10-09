@@ -147,7 +147,6 @@ def mousePress(caller):
     tempBlock = caller
 
 
-# TODO change combobox name and color
 def changeComboBox(self, pos):
     global selectedMultipleLayer
     item = self.model().item(pos)
@@ -177,8 +176,8 @@ def Cancel(e):
 def structureCommit():
     structure = mainNN.NNStructure(blocks=layers, arrows=archs)
     if structure.checkTopology():
-        print("tutto ok")
-        # structure.commitTopology()
+        print("tutto ok per ora")
+        structure.commitTopology()
         # structure.saveTopology()
     else:
         print("qualcosa è andato starto")
@@ -190,16 +189,21 @@ def structureLoad():
     pass
 
 
-# TODO
-class BlockSettings:
-    pass
-
-
 # Label for multiple selection (this is the actual blue rectangle which is used for selecting multiple elements)
 class Window(QtWidgets.QLabel):
     def __init__(self, parent=None):
         QtWidgets.QLabel.__init__(self, parent)
         self.rubberBand = QtWidgets.QRubberBand(QtWidgets.QRubberBand.Rectangle, self)
+
+
+# TODO
+class BlockProperties(QtWidgets.QComboBox):
+
+    def __init__(self, parent):
+        super().__init__(parent=parent)
+
+        for item in costants.BOX_PROPERTIES:
+            self.addItem(item)
 
 
 # Class for the two labels (layer number * and number of neurons) in each generated block
@@ -219,6 +223,7 @@ class TextInStructBox(QtWidgets.QLineEdit):
 class Arrow(QtWidgets.QFrame):
 
     def __init__(self, parent, initBlock, finalBlock):
+        self.block = False
         self.initBlock = initBlock
         self.finalBlock = finalBlock
         self.horizontalLayout = True
@@ -316,7 +321,6 @@ class Arrow(QtWidgets.QFrame):
             SelectBlock(self)
             changeArchChangeComboBox(self.combo, self.name)
 
-    # TODO COMBOBOX select arrow name and color
     def changeColor(self, color, name, combo):
         self.name = name
         self.color = str(color)
@@ -328,7 +332,6 @@ class Arrow(QtWidgets.QFrame):
     def unselect(self):
         self.setStyleSheet(self.stylesheet)
         self.selected = False
-        # TODO
 
 
 # Class for generating new layer blocks. Inside it has two labels: one for layer number and one for number of neurons
@@ -336,6 +339,7 @@ class StructBlock(QtWidgets.QFrame):
 
     # It initializes its informations: its parent, its prefab, its geometry and its two labels
     def __init__(self, parent, MainBlock):
+        self.block = True
         self.PrevArch = []
         self.SuccArch = []
         self.select = False
@@ -348,7 +352,7 @@ class StructBlock(QtWidgets.QFrame):
 
         self.setFixedWidth(MainBlock.width())
         self.setFixedHeight(MainBlock.height())
-        self.layer = TextInStructBox(self, "Layer")
+        self.layer = BlockProperties(self)
         self.neurons = TextInStructBox(self, "Neurons")
         self.layout.addWidget(self.layer, alignment=Qt.AlignCenter)
         self.layout.addWidget(self.neurons, alignment=Qt.AlignCenter)
