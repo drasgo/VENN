@@ -6,9 +6,10 @@ from PyQt5 import QtCore
 import costants
 from mainwindow import Ui_MainWindow
 import mainNN
+import pprint
 
 
-blockSelected = "background-color: black;"
+blockSelected = "background-color: dimgray;"
 blockUnSelected = "background-color: rgb(114, 159, 207);"
 
 
@@ -40,7 +41,7 @@ def UnselectBlock(wid=None):
 
 
 # Function for Mouse Press Event for multiple selection in MainStruct
-def SelectionmousePressEvent(self, event):
+def SelectionmousePressEvent(event):
     if event.buttons() == Qt.LeftButton:
         UnselectBlock()
 
@@ -60,7 +61,7 @@ def SelectionmouseMoveEvent(self, event):
 
 
 # Function for Mouse Release Event for multiple selection in MainStruct
-def SelectionmouseReleaseEvent(self, event):
+def SelectionmouseReleaseEvent(event):
     if event.button() == 1:
 
         global MultipleSelect
@@ -162,7 +163,7 @@ def changeArchChangeComboBox(combo, name):
         combo.setCurrentText(name)
 
 
-def Cancel(e):
+def Cancel():
     for block in selectedMultipleLayer:
         if block in layers:
             layers.remove(block)
@@ -172,21 +173,30 @@ def Cancel(e):
     selectedMultipleLayer.clear()
 
 
-# TODO
 def structureCommit():
     structure = mainNN.NNStructure(blocks=layers, arrows=archs)
     if structure.checkTopology():
         print("tutto ok per ora")
         structure.commitTopology()
-        # structure.saveTopology()
+        structure.saveTopology()
     else:
         print("qualcosa è andato starto")
 
 
 # TODO check get external file
 def structureLoad():
-    # structure = mainNN.NNStructure(file=...)
-    pass
+    blocks_temp = []
+    arrows_temp = []
+    file = costants.NNSTRUCTURE_FILE
+    structure = mainNN.NNStructure(file)
+    loadedData = structure.loadTopology()
+    if loadedData is None:
+        print("Error  opening previous structure")
+    else:
+        pprint.pprint(loadedData)
+#     structure = mainNN.NNStructure()
+#     print(str(structure.blocks))
+#     print(str(structure.arrows))
 
 
 # Label for multiple selection (this is the actual blue rectangle which is used for selecting multiple elements)
@@ -196,11 +206,11 @@ class Window(QtWidgets.QLabel):
         self.rubberBand = QtWidgets.QRubberBand(QtWidgets.QRubberBand.Rectangle, self)
 
 
-# TODO
 class BlockProperties(QtWidgets.QComboBox):
 
     def __init__(self, parent):
         super().__init__(parent=parent)
+        self.setFixedWidth(self.parent().width() - self.parent().width()/4)
 
         for item in costants.BOX_PROPERTIES:
             self.addItem(item)
@@ -230,6 +240,7 @@ class Arrow(QtWidgets.QFrame):
         self.upRightLayout = True
         self.startPoint = QtCore.QPoint()
         self.endPoint = QtCore.QPoint()
+        self.initPoint = QtCore.QPoint()
         self.lineWidth = costants.LINE_WIDTH
         self.selected = False
         self.name = "None"
@@ -239,7 +250,11 @@ class Arrow(QtWidgets.QFrame):
 
         QtWidgets.QFrame.__init__(self, parent=parent)
 
-        self.setObjectName(str(NumberofGeneratedArchs()) + "arch")
+        temp = str(NumberofGeneratedArchs()) + "arch"
+        while any(x.objectName() == temp for x in archs):
+            temp = str(NumberofGeneratedArchs() + 1) + "arch"
+
+        self.setObjectName(temp)
         self.setStyleSheet(self.stylesheet)
 
         self.activationFunc = QtWidgets.QLineEdit()
@@ -268,6 +283,22 @@ class Arrow(QtWidgets.QFrame):
         else:
             self.finalBlock = block
         self.drawArrow()
+
+    # TODO recursive connections
+    def drawRecursiveArrow(self):
+        # print("in recursive draw arrow. arrow: " + str(self.objectName()))
+        if abs(self.initBlock.y() < self.finalBlock.y()):
+            self.endPoint = QtCore.QPoint(self.finalBlock.x() + self.finalBlock.width()/2, self.finalBlock.y())
+            self.initPoint = QtCore.QPoint((self.finalBlock.x() + self.finalBlock.width()/2 - costants.LINE_WIDTH/2), self.initBlock.y() + self.initBlock.height())
+            self.upRightLayout = True
+            self.setGeometry(self.initPoint.x(), self.endPoint.y(), costants.LINE_WIDTH, self.initPoint.y() - self.endPoint.y())
+        else:
+            self.endPoint = QtCore.QPoint(self.finalBlock.x() + self.finalBlock.width()/2, self.finalBlock.y() + self.finalBlock.height())
+            self.initPoint = QtCore.QPoint((self.finalBlock.x() + self.finalBlock.width()/2 - costants.LINE_WIDTH/2), self.initBlock.y())
+            self.upRightLayout = False
+            self.setGeometry(self.initPoint.x(), self.initPoint.y(), costants.LINE_WIDTH, self.endPoint.y() - self.initPoint.y())
+
+        self.initBlock.updatePosition(self, self.initPoint, finalRec=True)
 
     def drawArrow(self):
         if abs(self.initBlock.y() - self.finalBlock.y()) <= abs(self.initBlock.x()-self.finalBlock.x()):
@@ -344,12 +375,17 @@ class StructBlock(QtWidgets.QFrame):
         self.SuccArch = []
         self.select = False
 
+        self.initRecursion = None
+
         QtWidgets.QWidget.__init__(self, parent=parent)
 
-        self.setObjectName(str(NumberofGeneratedBlocks()) + "block")
+        temp = str(NumberofGeneratedBlocks()) + "block"
+        while any(x.objectName() == temp for x in layers):
+            temp = str(NumberofGeneratedBlocks() + 1) + "block"
+
+        self.setObjectName(temp)
         self.setStyleSheet(MainBlock.styleSheet())
         self.layout = QtWidgets.QVBoxLayout(self)
-
         self.setFixedWidth(MainBlock.width())
         self.setFixedHeight(MainBlock.height())
         self.layer = BlockProperties(self)
@@ -383,24 +419,36 @@ class StructBlock(QtWidgets.QFrame):
                 self.updateArches()
                 # self.updatePosition(prevArch, prevArch.endPoint)
 
-    def updatePosition(self, arch, point):
-        if arch.horizontalLayout:
-
-            if arch.upRightLayout:
-                self.move(point - QtCore.QPoint(self.width(), self.height()/2))
-
-            else:
-                self.move(point - QtCore.QPoint(0, self.height()/2))
-
-        else:
+    def updatePosition(self, arch, point, finalRec=False):
+        if finalRec is True:
 
             if arch.upRightLayout:
                 self.move(point - QtCore.QPoint(self.width()/2, self.height()))
-
             else:
                 self.move(point - QtCore.QPoint(self.width()/2, 0))
 
-        self.updateArches(True)
+        elif self.initRecursion is None:
+            if arch.horizontalLayout:
+
+                if arch.upRightLayout:
+                    self.move(point - QtCore.QPoint(self.width(), self.height()/2))
+
+                else:
+                    self.move(point - QtCore.QPoint(0, self.height()/2))
+
+            else:
+
+                if arch.upRightLayout:
+                    self.move(point - QtCore.QPoint(self.width()/2, self.height()))
+
+                else:
+                    self.move(point - QtCore.QPoint(self.width()/2, 0))
+
+            self.initRecursion = arch
+            self.updateArches(True)
+
+        else:
+            self.updateArches(True, True)
 
     def unselect(self):
         self.setStyleSheet(blockUnSelected)
@@ -421,13 +469,20 @@ class StructBlock(QtWidgets.QFrame):
         elif e.buttons() == Qt.RightButton:
             self.selected()
 
-    def updateArches(self, succ=False):
+    def updateArches(self, succ=False, recursion=False):
+        # Called if block is moved and there are no more succ blocks
+        # print("blocco: " + str(self.objectName()) + "; numero chiamate: " + str(None if self.initRecursion is None else self.initRecursion.objectName()))
         if succ is False:
-            for arch in self.SuccArch + self.PrevArch:
+            for arch in self.PrevArch:
                 arch.Update(self)
+        # Called if another block is created and every other next block's position is updated
         else:
-            for arch in self.SuccArch:
-                arch.Update(self)
+            if recursion is False:
+                for arch in self.SuccArch:
+                    arch.Update(self)
+            else:
+                self.initRecursion.drawRecursiveArrow()
+        self.initRecursion = None
 
     # Mouse Move Event function: if it single left button it calls the original block Mouse Move Event function
     # Unless it does nothing
@@ -467,11 +522,11 @@ class MainW(QtWidgets.QMainWindow, Ui_MainWindow):
         self.MainStruct.dragEnterEvent = lambda event: dragEnterMainStruct(event)
         self.MainStruct.dragMoveEvent = lambda event: dragMoveMainStruct(event)
         self.MainStruct.dropEvent = lambda event: dropMainStruct(self.MainStruct, event, self)
-        self.MainStruct.mousePressEvent = lambda event: SelectionmousePressEvent(self.MainStruct, event)
+        self.MainStruct.mousePressEvent = lambda event: SelectionmousePressEvent(event)
         self.MainStruct.mouseMoveEvent = lambda event: SelectionmouseMoveEvent(self.MainStruct, event)
-        self.MainStruct.mouseReleaseEvent = lambda event: SelectionmouseReleaseEvent(self.MainStruct, event)
+        self.MainStruct.mouseReleaseEvent = lambda event: SelectionmouseReleaseEvent(event)
 
-        self.Delete.mousePressEvent = lambda event: Cancel(event)
+        self.Delete.clicked.connect(Cancel)
 
         self.ChooseArrow.currentIndexChanged.connect(lambda: changeComboBox(self.ChooseArrow, self.ChooseArrow.currentIndex()))
 
@@ -482,6 +537,7 @@ class MainW(QtWidgets.QMainWindow, Ui_MainWindow):
             mod.appendRow(item)
 
         self.CommSave.clicked.connect(structureCommit)
+        self.LoadStr.clicked.connect(structureLoad)
 
 
 # Global variables for original position of a moved widget and block which is dropped after a drag event

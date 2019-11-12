@@ -25,7 +25,7 @@ class Ui_MainWindow(object):
         self.OutputFi.setGeometry(QtCore.QRect(20, 350, 104, 36))
         self.OutputFi.setObjectName("OutputFi")
         self.LoadStr = QtWidgets.QPushButton(self.tab)
-        self.LoadStr.setEnabled(False)
+        self.LoadStr.setEnabled(True)
         self.LoadStr.setGeometry(QtCore.QRect(670, 440, 251, 36))
         self.LoadStr.setObjectName("LoadStr")
         self.RunNN = QtWidgets.QPushButton(self.tab)

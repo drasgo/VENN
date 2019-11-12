@@ -1,16 +1,34 @@
 import gui
+import costants
+import json
+import shelve
+import dill as pickle
+import os
+from PyQt5 import QtWidgets
+from PyQt5.QtCore import Qt, QMimeData
+from PyQt5.QtGui import QDrag
+from PyQt5 import QtGui
+from PyQt5 import QtCore
+# from PyQt5.QtWidgets import QFrame
+# from gui import StructBlock
+# from gui import Arrow
 
 
 class NNStructure:
 
-    def __init__(self, blocks=None, arrows=None, file=None):
+    def __init__(self, blocks=None, arrows=None, file="NNStructure.dr"):
         self.topology = {}
-        if file is not None:
-            self.file = file
-            self.importTopology()
-        elif blocks is not None and arrows is not None:
-            self.blocks = blocks
-            self.arrows = arrows
+        self.file = file
+
+        if blocks is not None and arrows is not None:
+            self.blocks = blocks[:]
+            self.blockBackup = blocks
+            self.arrowBackup = arrows
+            self.arrows = arrows[:]
+        else:
+            self.blocks = None
+            self.arrows = None
+            self.loadTopology()
 
     def checkTopology(self):
         print([lay.objectName() for lay in self.blocks])
@@ -60,56 +78,61 @@ class NNStructure:
 
         def getBlockProperties(block):
             nonlocal blockIndex
-            print("in get block properties")
+            # print("in get block properties")
             temp = dict()
             temp["block"] = True
-            temp["name"] = str(blockIndex) + "block"
-            temp["prevArch"] = block.PrevArch.objectName()
-            temp["SuccArch"] = block.SuccArch.objectName()
-            temp["neurons"] = [int(s) for s in block.neurons.text().split() if s.isdigit()]
+            temp["name"] = str(block.objectName())
+            temp["PrevArch"] = [bl.objectName() for bl in block.PrevArch]
+            temp["SuccArch"] = [bl.objectName() for bl in block.SuccArch]
+            temp["type"] = str(block.layer.currentText())
+            if str(block.layer.currentText()) == "LAYER":
+                temp["neurons"] = str([int(s) for s in block.neurons.text().split() if s.isdigit()][0])
+            temp["position"] = [block.x(), block.y(), block.height(), block.width()]
             blockIndex = blockIndex + 1
             return temp
 
         def getArrowProperties(arch):
             nonlocal arrowIndex
-            print("in get arrow properties")
+            # print("in get arrow properties")
             temp = dict()
             temp["block"] = False
-            temp["name"] = str(arrowIndex) + "arch"
+            temp["name"] = str(arch.objectName())
             temp["initBlock"] = arch.initBlock.objectName()
             temp["finalBlock"] = arch.finalBlock.objectName()
             temp["activFunc"] = arch.name
+            temp["position"] = [arch.x(), arch.y(), arch.height(), arch.width()]
             arrowIndex = arrowIndex + 1
             return temp
 
         def getNextArrow(block):
             if block.block is True:
-                print("in get next arrow")
+                # print("in get next arrow")
                 return block.SuccArch
 
         def getNextBlock(arch):
             if arch.block is False:
-                print("in get next block")
+                # print("in get next block")
                 return arch.finalBlock
 
         def recursive(component):
             nonlocal initialIndex
 
             if (initialIndex == 0 or self.topology[str(initialIndex-1)]["block"] is False) and len(self.blocks) > 0:
+                # print(component.objectName())
                 self.topology[str(initialIndex)] = getBlockProperties(component)
-                print("index: " + str(initialIndex) + "; in block step")
-                print(self.topology)
+                # print("index: " + str(initialIndex) + "; in block step")
+                # print(self.topology)
                 self.blocks.remove(component)
 
                 for arch in getNextArrow(component):
                     initialIndex = initialIndex + 1
-                    print("In piu archi in uscita da blocco")
+                    # print("In piu archi in uscita da blocco")
                     recursive(arch)
 
             elif self.topology[str(initialIndex-1)]["block"] is True and len(self.arrows) > 0:
                 self.topology[str(initialIndex)] = getArrowProperties(component)
-                print("index: " + str(initialIndex) + "; in arrow step")
-                print(self.topology)
+                # print("index: " + str(initialIndex) + "; in arrow step")
+                # print(self.topology)
                 self.arrows.remove(component)
                 initialIndex = initialIndex + 1
                 recursive(getNextBlock(component))
@@ -118,13 +141,22 @@ class NNStructure:
             recursive(first)
 
     def saveTopology(self):
-        pass
+        if len(self.topology) == 0:
+            self.commitTopology()
+
+        with open(self.file, "w", encoding="utf-8") as f:
+            json.dump(self.topology, f, indent=4)
 
     def exportAs(self, framework):
         pass
 
     def loadTopology(self):
-        pass
+        if os.path.exists(self.file):
+            with open(self.file, "r") as data:
+                # print(str(data))
+                loaded = json.load(data)
+        else:
+            print("Previous structure not found")
+            loaded = None
 
-    def importTopology(self):
-        pass
+        return loaded
