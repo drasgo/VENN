@@ -7,6 +7,7 @@ import costants
 from mainwindow import Ui_MainWindow
 import mainNN
 import pprint
+import functools
 
 
 blockSelected = "background-color: dimgray;"
@@ -153,7 +154,7 @@ def changeComboBox(self, pos):
     item = self.model().item(pos)
 
     for arch in [arch for arch in selectedMultipleLayer if "arch" in arch.objectName()]:
-        arch.changeColor(costants.ACTIVATION_FUNCTIONS[item.text()], item.text(), self)
+        arch.changeColor(item.text(), self)
 
     UnselectBlock()
 
@@ -176,7 +177,6 @@ def Cancel():
 def structureCommit():
     structure = mainNN.NNStructure(blocks=layers, arrows=archs)
     if structure.checkTopology():
-        print("tutto ok per ora")
         structure.commitTopology()
         structure.saveTopology()
     else:
@@ -184,7 +184,11 @@ def structureCommit():
 
 
 # TODO check get external file
-def structureLoad():
+def structureLoad(parent, comboBox):
+    global tempBlock
+    global layers
+    global archs
+
     blocks_temp = []
     arrows_temp = []
     file = costants.NNSTRUCTURE_FILE
@@ -194,10 +198,24 @@ def structureLoad():
         print("Error  opening previous structure")
     else:
         pprint.pprint(loadedData)
-#     structure = mainNN.NNStructure()
-#     print(str(structure.blocks))
-#     print(str(structure.arrows))
+        # for comp in layers + archs:
+        #     comp.__del__()
 
+        for block in [loadedData[x] for x in loadedData if loadedData[x]["block"] is True]:
+            newBlock = StructBlock(parent, tempBlock, block)
+            layers.append(newBlock)
+
+        for arrow in [loadedData[x] for x in loadedData if loadedData[x]["block"] is False]:
+            arrow["combo"] = comboBox
+            newArrow = Arrow(parent, loaded=arrow)
+            archs.append(newArrow)
+
+        for block in [loadedData[x] for x in loadedData if loadedData[x]["block"] is True]:
+            for comp in [x for x in layers if "saved" in x.objectName() and block["name"] in x.objectName()]:
+                comp.addLoadedArchs(block["PrevArch"], prev=True)
+                comp.addLoadedArchs(block["SuccArch"], prev=False)
+
+        CheckNumbOfLayers(parent)
 
 # Label for multiple selection (this is the actual blue rectangle which is used for selecting multiple elements)
 class Window(QtWidgets.QLabel):
@@ -232,33 +250,46 @@ class TextInStructBox(QtWidgets.QLineEdit):
 
 class Arrow(QtWidgets.QFrame):
 
-    def __init__(self, parent, initBlock, finalBlock):
-        self.block = False
-        self.initBlock = initBlock
-        self.finalBlock = finalBlock
+    def __init__(self, parent, initBlock=None, finalBlock=None, loaded=None):
+        QtWidgets.QFrame.__init__(self, parent=parent)
+
+        self.activationFunc = QtWidgets.QLineEdit()
+        self.color = costants.ARROW_DEFAULT_COLOR
+        self.stylesheet = costants.ARROW_STYLESHEET
+        # Get None as default name from default color "white" into activation function dictionary
+        self.name = list(costants.ACTIVATION_FUNCTIONS.keys())[list(costants.ACTIVATION_FUNCTIONS.values()).index(costants.ARROW_DEFAULT_COLOR)]
+
         self.horizontalLayout = True
         self.upRightLayout = True
         self.startPoint = QtCore.QPoint()
         self.endPoint = QtCore.QPoint()
         self.initPoint = QtCore.QPoint()
         self.lineWidth = costants.LINE_WIDTH
+
+        self.initBlock = None
+        self.finalBlock = None
+
+        self.block = False
         self.selected = False
-        self.name = "None"
-        self.color = "white"
-        self.stylesheet = "border-color: black; background-color: " + self.color + ";"
         self.combo = None
 
-        QtWidgets.QFrame.__init__(self, parent=parent)
-
-        temp = str(NumberofGeneratedArchs()) + "arch"
-        while any(x.objectName() == temp for x in archs):
-            temp = str(NumberofGeneratedArchs() + 1) + "arch"
-
-        self.setObjectName(temp)
         self.setStyleSheet(self.stylesheet)
 
-        self.activationFunc = QtWidgets.QLineEdit()
-        self.activationFunc.setText(self.name)
+        if loaded is not None:
+            self.loaded(loaded)
+
+        else:
+            self.initBlock = initBlock
+            self.finalBlock = finalBlock
+
+            temp = str(NumberofGeneratedArchs()) + "arch"
+            while any(x.objectName() == temp for x in archs):
+                temp = str(NumberofGeneratedArchs() + 1) + "arch"
+
+            self.setObjectName(temp)
+
+            self.activationFunc.setText(self.name)
+
         self.activationFunc.setEnabled(False)
         self.activationFunc.setAlignment(Qt.AlignTop | Qt.AlignCenter)
         self.activationFunc.setStyleSheet("border-color: " + self.color + ";")
@@ -269,6 +300,13 @@ class Arrow(QtWidgets.QFrame):
 
         archs.append(self)
         self.show()
+
+    def loaded(self, loaded):
+        self.setObjectName(str(loaded["name"]))
+        self.name = loaded["activFunc"]
+        self.initBlock = loaded["initBlock"]
+        self.finalBlock = loaded["finalBlock"]
+        self.setGeometry(loaded["position"][0], loaded["position"][1], loaded["position"][2], loaded["position"][3])
 
     def __del__(self):
         self.hide()
@@ -352,9 +390,9 @@ class Arrow(QtWidgets.QFrame):
             SelectBlock(self)
             changeArchChangeComboBox(self.combo, self.name)
 
-    def changeColor(self, color, name, combo):
+    def changeColor(self, name, combo):
         self.name = name
-        self.color = str(color)
+        self.color = str(costants.ACTIVATION_FUNCTIONS[name])
         self.activationFunc.setText(self.name)
         self.combo = combo
         self.stylesheet = "border-color: " + self.color + "; background-color: " + self.color + ";"
@@ -369,32 +407,57 @@ class Arrow(QtWidgets.QFrame):
 class StructBlock(QtWidgets.QFrame):
 
     # It initializes its informations: its parent, its prefab, its geometry and its two labels
-    def __init__(self, parent, MainBlock):
-        self.block = True
-        self.PrevArch = []
-        self.SuccArch = []
-        self.select = False
-
-        self.initRecursion = None
+    def __init__(self, parent, MainBlock, loaded=None):
 
         QtWidgets.QWidget.__init__(self, parent=parent)
 
-        temp = str(NumberofGeneratedBlocks()) + "block"
-        while any(x.objectName() == temp for x in layers):
-            temp = str(NumberofGeneratedBlocks() + 1) + "block"
-
-        self.setObjectName(temp)
         self.setStyleSheet(MainBlock.styleSheet())
         self.layout = QtWidgets.QVBoxLayout(self)
         self.setFixedWidth(MainBlock.width())
         self.setFixedHeight(MainBlock.height())
-        self.layer = BlockProperties(self)
-        self.neurons = TextInStructBox(self, "Neurons")
+
+        self.block = True
+        self.PrevArch = []
+        self.SuccArch = []
+        self.select = False
+        self.initRecursion = None
+
+        self.layer = None
+        self.neurons = None
+
+        if loaded is not None:
+            self.loaded(loaded)
+
+        else:
+            temp = str(NumberofGeneratedBlocks()) + "block"
+            while any(x.objectName() == temp for x in layers):
+                temp = str(NumberofGeneratedBlocks() + 1) + "block"
+
+            self.setObjectName(temp)
+            self.layer = BlockProperties(self)
+            self.neurons = TextInStructBox(self, "Neurons")
+
         self.layout.addWidget(self.layer, alignment=Qt.AlignCenter)
         self.layout.addWidget(self.neurons, alignment=Qt.AlignCenter)
 
         layers.append(self)
         self.show()
+
+    def loaded(self, loaded):
+        self.setObjectName(str(loaded["name"]))
+        self.setGeometry(loaded["position"][0], loaded["position"][1], loaded["position"][2], loaded["position"][3])
+
+    def addLoadedArchs(self, arch, prev):
+        global archs
+
+        for arrow in arch:
+            if prev is True:
+                self.PrevArch.append([ar for ar in archs if ar.objectName() == arrow][0])
+            else:
+                print(arrow)
+                print([ar for ar in archs if ar.objectName() == arrow])
+                print([namearch.objectName() for namearch in archs])
+                self.SuccArch.append([ar for ar in archs if ar.objectName() == arrow][0])
 
     def __del__(self):
         self.hide()
@@ -511,12 +574,14 @@ class MainW(QtWidgets.QMainWindow, Ui_MainWindow):
         self.setupUi(self)
 
         global MultipleSelect
+        global tempBlock
         MultipleSelect[0] = QtWidgets.QRubberBand(QtWidgets.QRubberBand.Rectangle, self.MainStruct)
         MultipleSelect[1] = QtCore.QPoint()
 
         self.Blocks.mouseMoveEvent = lambda event: mouseMove(event, self.MainStruct)
         self.Blocks.mousePressEvent = lambda event: mousePress(self.Blocks)
         self.Blocks.setObjectName("Blocks")
+        tempBlock = self.Blocks
 
         self.MainStruct.setAcceptDrops(True)
         self.MainStruct.dragEnterEvent = lambda event: dragEnterMainStruct(event)
@@ -537,7 +602,7 @@ class MainW(QtWidgets.QMainWindow, Ui_MainWindow):
             mod.appendRow(item)
 
         self.CommSave.clicked.connect(structureCommit)
-        self.LoadStr.clicked.connect(structureLoad)
+        self.LoadStr.clicked.connect(lambda: structureLoad(self.MainStruct, self.ChooseArrow))
 
 
 # Global variables for original position of a moved widget and block which is dropped after a drag event

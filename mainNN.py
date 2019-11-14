@@ -81,9 +81,9 @@ class NNStructure:
             # print("in get block properties")
             temp = dict()
             temp["block"] = True
-            temp["name"] = str(block.objectName())
-            temp["PrevArch"] = [bl.objectName() for bl in block.PrevArch]
-            temp["SuccArch"] = [bl.objectName() for bl in block.SuccArch]
+            temp["name"] = "saved" + str(block.objectName())
+            temp["PrevArch"] = ["saved" + bl.objectName() for bl in block.PrevArch]
+            temp["SuccArch"] = ["saved" + bl.objectName() for bl in block.SuccArch]
             temp["type"] = str(block.layer.currentText())
             if str(block.layer.currentText()) == "LAYER":
                 temp["neurons"] = str([int(s) for s in block.neurons.text().split() if s.isdigit()][0])
@@ -96,9 +96,9 @@ class NNStructure:
             # print("in get arrow properties")
             temp = dict()
             temp["block"] = False
-            temp["name"] = str(arch.objectName())
-            temp["initBlock"] = arch.initBlock.objectName()
-            temp["finalBlock"] = arch.finalBlock.objectName()
+            temp["name"] = "saved" + str(arch.objectName())
+            temp["initBlock"] = "saved" + arch.initBlock.objectName()
+            temp["finalBlock"] = "saved" + arch.finalBlock.objectName()
             temp["activFunc"] = arch.name
             temp["position"] = [arch.x(), arch.y(), arch.height(), arch.width()]
             arrowIndex = arrowIndex + 1
