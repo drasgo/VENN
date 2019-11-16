@@ -166,11 +166,17 @@ def changeArchChangeComboBox(combo, name):
 
 def Cancel():
     for block in selectedMultipleLayer:
+        print(block.objectName())
         if block in layers:
             layers.remove(block)
         elif block in archs:
             archs.remove(block)
+        selectedMultipleLayer.remove(block)
         block.__del__()
+        block.show()
+    # print(len(layers))
+    # print(len(archs))
+    # print("\n\n\n")
     selectedMultipleLayer.clear()
 
 
@@ -185,7 +191,6 @@ def structureCommit():
 
 # TODO check get external file
 def structureLoad(parent, comboBox):
-    global tempBlock
     global layers
     global archs
 
@@ -197,17 +202,19 @@ def structureLoad(parent, comboBox):
     if loadedData is None:
         print("Error  opening previous structure")
     else:
-        pprint.pprint(loadedData)
+        # pprint.pprint(loadedData)
         # for comp in layers + archs:
         #     comp.__del__()
 
         for block in [loadedData[x] for x in loadedData if loadedData[x]["block"] is True]:
-            newBlock = StructBlock(parent, tempBlock, block)
+            # print(block)
+            newBlock = StructBlock(parent.MainStruct, parent.Blocks, block)
             layers.append(newBlock)
 
         for arrow in [loadedData[x] for x in loadedData if loadedData[x]["block"] is False]:
+            # print(arrow)
             arrow["combo"] = comboBox
-            newArrow = Arrow(parent, loaded=arrow)
+            newArrow = Arrow(parent.MainStruct, loaded=arrow)
             archs.append(newArrow)
 
         for block in [loadedData[x] for x in loadedData if loadedData[x]["block"] is True]:
@@ -216,6 +223,7 @@ def structureLoad(parent, comboBox):
                 comp.addLoadedArchs(block["SuccArch"], prev=False)
 
         CheckNumbOfLayers(parent)
+
 
 # Label for multiple selection (this is the actual blue rectangle which is used for selecting multiple elements)
 class Window(QtWidgets.QLabel):
@@ -310,10 +318,13 @@ class Arrow(QtWidgets.QFrame):
 
     def __del__(self):
         self.hide()
-        if self in self.initBlock.SuccArch:
-            self.initBlock.SuccArch.remove(self)
-        if self in self.finalBlock.PrevArch:
-            self.finalBlock.PrevArch.remove(self)
+        self.activationFunc.deleteLater()
+        self.deleteLater()
+
+        # if self in self.initBlock.SuccArch:
+        #     self.initBlock.SuccArch.remove(self)
+        # if self in self.finalBlock.PrevArch:
+        #     self.finalBlock.PrevArch.remove(self)
 
     def Update(self, block):
         if block.objectName() == self.initBlock.objectName():
@@ -454,15 +465,19 @@ class StructBlock(QtWidgets.QFrame):
             if prev is True:
                 self.PrevArch.append([ar for ar in archs if ar.objectName() == arrow][0])
             else:
-                print(arrow)
-                print([ar for ar in archs if ar.objectName() == arrow])
-                print([namearch.objectName() for namearch in archs])
+                # print(arrow)
+                # print([ar for ar in archs if ar.objectName() == arrow])
+                # print([namearch.objectName() for namearch in archs])
                 self.SuccArch.append([ar for ar in archs if ar.objectName() == arrow][0])
 
     def __del__(self):
         self.hide()
-        for arch in self.PrevArch + self.SuccArch:
-            arch.__del__()
+        self.layer.deleteLater()
+        self.neurons.deleteLater()
+        self.deleteLater()
+        # for arch in self.PrevArch + self.SuccArch:
+        #     arch.__del__()
+        # del self
 
     def isSelected(self):
         return self.select
@@ -574,14 +589,12 @@ class MainW(QtWidgets.QMainWindow, Ui_MainWindow):
         self.setupUi(self)
 
         global MultipleSelect
-        global tempBlock
         MultipleSelect[0] = QtWidgets.QRubberBand(QtWidgets.QRubberBand.Rectangle, self.MainStruct)
         MultipleSelect[1] = QtCore.QPoint()
 
         self.Blocks.mouseMoveEvent = lambda event: mouseMove(event, self.MainStruct)
         self.Blocks.mousePressEvent = lambda event: mousePress(self.Blocks)
         self.Blocks.setObjectName("Blocks")
-        tempBlock = self.Blocks
 
         self.MainStruct.setAcceptDrops(True)
         self.MainStruct.dragEnterEvent = lambda event: dragEnterMainStruct(event)
@@ -602,7 +615,7 @@ class MainW(QtWidgets.QMainWindow, Ui_MainWindow):
             mod.appendRow(item)
 
         self.CommSave.clicked.connect(structureCommit)
-        self.LoadStr.clicked.connect(lambda: structureLoad(self.MainStruct, self.ChooseArrow))
+        self.LoadStr.clicked.connect(lambda: structureLoad(self, self.ChooseArrow))
 
 
 # Global variables for original position of a moved widget and block which is dropped after a drag event

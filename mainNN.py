@@ -100,7 +100,9 @@ class NNStructure:
             temp["initBlock"] = "saved" + arch.initBlock.objectName()
             temp["finalBlock"] = "saved" + arch.finalBlock.objectName()
             temp["activFunc"] = arch.name
-            temp["position"] = [arch.x(), arch.y(), arch.height(), arch.width()]
+            # print(arch.geometry())
+            # print(str(arch.x()) + ", " + str(arch.y()) + ", " + str(arch.width()) + ", " + str(arch.height()))
+            temp["position"] = [arch.x(), arch.y(), arch.width(), arch.height()]
             arrowIndex = arrowIndex + 1
             return temp
 
