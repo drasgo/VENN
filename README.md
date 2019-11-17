@@ -10,7 +10,6 @@ This work is licensed under the Creative Commons Attribution-NonCommercial 4.0 I
 - Fix recursive block connections
 - Remove multiple arches into layer blocks
 - Leave multiple arches into add sub div and mult blocks
-- finish load preexisting structure
 - add export to tensorflow
 - add export to pytorcch
 - add input for first layer matrix (input dimensionality)
