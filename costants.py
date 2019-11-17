@@ -9,6 +9,8 @@ BOX_PROPERTIES = ["LAYER", "SUM", "SUB", "MULT", "DIV", "BLANK"]
 
 NNSTRUCTURE_FILE = "NNStructure.nn"
 
-ARROW_DEFAULT_COLOR = "white"
+ARROW_DEFAULT_FUNC = "None"
 
-ARROW_STYLESHEET = "border-color: black; background-color: " + ARROW_DEFAULT_COLOR + ";"
+
+def arrow_stylesheet(color=ACTIVATION_FUNCTIONS[ARROW_DEFAULT_FUNC]):
+    return "border-color: black; background-color: " + color + ";"

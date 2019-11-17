@@ -262,10 +262,9 @@ class Arrow(QtWidgets.QFrame):
         QtWidgets.QFrame.__init__(self, parent=parent)
 
         self.activationFunc = QtWidgets.QLineEdit()
-        self.color = costants.ARROW_DEFAULT_COLOR
-        self.stylesheet = costants.ARROW_STYLESHEET
+        self.stylesheet = costants.arrow_stylesheet()
         # Get None as default name from default color "white" into activation function dictionary
-        self.name = list(costants.ACTIVATION_FUNCTIONS.keys())[list(costants.ACTIVATION_FUNCTIONS.values()).index(costants.ARROW_DEFAULT_COLOR)]
+        self.name = costants.ARROW_DEFAULT_FUNC
 
         self.horizontalLayout = True
         self.upRightLayout = True
@@ -281,8 +280,6 @@ class Arrow(QtWidgets.QFrame):
         self.selected = False
         self.combo = None
 
-        self.setStyleSheet(self.stylesheet)
-
         if loaded is not None:
             self.loaded(loaded)
 
@@ -296,8 +293,10 @@ class Arrow(QtWidgets.QFrame):
 
             self.setObjectName(temp)
 
-            self.activationFunc.setText(self.name)
+        self.color = costants.ACTIVATION_FUNCTIONS[self.name]
+        self.setStyleSheet(self.stylesheet)
 
+        self.activationFunc.setText(self.name)
         self.activationFunc.setEnabled(False)
         self.activationFunc.setAlignment(Qt.AlignTop | Qt.AlignCenter)
         self.activationFunc.setStyleSheet("border-color: " + self.color + ";")
@@ -315,6 +314,7 @@ class Arrow(QtWidgets.QFrame):
         self.initBlock = loaded["initBlock"]
         self.finalBlock = loaded["finalBlock"]
         self.setGeometry(loaded["position"][0], loaded["position"][1], loaded["position"][2], loaded["position"][3])
+        self.stylesheet = costants.arrow_stylesheet(costants.ACTIVATION_FUNCTIONS[self.name])
 
     def __del__(self):
         self.hide()
