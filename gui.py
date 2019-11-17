@@ -166,17 +166,13 @@ def changeArchChangeComboBox(combo, name):
 
 def Cancel():
     for block in selectedMultipleLayer:
-        print(block.objectName())
         if block in layers:
             layers.remove(block)
+
         elif block in archs:
             archs.remove(block)
-        selectedMultipleLayer.remove(block)
         block.__del__()
-        block.show()
-    # print(len(layers))
-    # print(len(archs))
-    # print("\n\n\n")
+
     selectedMultipleLayer.clear()
 
 
@@ -194,8 +190,6 @@ def structureLoad(parent, comboBox):
     global layers
     global archs
 
-    blocks_temp = []
-    arrows_temp = []
     file = costants.NNSTRUCTURE_FILE
     structure = mainNN.NNStructure(file)
     loadedData = structure.loadTopology()
@@ -207,15 +201,13 @@ def structureLoad(parent, comboBox):
         #     comp.__del__()
 
         for block in [loadedData[x] for x in loadedData if loadedData[x]["block"] is True]:
-            # print(block)
+
             newBlock = StructBlock(parent.MainStruct, parent.Blocks, block)
-            layers.append(newBlock)
 
         for arrow in [loadedData[x] for x in loadedData if loadedData[x]["block"] is False]:
             # print(arrow)
             arrow["combo"] = comboBox
             newArrow = Arrow(parent.MainStruct, loaded=arrow)
-            archs.append(newArrow)
 
         for block in [loadedData[x] for x in loadedData if loadedData[x]["block"] is True]:
             for comp in [x for x in layers if "saved" in x.objectName() and block["name"] in x.objectName()]:
@@ -311,20 +303,23 @@ class Arrow(QtWidgets.QFrame):
     def loaded(self, loaded):
         self.setObjectName(str(loaded["name"]))
         self.name = loaded["activFunc"]
-        self.initBlock = loaded["initBlock"]
-        self.finalBlock = loaded["finalBlock"]
+        self.initBlock = next(init for init in layers if init.objectName() == loaded["initBlock"])
+        self.finalBlock = next(fin for fin in layers if fin.objectName() == loaded["finalBlock"])
         self.setGeometry(loaded["position"][0], loaded["position"][1], loaded["position"][2], loaded["position"][3])
         self.stylesheet = costants.arrow_stylesheet(costants.ACTIVATION_FUNCTIONS[self.name])
 
     def __del__(self):
         self.hide()
-        self.activationFunc.deleteLater()
-        self.deleteLater()
+        # self.activationFunc.deleteLater()
+        # self.deleteLater()
+        self.setParent(None)
 
-        # if self in self.initBlock.SuccArch:
-        #     self.initBlock.SuccArch.remove(self)
-        # if self in self.finalBlock.PrevArch:
-        #     self.finalBlock.PrevArch.remove(self)
+        if self in self.initBlock.SuccArch:
+            self.initBlock.SuccArch.remove(self)
+        if self in self.finalBlock.PrevArch:
+            self.finalBlock.PrevArch.remove(self)
+
+        del self
 
     def Update(self, block):
         if block.objectName() == self.initBlock.objectName():
@@ -433,8 +428,8 @@ class StructBlock(QtWidgets.QFrame):
         self.select = False
         self.initRecursion = None
 
-        self.layer = None
-        self.neurons = None
+        self.layer = BlockProperties(self)
+        self.neurons = TextInStructBox(self, "Neurons")
 
         if loaded is not None:
             self.loaded(loaded)
@@ -445,8 +440,6 @@ class StructBlock(QtWidgets.QFrame):
                 temp = str(NumberofGeneratedBlocks() + 1) + "block"
 
             self.setObjectName(temp)
-            self.layer = BlockProperties(self)
-            self.neurons = TextInStructBox(self, "Neurons")
 
         self.layout.addWidget(self.layer, alignment=Qt.AlignCenter)
         self.layout.addWidget(self.neurons, alignment=Qt.AlignCenter)
@@ -457,6 +450,11 @@ class StructBlock(QtWidgets.QFrame):
     def loaded(self, loaded):
         self.setObjectName(str(loaded["name"]))
         self.setGeometry(loaded["position"][0], loaded["position"][1], loaded["position"][2], loaded["position"][3])
+        self.layer.setCurrentText(loaded["type"])
+        if loaded["type"] == "LAYER":
+            self.neurons.setText(loaded["neurons"] + self.neurons.text().replace("**", ""))
+        else:
+            self.neurons.hide()
 
     def addLoadedArchs(self, arch, prev):
         global archs
@@ -472,12 +470,14 @@ class StructBlock(QtWidgets.QFrame):
 
     def __del__(self):
         self.hide()
-        self.layer.deleteLater()
-        self.neurons.deleteLater()
-        self.deleteLater()
-        # for arch in self.PrevArch + self.SuccArch:
-        #     arch.__del__()
-        # del self
+        # self.layer.deleteLater()
+        # self.neurons.deleteLater()
+        # self.deleteLater()
+        self.setParent(None)
+
+        for arch in self.PrevArch + self.SuccArch:
+            arch.__del__()
+        del self
 
     def isSelected(self):
         return self.select

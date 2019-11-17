@@ -1,17 +1,5 @@
-import gui
-import costants
 import json
-import shelve
-import dill as pickle
 import os
-from PyQt5 import QtWidgets
-from PyQt5.QtCore import Qt, QMimeData
-from PyQt5.QtGui import QDrag
-from PyQt5 import QtGui
-from PyQt5 import QtCore
-# from PyQt5.QtWidgets import QFrame
-# from gui import StructBlock
-# from gui import Arrow
 
 
 class NNStructure:
@@ -73,11 +61,8 @@ class NNStructure:
     def commitTopology(self):
 
         initialIndex = 0
-        blockIndex = 0
-        arrowIndex = 0
 
         def getBlockProperties(block):
-            nonlocal blockIndex
             # print("in get block properties")
             temp = dict()
             temp["block"] = True
@@ -88,11 +73,9 @@ class NNStructure:
             if str(block.layer.currentText()) == "LAYER":
                 temp["neurons"] = str([int(s) for s in block.neurons.text().split() if s.isdigit()][0])
             temp["position"] = [block.x(), block.y(), block.height(), block.width()]
-            blockIndex = blockIndex + 1
             return temp
 
         def getArrowProperties(arch):
-            nonlocal arrowIndex
             # print("in get arrow properties")
             temp = dict()
             temp["block"] = False
@@ -100,10 +83,7 @@ class NNStructure:
             temp["initBlock"] = "saved" + arch.initBlock.objectName()
             temp["finalBlock"] = "saved" + arch.finalBlock.objectName()
             temp["activFunc"] = arch.name
-            # print(arch.geometry())
-            # print(str(arch.x()) + ", " + str(arch.y()) + ", " + str(arch.width()) + ", " + str(arch.height()))
             temp["position"] = [arch.x(), arch.y(), arch.width(), arch.height()]
-            arrowIndex = arrowIndex + 1
             return temp
 
         def getNextArrow(block):
