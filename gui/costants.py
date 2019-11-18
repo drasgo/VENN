@@ -5,7 +5,9 @@ ACTIVATION_FUNCTIONS = {"None": "white",
                         "Linear": "red",
                         "Other": "orange"}
 
-BOX_PROPERTIES = ["LAYER", "SUM", "SUB", "MULT", "DIV", "BLANK"]
+BOX_PROPERTIES = ["LAYER", "SUM", "SUB", "MULT", "DIV", "BLANK", "COST"]
+
+COST_FUNCTION = ["MSE", "OTHER"]
 
 NNSTRUCTURE_FILE = "NNStructure.nn"
 

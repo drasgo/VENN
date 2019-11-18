@@ -219,6 +219,17 @@ class Window(QtWidgets.QLabel):
         self.rubberBand = QtWidgets.QRubberBand(QtWidgets.QRubberBand.Rectangle, self)
 
 
+class CostBlock(QtWidgets.QComboBox):
+
+    def __init__(self, parent):
+        super().__init__(parent=parent)
+
+        for item in costants.COST_FUNCTION:
+            self.addItem(item)
+
+        self.hide()
+
+
 class BlockProperties(QtWidgets.QComboBox):
 
     def __init__(self, parent):
@@ -233,10 +244,20 @@ class BlockProperties(QtWidgets.QComboBox):
         self.text = "LAYER"
 
     def textChanged(self):
-        if self.text != "LAYER" and self.currentText() == "LAYER":
+        if self.text == "COST":
+            self.parent.cost.hide()
+            self.parent.neurons.show()
+            
+        if self.text != "LAYER" and self.text != "BLANK" and self.text != "COST" \
+                and (self.currentText() == "LAYER" or self.currentText() == "BLANK" or self.currentText() == "COST"):
             while len(self.parent.PrevArch) > 0:
                 for arch in self.parent.PrevArch:
                     arch.__del__()
+
+        elif self.currentText() == "COST":
+            self.parent.neurons.hide()
+            self.parent.cost.show()
+
         self.text = self.currentText()
 
 
@@ -442,6 +463,7 @@ class StructBlock(QtWidgets.QFrame):
 
         self.layer = BlockProperties(self)
         self.neurons = TextInStructBox(self, "Neurons")
+        self.cost = CostBlock(self)
 
         if loaded is not None:
             self.loaded(loaded)
@@ -455,6 +477,7 @@ class StructBlock(QtWidgets.QFrame):
 
         self.layout.addWidget(self.layer, alignment=Qt.AlignCenter)
         self.layout.addWidget(self.neurons, alignment=Qt.AlignCenter)
+        self.layout.addWidget(self.cost, alignment=Qt.AlignCenter)
 
         layers.append(self)
         self.show()
