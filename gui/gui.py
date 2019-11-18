@@ -3,12 +3,9 @@ from PyQt5.QtCore import Qt, QMimeData
 from PyQt5.QtGui import QDrag
 from PyQt5 import QtGui
 from PyQt5 import QtCore
-import costants
-from mainwindow import Ui_MainWindow
-import mainNN
-import pprint
-import functools
-
+import gui.costants as costants
+from gui.mainwindow import Ui_MainWindow
+import nn.mainNN as mainNN
 
 blockSelected = "background-color: dimgray;"
 blockUnSelected = "background-color: rgb(114, 159, 207);"
@@ -64,7 +61,6 @@ def SelectionmouseMoveEvent(self, event):
 # Function for Mouse Release Event for multiple selection in MainStruct
 def SelectionmouseReleaseEvent(event):
     if event.button() == 1:
-
         global MultipleSelect
         MultipleSelect[0].hide()
         MultipleSelect[0].setGeometry(QtCore.QRect(QtCore.QPoint(), QtCore.QPoint()))
@@ -201,7 +197,6 @@ def structureLoad(parent, comboBox):
         #     comp.__del__()
 
         for block in [loadedData[x] for x in loadedData if loadedData[x]["block"] is True]:
-
             newBlock = StructBlock(parent.MainStruct, parent.Blocks, block)
 
         for arrow in [loadedData[x] for x in loadedData if loadedData[x]["block"] is False]:
@@ -228,7 +223,7 @@ class BlockProperties(QtWidgets.QComboBox):
 
     def __init__(self, parent):
         super().__init__(parent=parent)
-        self.setFixedWidth(self.parent().width() - self.parent().width()/4)
+        self.setFixedWidth(self.parent().width() - self.parent().width() / 4)
         self.parent = parent
 
         for item in costants.BOX_PROPERTIES:
@@ -250,7 +245,6 @@ class TextInStructBox(QtWidgets.QLineEdit):
     defaultText = "** "
 
     def __init__(self, parent, text=defaultText):
-
         super().__init__(self.defaultText + text, parent)
 
         self.setObjectName(text)
@@ -306,7 +300,7 @@ class Arrow(QtWidgets.QFrame):
 
         self.layout = QtWidgets.QVBoxLayout(self)
         self.layout.addWidget(self.activationFunc, alignment=Qt.AlignTop)
-        self.layout.setContentsMargins(0, self.lineWidth/10, 0, self.lineWidth/10)
+        self.layout.setContentsMargins(0, self.lineWidth / 10, 0, self.lineWidth / 10)
 
         archs.append(self)
         self.show()
@@ -343,46 +337,53 @@ class Arrow(QtWidgets.QFrame):
     def drawRecursiveArrow(self):
         # print("in recursive draw arrow. arrow: " + str(self.objectName()))
         if abs(self.initBlock.y() < self.finalBlock.y()):
-            self.endPoint = QtCore.QPoint(self.finalBlock.x() + self.finalBlock.width()/2, self.finalBlock.y())
-            self.initPoint = QtCore.QPoint((self.finalBlock.x() + self.finalBlock.width()/2 - costants.LINE_WIDTH/2), self.initBlock.y() + self.initBlock.height())
+            self.endPoint = QtCore.QPoint(self.finalBlock.x() + self.finalBlock.width() / 2, self.finalBlock.y())
+            self.initPoint = QtCore.QPoint(
+                (self.finalBlock.x() + self.finalBlock.width() / 2 - costants.LINE_WIDTH / 2),
+                self.initBlock.y() + self.initBlock.height())
             self.upRightLayout = True
-            self.setGeometry(self.initPoint.x(), self.endPoint.y(), costants.LINE_WIDTH, self.initPoint.y() - self.endPoint.y())
+            self.setGeometry(self.initPoint.x(), self.endPoint.y(), costants.LINE_WIDTH,
+                             self.initPoint.y() - self.endPoint.y())
         else:
-            self.endPoint = QtCore.QPoint(self.finalBlock.x() + self.finalBlock.width()/2, self.finalBlock.y() + self.finalBlock.height())
-            self.initPoint = QtCore.QPoint((self.finalBlock.x() + self.finalBlock.width()/2 - costants.LINE_WIDTH/2), self.initBlock.y())
+            self.endPoint = QtCore.QPoint(self.finalBlock.x() + self.finalBlock.width() / 2,
+                                          self.finalBlock.y() + self.finalBlock.height())
+            self.initPoint = QtCore.QPoint(
+                (self.finalBlock.x() + self.finalBlock.width() / 2 - costants.LINE_WIDTH / 2), self.initBlock.y())
             self.upRightLayout = False
-            self.setGeometry(self.initPoint.x(), self.initPoint.y(), costants.LINE_WIDTH, self.endPoint.y() - self.initPoint.y())
+            self.setGeometry(self.initPoint.x(), self.initPoint.y(), costants.LINE_WIDTH,
+                             self.endPoint.y() - self.initPoint.y())
 
         self.initBlock.updatePosition(self, self.initPoint, finalRec=True)
 
     def drawArrow(self):
-        if abs(self.initBlock.y() - self.finalBlock.y()) <= abs(self.initBlock.x()-self.finalBlock.x()):
+        if abs(self.initBlock.y() - self.finalBlock.y()) <= abs(self.initBlock.x() - self.finalBlock.x()):
             self.lineWidth = costants.LINE_WIDTH
-            yIn = self.initBlock.y() + self.initBlock.height()/2 - costants.LINE_WIDTH / 2
+            yIn = self.initBlock.y() + self.initBlock.height() / 2 - costants.LINE_WIDTH / 2
             self.horizontalLayout = True
 
             if self.initBlock.x() < self.finalBlock.x():
                 self.upRightLayout = False
                 xIn = self.initBlock.x() + self.initBlock.width()
                 xFin = self.finalBlock.x() - xIn
-                self.endPoint = QtCore.QPoint(self.finalBlock.x(), yIn + self.lineWidth/2)
+                self.endPoint = QtCore.QPoint(self.finalBlock.x(), yIn + self.lineWidth / 2)
 
             else:
                 self.upRightLayout = True
                 xIn = self.finalBlock.x() + self.finalBlock.width()
                 xFin = self.initBlock.x() - xIn
-                self.endPoint = QtCore.QPoint(self.finalBlock.x() + self.finalBlock.width(), yIn + self.lineWidth/2)
+                self.endPoint = QtCore.QPoint(self.finalBlock.x() + self.finalBlock.width(), yIn + self.lineWidth / 2)
 
         else:
             self.horizontalLayout = False
-            xIn = self.initBlock.x() + self.initBlock.width()/2 - costants.LINE_WIDTH / 2
+            xIn = self.initBlock.x() + self.initBlock.width() / 2 - costants.LINE_WIDTH / 2
             xFin = costants.LINE_WIDTH
 
             if self.initBlock.y() > self.finalBlock.y():
                 self.upRightLayout = True
                 yIn = self.finalBlock.y() + self.finalBlock.height()
                 self.lineWidth = self.initBlock.y() - (self.finalBlock.y() + self.finalBlock.height())
-                self.endPoint = QtCore.QPoint(xIn + costants.LINE_WIDTH / 2, self.finalBlock.y() + self.finalBlock.height())
+                self.endPoint = QtCore.QPoint(xIn + costants.LINE_WIDTH / 2,
+                                              self.finalBlock.y() + self.finalBlock.height())
 
             else:
                 self.upRightLayout = False
@@ -501,15 +502,15 @@ class StructBlock(QtWidgets.QFrame):
         for block in layers:
 
             if block.objectName() != self.objectName() and block.isSelected():
-                if (self.layer.currentText() == "LAYER" and len(self.PrevArch) == 0) or \
-                     self.layer.currentText() != "LAYER":
+                if ((self.layer.text == "LAYER" or self.layer.text == "BLANK") and len(self.PrevArch) == 0) \
+                        or self.layer.text != "LAYER" or self.layer.text != "BLANK":
                     prevArch = Arrow(self.parent(), block, self)
                     block.SuccArch.append(prevArch)
                     self.PrevArch.append(prevArch)
                     prevArch.drawArrow()
                     self.updateArches()
 
-                elif self.layer.currentText() == "LAYER" and len(self.PrevArch) > 0:
+                elif (self.layer.text == "LAYER" or self.layer.text == "BLANK") and len(self.PrevArch) > 0:
                     self.select = False
                     block.select = False
                     UnselectBlock()
@@ -519,26 +520,26 @@ class StructBlock(QtWidgets.QFrame):
         if finalRec is True:
 
             if arch.upRightLayout:
-                self.move(point - QtCore.QPoint(self.width()/2, self.height()))
+                self.move(point - QtCore.QPoint(self.width() / 2, self.height()))
             else:
-                self.move(point - QtCore.QPoint(self.width()/2, 0))
+                self.move(point - QtCore.QPoint(self.width() / 2, 0))
 
         elif self.initRecursion is None:
             if arch.horizontalLayout:
 
                 if arch.upRightLayout:
-                    self.move(point - QtCore.QPoint(self.width(), self.height()/2))
+                    self.move(point - QtCore.QPoint(self.width(), self.height() / 2))
 
                 else:
-                    self.move(point - QtCore.QPoint(0, self.height()/2))
+                    self.move(point - QtCore.QPoint(0, self.height() / 2))
 
             else:
 
                 if arch.upRightLayout:
-                    self.move(point - QtCore.QPoint(self.width()/2, self.height()))
+                    self.move(point - QtCore.QPoint(self.width() / 2, self.height()))
 
                 else:
-                    self.move(point - QtCore.QPoint(self.width()/2, 0))
+                    self.move(point - QtCore.QPoint(self.width() / 2, 0))
 
             self.initRecursion = arch
             self.updateArches(True)
@@ -625,7 +626,8 @@ class MainW(QtWidgets.QMainWindow, Ui_MainWindow):
 
         self.Delete.clicked.connect(Cancel)
 
-        self.ChooseArrow.currentIndexChanged.connect(lambda: changeComboBox(self.ChooseArrow, self.ChooseArrow.currentIndex()))
+        self.ChooseArrow.currentIndexChanged.connect(
+            lambda: changeComboBox(self.ChooseArrow, self.ChooseArrow.currentIndex()))
 
         for transFunc in costants.ACTIVATION_FUNCTIONS:
             item = QtGui.QStandardItem(str(transFunc))

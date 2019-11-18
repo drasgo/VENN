@@ -8,10 +8,8 @@ This work is licensed under the Creative Commons Attribution-NonCommercial 4.0 I
 # TODO
 
 - Fix recursive block connections
-- Remove multiple arches into layer blocks
-- Leave multiple arches into add sub div and mult blocks
 - add export to tensorflow
-- add export to pytorcch
+- add export to pytorch
 - add input for first layer matrix (input dimensionality)
 - add output for last layer matrix (output dimensionality)
 - add learning algorithms blocks/arches
@@ -24,6 +22,7 @@ This work is licensed under the Creative Commons Attribution-NonCommercial 4.0 I
 - add multiple dimensions for layers
 - add famous models prefab
 - add ideal models for given input/output
+- add "run the model" option, using Tensorflow or Pytorch
 - general bugfix
 - comments
 - documentation
