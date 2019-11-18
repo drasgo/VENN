@@ -10,13 +10,7 @@ class NNStructure:
 
         if blocks is not None and arrows is not None:
             self.blocks = blocks[:]
-            self.blockBackup = blocks
-            self.arrowBackup = arrows
             self.arrows = arrows[:]
-        else:
-            self.blocks = None
-            self.arrows = None
-            self.loadTopology()
 
     def checkTopology(self):
         print([lay.objectName() for lay in self.blocks])
@@ -27,7 +21,7 @@ class NNStructure:
 
         for layer in self.blocks:
 
-            if not any(ch.isdigit() for ch in layer.neurons.text()):
+            if layer.layer.currentText() == "LAYER" and not any(ch.isdigit() for ch in layer.neurons.text()):
                 print("non ci sono numeri in blocco: " + layer.neurons.text())
                 return 0
 
@@ -72,6 +66,8 @@ class NNStructure:
             temp["type"] = str(block.layer.currentText())
             if str(block.layer.currentText()) == "LAYER":
                 temp["neurons"] = str([int(s) for s in block.neurons.text().split() if s.isdigit()][0])
+            if str(block.layer.currentText()) == "COST":
+                temp["cost"] = str(block.cost.currentText())
             temp["position"] = [block.x(), block.y(), block.height(), block.width()]
             return temp
 

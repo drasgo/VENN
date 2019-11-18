@@ -7,9 +7,6 @@ import gui.costants as costants
 from gui.mainwindow import Ui_MainWindow
 import nn.mainNN as mainNN
 
-blockSelected = "background-color: dimgray;"
-blockUnSelected = "background-color: rgb(114, 159, 207);"
-
 
 def CheckMultipleSelection(self):
     for widget in self.findChildren(QtWidgets.QFrame):
@@ -20,7 +17,7 @@ def CheckMultipleSelection(self):
 
 
 def SelectBlock(widget):
-    widget.setStyleSheet(blockSelected)
+    widget.setStyleSheet(costants.blockSelected)
     if widget not in selectedMultipleLayer:
         selectedMultipleLayer.append(widget)
 
@@ -181,13 +178,12 @@ def structureCommit():
         print("qualcosa è andato starto")
 
 
-# TODO check get external file
 def structureLoad(parent, comboBox):
     global layers
     global archs
 
     file = costants.NNSTRUCTURE_FILE
-    structure = mainNN.NNStructure(file)
+    structure = mainNN.NNStructure(file=file)
     loadedData = structure.loadTopology()
     if loadedData is None:
         print("Error  opening previous structure")
@@ -247,7 +243,7 @@ class BlockProperties(QtWidgets.QComboBox):
         if self.text == "COST":
             self.parent.cost.hide()
             self.parent.neurons.show()
-            
+
         if self.text != "LAYER" and self.text != "BLANK" and self.text != "COST" \
                 and (self.currentText() == "LAYER" or self.currentText() == "BLANK" or self.currentText() == "COST"):
             while len(self.parent.PrevArch) > 0:
@@ -489,6 +485,9 @@ class StructBlock(QtWidgets.QFrame):
         if loaded["type"] == "LAYER":
             self.neurons.setText(loaded["neurons"] + self.neurons.text().replace("**", ""))
         else:
+            if loaded["type"] == "COST" and loaded["cost"] in costants.COST_FUNCTION:
+                self.cost.setCurrentText(loaded["cost"])
+                self.show()
             self.neurons.hide()
 
     def addLoadedArchs(self, arch, prev):
@@ -571,7 +570,7 @@ class StructBlock(QtWidgets.QFrame):
             self.updateArches(True, True)
 
     def unselect(self):
-        self.setStyleSheet(blockUnSelected)
+        self.setStyleSheet(costants.blockUnSelected)
         self.select = False
 
     # Mouse Press Event function: if its right button or double-click left button it allows changing label for the number of neurons
