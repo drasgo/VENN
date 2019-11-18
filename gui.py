@@ -229,9 +229,20 @@ class BlockProperties(QtWidgets.QComboBox):
     def __init__(self, parent):
         super().__init__(parent=parent)
         self.setFixedWidth(self.parent().width() - self.parent().width()/4)
+        self.parent = parent
 
         for item in costants.BOX_PROPERTIES:
             self.addItem(item)
+
+        self.currentIndexChanged.connect(self.textChanged)
+        self.text = "LAYER"
+
+    def textChanged(self):
+        if self.text != "LAYER" and self.currentText() == "LAYER":
+            while len(self.parent.PrevArch) > 0:
+                for arch in self.parent.PrevArch:
+                    arch.__del__()
+        self.text = self.currentText()
 
 
 # Class for the two labels (layer number * and number of neurons) in each generated block
@@ -490,11 +501,18 @@ class StructBlock(QtWidgets.QFrame):
         for block in layers:
 
             if block.objectName() != self.objectName() and block.isSelected():
-                prevArch = Arrow(self.parent(), block, self)
-                block.SuccArch.append(prevArch)
-                self.PrevArch.append(prevArch)
-                prevArch.drawArrow()
-                self.updateArches()
+                if (self.layer.currentText() == "LAYER" and len(self.PrevArch) == 0) or \
+                     self.layer.currentText() != "LAYER":
+                    prevArch = Arrow(self.parent(), block, self)
+                    block.SuccArch.append(prevArch)
+                    self.PrevArch.append(prevArch)
+                    prevArch.drawArrow()
+                    self.updateArches()
+
+                elif self.layer.currentText() == "LAYER" and len(self.PrevArch) > 0:
+                    self.select = False
+                    block.select = False
+                    UnselectBlock()
                 # self.updatePosition(prevArch, prevArch.endPoint)
 
     def updatePosition(self, arch, point, finalRec=False):
@@ -575,6 +593,7 @@ class StructBlock(QtWidgets.QFrame):
                 arch.__del__()
 
         self.updateArches()
+        self.updateArches(True)
 
     # Key Press Event funciton: If the number of neurons label was active than if it is pressed the enter key it will be disabled
     def keyPressEvent(self, e):
