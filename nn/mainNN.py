@@ -13,7 +13,7 @@ class NNStructure:
             self.arrows = arrows[:]
 
     def checkTopology(self):
-        print([lay.objectName() for lay in self.blocks])
+        # print([lay.objectName() for lay in self.blocks])
 
         if len(self.blocks) < 2 or len(self.arrows) == 0:
             print("non ci sono abbastanza blocchi o abbastanza frecce")
@@ -31,20 +31,20 @@ class NNStructure:
                 return 0
 
         if not any(len(lay.PrevArch) == 0 for lay in self.blocks):
-            print("non c'è blocco iniziale")
+            print("initial block absent")
             print("number of prev arches: " + str([len(lay.PrevArch) for lay in self.blocks]))
             return 0
 
         if not any(len(lay.SuccArch) == 0 for lay in self.blocks):
-            print("non c'è blocco finale")
+            print("final block absent")
             print("number of succ arches: " + str([len(lay.SuccArch) for lay in self.blocks]))
             return 0
 
         for arch in self.arrows:
 
-            if arch.name == "None":
-                print("funzione di attivazione è None in " + arch.objectName())
-                return 0
+            # if arch.name == "None":
+            #     print("funzione di attivazione è None in " + arch.objectName())
+            #     return 0
 
             if arch.initBlock is None or arch.finalBlock is None:
                 print("blocco iniziale o finale è None in arco " + arch.objectName())

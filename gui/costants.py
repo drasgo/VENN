@@ -16,6 +16,8 @@ ARROW_DEFAULT_FUNC = "None"
 blockSelected = "background-color: dimgray;"
 blockUnSelected = "background-color: rgb(114, 159, 207);"
 
+INPUT_OUTPUT_DATA_FILE_EXTENSION = "Text Files (*.txt, *.json, *.dat)"
+
 
 def arrow_stylesheet(color=ACTIVATION_FUNCTIONS[ARROW_DEFAULT_FUNC]):
     return "border-color: black; background-color: " + color + ";"

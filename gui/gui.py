@@ -6,6 +6,7 @@ from PyQt5 import QtCore
 import gui.costants as costants
 from gui.mainwindow import Ui_MainWindow
 import nn.mainNN as mainNN
+import os
 
 
 def CheckMultipleSelection(self):
@@ -207,6 +208,21 @@ def structureLoad(parent, comboBox):
 
         CheckNumbOfLayers(parent)
 
+
+def inputData(parent, button):
+    fileDial = QtWidgets.QFileDialog.getOpenFileName(button, "Input File", os.path.curdir, costants.INPUT_OUTPUT_DATA_FILE_EXTENSION)
+    fileData = ""
+
+    with open(fileDial[0], 'r') as fp:
+        for line in fp.readline():
+            fileData = fileData + line
+    fileData.replace("\n", "")
+
+    if button is parent.InputFi:
+        parent.InputText.appendPlainText(fileData)
+    else:
+        parent.OutputText.appendPlainText(fileData)
+        
 
 # Label for multiple selection (this is the actual blue rectangle which is used for selecting multiple elements)
 class Window(QtWidgets.QLabel):
@@ -659,6 +675,9 @@ class MainW(QtWidgets.QMainWindow, Ui_MainWindow):
 
         self.CommSave.clicked.connect(structureCommit)
         self.LoadStr.clicked.connect(lambda: structureLoad(self, self.ChooseArrow))
+
+        self.InputFi.clicked.connect(lambda: inputData(self, self.InputFi))
+        self.OutputFi.clicked.connect(lambda: inputData(self, self.OutputFi))
 
 
 # Global variables for original position of a moved widget and block which is dropped after a drag event
