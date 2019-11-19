@@ -4,13 +4,19 @@ import os
 
 class NNStructure:
 
-    def __init__(self, blocks=None, arrows=None, file="NNStructure.dr"):
+    def __init__(self, blocks=None, arrows=None, inputData="", outputData="", file="NNStructure.dr"):
         self.topology = {}
         self.file = file
 
         if blocks is not None and arrows is not None:
             self.blocks = blocks[:]
             self.arrows = arrows[:]
+
+        if inputData != "":
+            self.input = inputData
+
+        if outputData != "":
+            self.output = outputData
 
     def checkTopology(self):
         # print([lay.objectName() for lay in self.blocks])

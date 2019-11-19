@@ -170,8 +170,9 @@ def Cancel():
     selectedMultipleLayer.clear()
 
 
-def structureCommit():
-    structure = mainNN.NNStructure(blocks=layers, arrows=archs)
+def structureCommit(parent):
+    structure = mainNN.NNStructure(blocks=layers, arrows=archs,
+                                   inputData=parent.InputText.toPlainText(), outputData=parent.OutputText.toPlainText())
     if structure.checkTopology():
         structure.commitTopology()
         structure.saveTopology()
@@ -222,7 +223,7 @@ def inputData(parent, button):
         parent.InputText.appendPlainText(fileData)
     else:
         parent.OutputText.appendPlainText(fileData)
-        
+
 
 # Label for multiple selection (this is the actual blue rectangle which is used for selecting multiple elements)
 class Window(QtWidgets.QLabel):
@@ -673,7 +674,7 @@ class MainW(QtWidgets.QMainWindow, Ui_MainWindow):
             mod = self.ChooseArrow.model()
             mod.appendRow(item)
 
-        self.CommSave.clicked.connect(structureCommit)
+        self.CommSave.clicked.connect(lambda: structureCommit(self))
         self.LoadStr.clicked.connect(lambda: structureLoad(self, self.ChooseArrow))
 
         self.InputFi.clicked.connect(lambda: inputData(self, self.InputFi))

@@ -3,7 +3,7 @@ Visual Creation tool for Neural Network development training and deployment
 
 To use this project you have to install:
 
-- PyQT5
+- PyQt5
 - (Optional) TensorFlow
 - (Optional) PyTorch
 
