@@ -5,6 +5,8 @@ ACTIVATION_FUNCTIONS = {"None": "white",
                         "Linear": "red",
                         "Other": "orange"}
 
+FRAMEWORKS = ["TensorFlow", "PyTorch"]
+
 BOX_PROPERTIES = ["LAYER", "SUM", "SUB", "MULT", "DIV", "BLANK", "COST"]
 
 COST_FUNCTION = ["MSE", "OTHER"]

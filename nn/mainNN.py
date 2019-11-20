@@ -1,22 +1,29 @@
 import json
 import os
+import gui.costants as costants
 
 
 class NNStructure:
 
-    def __init__(self, blocks=None, arrows=None, inputData="", outputData="", file="NNStructure.dr"):
+    def __init__(self, blocks=None, arrows=None, inputData="", outputData=""):
         self.topology = {}
-        self.file = file
+        self.file = costants.NNSTRUCTURE_FILE
+        self.input = inputData
+        self.output = outputData
+        self.framework = None
 
         if blocks is not None and arrows is not None:
             self.blocks = blocks[:]
             self.arrows = arrows[:]
 
-        if inputData != "":
-            self.input = inputData
+        if self.input != "" and self.output != "":
+            self.prepareIOData()
 
-        if outputData != "":
-            self.output = outputData
+    def setStructureFilename(self, name):
+        self.file = name
+
+    def setFramework(self, frame):
+        self.framework = frame
 
     def checkTopology(self):
         # print([lay.objectName() for lay in self.blocks])
@@ -131,7 +138,10 @@ class NNStructure:
         with open(self.file, "w", encoding="utf-8") as f:
             json.dump(self.topology, f, indent=4)
 
-    def exportAs(self, framework):
+    def prepareIOData(self):
+        pass
+
+    def exportAs(self):
         pass
 
     def loadTopology(self):

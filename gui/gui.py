@@ -170,23 +170,52 @@ def Cancel():
     selectedMultipleLayer.clear()
 
 
-def structureCommit(parent):
+def frameworkCommit(parent):
+    structure = structureCommit(parent, True)
+
+    if structure is not None:
+        structure.exportAs()
+
+    else:
+        print("Error exporting the structure")
+
+
+def structureCommit(parent, called=False):
     structure = mainNN.NNStructure(blocks=layers, arrows=archs,
                                    inputData=parent.InputText.toPlainText(), outputData=parent.OutputText.toPlainText())
+
+    structure.setFramework(parent.Framework.currentText())
+
+    if parent.StructureFilename.text() != "":
+        structure.setStructureFilename(parent.StructureFilename.text())
+
     if structure.checkTopology():
         structure.commitTopology()
         structure.saveTopology()
+
+        if called is True:
+            return structure
     else:
         print("qualcosa è andato starto")
+
+        if called is True:
+            return None
 
 
 def structureLoad(parent, comboBox):
     global layers
     global archs
 
-    file = costants.NNSTRUCTURE_FILE
-    structure = mainNN.NNStructure(file=file)
+    if parent.StructureFilename.text() != "":
+        file = parent.StructureFilename.text()
+
+    else:
+        file = costants.NNSTRUCTURE_FILE
+
+    structure = mainNN.NNStructure(file)
+    structure.setStructureFilename()
     loadedData = structure.loadTopology()
+    
     if loadedData is None:
         print("Error  opening previous structure")
     else:
@@ -679,6 +708,13 @@ class MainW(QtWidgets.QMainWindow, Ui_MainWindow):
 
         self.InputFi.clicked.connect(lambda: inputData(self, self.InputFi))
         self.OutputFi.clicked.connect(lambda: inputData(self, self.OutputFi))
+
+        for frame in costants.FRAMEWORKS:
+            item = QtGui.QStandardItem(str(frame))
+            mod = self.Framework.model()
+            mod.appendRow(item)
+
+        self.FrameworkCommit.clicked.connect(lambda: frameworkCommit(self))
 
 
 # Global variables for original position of a moved widget and block which is dropped after a drag event
