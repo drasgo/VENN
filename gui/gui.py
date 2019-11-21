@@ -174,6 +174,7 @@ def frameworkCommit(parent):
     structure = structureCommit(parent, True)
 
     if structure is not None:
+        structure.setFramework(parent.Framework.currentText())
         structure.exportAs()
 
     else:
@@ -184,17 +185,17 @@ def structureCommit(parent, called=False):
     structure = mainNN.NNStructure(blocks=layers, arrows=archs,
                                    inputData=parent.InputText.toPlainText(), outputData=parent.OutputText.toPlainText())
 
-    structure.setFramework(parent.Framework.currentText())
-
     if parent.StructureFilename.text() != "":
         structure.setStructureFilename(parent.StructureFilename.text())
 
     if structure.checkTopology():
         structure.commitTopology()
-        structure.saveTopology()
 
         if called is True:
             return structure
+        else:
+            structure.saveTopology()
+
     else:
         print("qualcosa è andato starto")
 
@@ -206,14 +207,11 @@ def structureLoad(parent, comboBox):
     global layers
     global archs
 
+    structure = mainNN.NNStructure()
+
     if parent.StructureFilename.text() != "":
-        file = parent.StructureFilename.text()
+        structure.setStructureFilename(parent.StructureFilename.text())
 
-    else:
-        file = costants.NNSTRUCTURE_FILE
-
-    structure = mainNN.NNStructure(file)
-    structure.setStructureFilename()
     loadedData = structure.loadTopology()
 
     if loadedData is None:

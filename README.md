@@ -16,8 +16,8 @@ This work is licensed under the Creative Commons Attribution-NonCommercial 4.0 I
 - Fix recursive block connections
 - add export to tensorflow
 - add export to pytorch
-- add input for first layer matrix (input dimensionality)
-- add output for last layer matrix (output dimensionality)
+- add export to keras
+- add export to scikit-learn
 - add learning algorithms blocks/arches
 - add optimization algorithms
 - graphical refactor

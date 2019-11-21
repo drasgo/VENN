@@ -143,7 +143,13 @@ class NNStructure:
         if len(self.inputTarget) == 0:
             print("Error preparing input/target data while exporting structure into " + self.framework)
             return
-        
+
+        if self.framework.lowercase() == "tensorflow":
+            import nn.tensorflowWrapper as frame
+        else:
+            import nn.pytorchWrapper as frame
+
+        frameStruc = frame.FrameStructure
 
     def prepareIOData(self):
         inputList = self.splitInputOuput(inp=True)
