@@ -11,13 +11,11 @@ class NNStructure:
         self.input = inputData
         self.output = outputData
         self.framework = None
+        self.inputTarget = {}
 
         if blocks is not None and arrows is not None:
             self.blocks = blocks[:]
             self.arrows = arrows[:]
-
-        if self.input != "" and self.output != "":
-            self.prepareIOData()
 
     def setStructureFilename(self, name):
         self.file = name
@@ -138,11 +136,42 @@ class NNStructure:
         with open(self.file, "w", encoding="utf-8") as f:
             json.dump(self.topology, f, indent=4)
 
-    def prepareIOData(self):
-        pass
-
     def exportAs(self):
-        pass
+        if self.input != "" and self.output != "":
+            self.prepareIOData()
+
+        if len(self.inputTarget) == 0:
+            print("Error preparing input/target data while exporting structure into " + self.framework)
+            return
+        
+
+    def prepareIOData(self):
+        inputList = self.splitInputOuput(inp=True)
+        outputList = self.splitInputOuput(inp=False)
+
+        if self.checkInputOutput(len(inputList), len(outputList)) is False:
+            print("Number of input data is different of number of target data: Input:" +
+                  str(len(inputList)) + ", Output: " + str(len(outputList)))
+            return
+
+        for index in range(len(inputList) - 1):
+            self.inputTarget[inputList[index]] = outputList[index]
+
+    def splitInputOuput(self, inp):
+        reference = self.input if inp else self.output
+        if "[" not in reference:
+            return reference.split(",")
+        else:
+            temp = reference.split("],[")
+            lista = []
+            for x in temp:
+                temp1 = x.replace("]", "")
+                temp1 = temp1.replace("[", "")
+                lista.append(temp1.split(","))
+            return lista
+
+    def checkInputOutput(self, inputLen, outputLen):
+        return True if inputLen == outputLen else False
 
     def loadTopology(self):
         if os.path.exists(self.file):

@@ -215,11 +215,11 @@ def structureLoad(parent, comboBox):
     structure = mainNN.NNStructure(file)
     structure.setStructureFilename()
     loadedData = structure.loadTopology()
-    
+
     if loadedData is None:
         print("Error  opening previous structure")
     else:
-        # pprint.pprint(loadedData)
+        # Uncomment if previous blocks need to be deleted before loading other blocks
         # for comp in layers + archs:
         #     comp.__del__()
 
