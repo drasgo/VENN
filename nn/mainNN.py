@@ -11,13 +11,16 @@ class NNStructure:
         self.input = inputData
         self.output = outputData
         self.framework = None
-        self.inputTarget = {}
+        self.finalInput = []
+        self.finalOutput = []
 
         if blocks is not None and arrows is not None:
             self.blocks = blocks[:]
             self.arrows = arrows[:]
 
     def setStructureFilename(self, name):
+        if "." not in name:
+            name = name + costants.STRUCTURE_EXTENSION
         self.file = name
 
     def setFramework(self, frame):
@@ -41,7 +44,7 @@ class NNStructure:
                 layer.__del__()
                 return 0
 
-        if not any(len(lay.PrevArch) == 0 for lay in self.blocks):
+        if not any(len(lay.PrevArch) == 0 for lay in self.blocks if lay.layer.text == "INPUT"):
             print("initial block absent")
             print("number of prev arches: " + str([len(lay.PrevArch) for lay in self.blocks]))
             return 0
@@ -72,6 +75,8 @@ class NNStructure:
             temp = dict()
             temp["block"] = True
             temp["name"] = "saved" + str(block.objectName())
+            temp["FirstBlock"] = True if len(block.PrevArch) == 0 else False
+            temp["LastBlock"] = True if len(block.SuccArch) == 0 else False
             temp["PrevArch"] = ["saved" + bl.objectName() for bl in block.PrevArch]
             temp["SuccArch"] = ["saved" + bl.objectName() for bl in block.SuccArch]
             temp["type"] = str(block.layer.currentText())
@@ -140,28 +145,27 @@ class NNStructure:
         if self.input != "" and self.output != "":
             self.prepareIOData()
 
-        if len(self.inputTarget) == 0:
+        if len(self.finalInput) != len(self.finalOutput):
             print("Error preparing input/target data while exporting structure into " + self.framework)
             return
 
         if self.framework.lowercase() == "tensorflow":
-            import nn.tensorflowWrapper as frame
+            import nn.tensorflowWrapper as frameChosen
         else:
-            import nn.pytorchWrapper as frame
+            import nn.pytorchWrapper as frameChosen
 
-        frameStruc = frame.FrameStructure
+        frameStruc = frameChosen.FrameStructure(self.finalInput, self.finalOutput, structure=self.topology)
+        frameStruc.prepareModel()
+        frameStruc.saveModel()
 
     def prepareIOData(self):
-        inputList = self.splitInputOuput(inp=True)
-        outputList = self.splitInputOuput(inp=False)
+        self.finalInput = self.splitInputOuput(inp=True)
+        self.finalOutput = self.splitInputOuput(inp=False)
 
-        if self.checkInputOutput(len(inputList), len(outputList)) is False:
+        if self.checkInputOutput(len(self.finalOutput), len(self.finalOutput)) is False:
             print("Number of input data is different of number of target data: Input:" +
-                  str(len(inputList)) + ", Output: " + str(len(outputList)))
+                  str(len(self.finalInput)) + ", Output: " + str(len(self.finalOutput)))
             return
-
-        for index in range(len(inputList) - 1):
-            self.inputTarget[inputList[index]] = outputList[index]
 
     def splitInputOuput(self, inp):
         reference = self.input if inp else self.output
