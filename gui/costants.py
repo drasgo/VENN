@@ -9,7 +9,7 @@ FRAMEWORKS = ["TensorFlow", "PyTorch"]
 
 BOX_PROPERTIES = ["LAYER", "INPUT", "SUM", "SUB", "MULT", "DIV", "BLANK", "COST"]
 
-COST_FUNCTION = ["MSE", "OTHER"]
+COST_FUNCTION = ["MSE", "CROSSENTROPY", "OTHER"]
 
 NNSTRUCTURE_FILE = "NNStructure.dr"
 

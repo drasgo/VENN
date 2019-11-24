@@ -171,7 +171,24 @@ def Cancel():
 
 
 def frameworkCommit(parent):
-    structure = structureCommit(parent, True)
+    if parent.InputText.toPlainText() != "":
+        inputs = parent.InputText.toPlainText()
+    elif parent.numberInputs.text() != "" and parent.numberInputs.text().isdigit():
+        temp = parent.numberInputs.text()
+        inputs = int(temp)
+    else:
+        print("No informations about input data was found. Insert input data or number of inputs")
+        return
+    if parent.OutputText.toPlainText() != "":
+        outputs = parent.OutputText.toPlainText()
+    elif parent.numberOutputs.text() != "" and parent.numberOutputs.text().isdigit():
+        temp = parent.numberOutputs.text()
+        outputs = int(temp)
+    else:
+        print("No informations about output data was found. Insert output data or number of outputs")
+        return
+
+    structure = structureCommit(parent, True, inputs=inputs, outputs=outputs)
 
     if structure is not None:
         structure.setFramework(parent.Framework.currentText())
@@ -181,9 +198,9 @@ def frameworkCommit(parent):
         print("Error exporting the structure")
 
 
-def structureCommit(parent, called=False):
+def structureCommit(parent, called=False, inputs=None, outputs=None):
     structure = mainNN.NNStructure(blocks=layers, arrows=archs,
-                                   inputData=parent.InputText.toPlainText(), outputData=parent.OutputText.toPlainText())
+                                   inputData=inputs, outputData=outputs)
 
     if parent.StructureFilename.text() != "":
         structure.setStructureFilename(parent.StructureFilename.text())
@@ -218,8 +235,8 @@ def structureLoad(parent, comboBox):
         print("Error  opening previous structure")
     else:
         # Uncomment if previous blocks need to be deleted before loading other blocks
-        # for comp in layers + archs:
-        #     comp.__del__()
+        for comp in layers + archs:
+            comp.__del__()
 
         for block in [loadedData[x] for x in loadedData if loadedData[x]["block"] is True]:
             newBlock = StructBlock(parent.MainStruct, parent.Blocks, block)
@@ -230,7 +247,7 @@ def structureLoad(parent, comboBox):
             newArrow = Arrow(parent.MainStruct, loaded=arrow)
 
         for block in [loadedData[x] for x in loadedData if loadedData[x]["block"] is True]:
-            for comp in [x for x in layers if "saved" in x.objectName() and block["name"] in x.objectName()]:
+            for comp in [x for x in layers if block["name"] == x.objectName()]:
                 comp.addLoadedArchs(block["PrevArch"], prev=True)
                 comp.addLoadedArchs(block["SuccArch"], prev=False)
 
@@ -284,12 +301,12 @@ class BlockProperties(QtWidgets.QComboBox):
         self.text = "LAYER"
 
     def textChanged(self):
-        if self.text == "COST":
-            self.parent.cost.hide()
-            self.parent.neurons.show()
+    #     if self.text == "COST" or self.text == "INPUT":
+    #         self.parent.cost.hide()
+    #         self.parent.neurons.show()
 
-        if self.text != "LAYER" and self.text != "BLANK" and self.text != "COST" \
-                and (self.currentText() == "LAYER" or self.currentText() == "BLANK" or self.currentText() == "COST"):
+        if self.text != "LAYER" and self.text != "BLANK" and self.text != "COST" and self.text != "INPUT" \
+                and (self.currentText() == "LAYER" or self.currentText() == "BLANK" or self.currentText() == "COST" or self.currentText() == "INPUT"):
             while len(self.parent.PrevArch) > 0:
                 for arch in self.parent.PrevArch:
                     arch.__del__()
@@ -297,6 +314,9 @@ class BlockProperties(QtWidgets.QComboBox):
         elif self.currentText() == "COST":
             self.parent.neurons.hide()
             self.parent.cost.show()
+
+        elif self.currentText() == "INPUT":
+            self.parent.neurons.hide()
 
         self.text = self.currentText()
 
@@ -536,7 +556,6 @@ class StructBlock(QtWidgets.QFrame):
 
     def addLoadedArchs(self, arch, prev):
         global archs
-
         for arrow in arch:
             if prev is True:
                 self.PrevArch.append([ar for ar in archs if ar.objectName() == arrow][0])

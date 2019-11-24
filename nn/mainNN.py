@@ -5,7 +5,7 @@ import gui.costants as costants
 
 class NNStructure:
 
-    def __init__(self, blocks=None, arrows=None, inputData="", outputData=""):
+    def __init__(self, blocks=None, arrows=None, inputData=None, outputData=None):
         self.topology = {}
         self.file = costants.NNSTRUCTURE_FILE
         self.input = inputData
@@ -13,6 +13,8 @@ class NNStructure:
         self.framework = None
         self.finalInput = []
         self.finalOutput = []
+        self.numberInputs = 0
+        self.numberOutputs = 0
 
         if blocks is not None and arrows is not None:
             self.blocks = blocks[:]
@@ -74,11 +76,11 @@ class NNStructure:
             # print("in get block properties")
             temp = dict()
             temp["block"] = True
-            temp["name"] = "saved" + str(block.objectName())
+            temp["name"] = str(block.objectName())
             temp["FirstBlock"] = True if len(block.PrevArch) == 0 else False
             temp["LastBlock"] = True if len(block.SuccArch) == 0 else False
-            temp["PrevArch"] = ["saved" + bl.objectName() for bl in block.PrevArch]
-            temp["SuccArch"] = ["saved" + bl.objectName() for bl in block.SuccArch]
+            temp["PrevArch"] = [bl.objectName() for bl in block.PrevArch]
+            temp["SuccArch"] = [bl.objectName() for bl in block.SuccArch]
             temp["type"] = str(block.layer.currentText())
             if str(block.layer.currentText()) == "LAYER":
                 temp["neurons"] = str([int(s) for s in block.neurons.text().split() if s.isdigit()][0])
@@ -91,9 +93,9 @@ class NNStructure:
             # print("in get arrow properties")
             temp = dict()
             temp["block"] = False
-            temp["name"] = "saved" + str(arch.objectName())
-            temp["initBlock"] = "saved" + arch.initBlock.objectName()
-            temp["finalBlock"] = "saved" + arch.finalBlock.objectName()
+            temp["name"] = str(arch.objectName())
+            temp["initBlock"] = arch.initBlock.objectName()
+            temp["finalBlock"] = arch.finalBlock.objectName()
             temp["activFunc"] = arch.name
             temp["position"] = [arch.x(), arch.y(), arch.width(), arch.height()]
             return temp
@@ -142,19 +144,27 @@ class NNStructure:
             json.dump(self.topology, f, indent=4)
 
     def exportAs(self):
-        if self.input != "" and self.output != "":
+        if isinstance(self.input, str) and isinstance(self.output, str):
             self.prepareIOData()
+
+        elif isinstance(self.input, int) and isinstance(self.output, int):
+            self.numberInputs = self.input
+            self.numberOutputs = self.output
+
+        else:
+            print("Error preparing input/output data")
+            return
 
         if len(self.finalInput) != len(self.finalOutput):
             print("Error preparing input/target data while exporting structure into " + self.framework)
             return
 
-        if self.framework.lowercase() == "tensorflow":
+        if self.framework.lower() == "tensorflow":
             import nn.tensorflowWrapper as frameChosen
         else:
             import nn.pytorchWrapper as frameChosen
 
-        frameStruc = frameChosen.FrameStructure(self.finalInput, self.finalOutput, structure=self.topology)
+        frameStruc = frameChosen.FrameStructure(self.numberOutputs, self.numberOutputs, structure=self.topology)
         frameStruc.prepareModel()
         frameStruc.saveModel()
 
@@ -166,6 +176,8 @@ class NNStructure:
             print("Number of input data is different of number of target data: Input:" +
                   str(len(self.finalInput)) + ", Output: " + str(len(self.finalOutput)))
             return
+        self.numberInputs = self.finalInput[0]
+        self.numberOutputs = self.finalOutput[0]
 
     def splitInputOuput(self, inp):
         reference = self.input if inp else self.output
