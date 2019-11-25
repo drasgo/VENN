@@ -1,6 +1,5 @@
 from tensorflow import keras
 from tensorflow.keras import layers
-import pprint
 
 
 class FrameStructure:
@@ -15,52 +14,40 @@ class FrameStructure:
         structInput = []
         structMiddle = []
         prevBlockProp = {}
-        finalBlock = {}
-        finalLayer = None
-        pprint.pprint(self.structure, indent=4)
+        output = None
+
         for element in [block for block in self.structure if
                         self.structure[block]["block"] is True and self.structure[block]["FirstBlock"]]:
-
-            structInput.append(keras.Input(shape=(self.ninput,), name="input"))
-            structMiddle.append(keras.Input(shape=(self.ninput,), name="input"))
-            prevBlockProp[element] = {"name" : self.structure[element]["name"], "succarch": self.structure[element]["SuccArch"]}
-            # pprint.pprint(str(prevBlockProp))
-            self.structure.pop(element)
+            temp = keras.Input(shape=(self.ninput,), name="input")
+            structInput.append(temp)
+            structMiddle.append(temp)
+            prevBlockProp[str(element)] = {"name": self.structure[element]["name"], "succarch": self.structure[element]["SuccArch"]}
 
         final = False
         while len(self.structure) != 0 and final is False:
-            for element in structInput:
+            for index in range(len(structInput)):
 
-                temp = structMiddle[structInput.index(element)]
-
-                createLayerFunc = self.createLayer(temp, prevBlockProp[element])
+                createLayerFunc = self.createLayer(structMiddle[index], prevBlockProp[str(index)])
                 # , [(structMiddle[i], prevBlockProp[i]) for i in range(len(structMiddle)) if  structMiddle[i] is not temp])
 
                 blockArches = False
 
                 while blockArches is False:
-
                     final, blockArches = next(createLayerFunc)
 
                     if final is False:
-                        temp, prevBlockProp[element] = next(createLayerFunc)
-                        print("prevBlockProp:")
-                        pprint.pprint(prevBlockProp)
+                        structMiddle[index], prevBlockProp[str(index)] = next(createLayerFunc)
                     else:
-                        finalBlock = next(createLayerFunc)
-                        finalLayer = temp
+                        output = next(createLayerFunc)
 
-        output = layers.Dense(self.noutput, activation=self.chooseCost(finalBlock["cost"]), name="output")(finalLayer)
         self.model = keras.Model(inputs=structInput[0], outputs=output)
 
     # TODO
     #  la variabile otherbranches serve per implementare successivamente i blocchi mult add sub div e blank
-    # Add in arguments otherbranches
+    # Add in arguments otherbranchesq
     # Find arch-> block (for current layer)+ return current block -> next arch (for next layer)
     def createLayer(self, prevLayer, prevBlockProp):
         index = None
-        print("\nin create layer")
-        pprint.pprint(str(prevBlockProp))
 
         # Find current arch
         for elem in self.structure:
@@ -70,65 +57,57 @@ class FrameStructure:
                 prevBlockProp["succarch"].remove(next(arch for arch in prevBlockProp["succarch"] if self.structure[elem]["name"] == arch))
                 break
 
+        # current arch
         arch = self.structure[index]
+        # print(arch)
+
         if arch["block"] is True:
             print("Error converting structure to tensorflow")
             quit()
 
+        # find current arch activ function
         activFunc = arch["activFunc"]
-        # find current block
-        blockName = prevBlockProp["name"]
-        # find next arch
-        succArch = next(self.structure[arch]["name"] for arch in self.structure if self.structure[arch]["block"]
-                        is False and self.structure[arch]["initBlock"] == blockName)
 
+        # find current block infos
         index = None
         for elem in self.structure:
             index = elem
-            if self.structure[elem]["name"] == blockName:
+            if self.structure[elem]["name"] == arch["finalBlock"]:
                 break
 
         # current block infos
         block = self.structure[str(index)]
-        neurons = 0
 
+        # find next arch
+        succArch = block["SuccArch"]
+
+        # find current block neurons number
+        neurons = 0
         if block["type"] == "LAYER":
             neurons = int(block["neurons"])
+        elif block["type"] == "OUTPUT":
+            neurons = self.noutput
         #     TODO
         #     elif block["type"] == "SUM"/"SUB"/"MULT"/"DIV"/"BLANK":
-
-        # print("block[final] " + str(block["final"]))
-
-        pprint.pprint(str(prevLayer))
-        pprint.pprint(str(prevBlockProp))
-        print("num archi succ " + str(len(prevBlockProp["succarch"])))
-        print("curr block " + blockName)
-        print("curr arch " + arch["name"])
-        print("succ arch " + str(succArch))
 
         yield block["LastBlock"], True if len(prevBlockProp["succarch"]) == 0 else False
 
         if block["LastBlock"] is False:
-            yield layers.Dense(neurons, activation=self.chooseActivation(activFunc), name=blockName)(prevLayer), \
-                   {"name": blockName, "succarch": succArch} if len(prevBlockProp["succarch"]) == 0 else prevBlockProp
+            yield layers.Dense(neurons, activation=self.chooseActivation(activFunc), name=block["name"])(prevLayer), \
+                   {"name": block["name"], "succarch": succArch} if len(prevBlockProp["succarch"]) == 0 else prevBlockProp
 
         else:
-            # print("block in create layer " + str(block))
-            yield block
+            yield layers.Dense(neurons, activation=self.chooseActivation(activFunc), name=block["name"])(prevLayer)
 
     def chooseActivation(self, activ):
         if activ == "Tanh":
-            return "relu"
+            return 'relu'
+        elif activ == "Softmax":
+            return 'softmax'
         # TODO
         # Add activation function
         else:
             return None
-
-    def chooseCost(self, cost):
-        if cost == "MSE":
-            return None
-        elif cost == "CROSSENTROPY":
-            return "softmax"
 
     def saveModel(self):
         if self.model is not None:
@@ -136,12 +115,3 @@ class FrameStructure:
         else:
             self.prepareModel()
             self.model.summary()
-
-#
-# inputs = keras.Input(shape=(784,), name='digits')
-# x = layers.Dense(64, activation='relu', name='dense_1')(inputs)
-# x = layers.Dense(64, activation='relu', name='dense_2')(x)
-# outputs = layers.Dense(10, activation='softmax', name='predictions')(x)
-#
-# model = keras.Model(inputs=inputs, outputs=outputs, name='3_layer_mlp')
-# model.summary()

@@ -5,7 +5,7 @@ import gui.costants as costants
 
 class NNStructure:
 
-    def __init__(self, blocks=None, arrows=None, inputData=None, outputData=None):
+    def __init__(self, blocks=None, arrows=None, inputData=None, outputData=None, cost=None):
         self.topology = {}
         self.file = costants.NNSTRUCTURE_FILE
         self.input = inputData
@@ -15,6 +15,7 @@ class NNStructure:
         self.finalOutput = []
         self.numberInputs = 0
         self.numberOutputs = 0
+        self.cost = cost
 
         if blocks is not None and arrows is not None:
             self.blocks = blocks[:]
@@ -27,6 +28,9 @@ class NNStructure:
 
     def setFramework(self, frame):
         self.framework = frame
+
+    def setCostFunction(self, cost):
+        self.cost = cost
 
     def checkTopology(self):
         # print([lay.objectName() for lay in self.blocks])
@@ -44,6 +48,10 @@ class NNStructure:
             if len(layer.PrevArch) == 0 and len(layer.SuccArch) == 0:
                 print("non ci sono arco precedente o successivo in blocco " + layer.objectName())
                 layer.__del__()
+                return 0
+
+            if len(layer.SuccArch) > 0 and layer.layer.currentText() == "OUTPUT":
+                print("blocco output ha archi successivi")
                 return 0
 
         if not any(len(lay.PrevArch) == 0 for lay in self.blocks if lay.layer.text == "INPUT"):
@@ -84,8 +92,6 @@ class NNStructure:
             temp["type"] = str(block.layer.currentText())
             if str(block.layer.currentText()) == "LAYER":
                 temp["neurons"] = str([int(s) for s in block.neurons.text().split() if s.isdigit()][0])
-            if str(block.layer.currentText()) == "COST":
-                temp["cost"] = str(block.cost.currentText())
             temp["position"] = [block.x(), block.y(), block.height(), block.width()]
             return temp
 

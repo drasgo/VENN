@@ -154,7 +154,8 @@ def changeComboBox(self, pos):
 
 
 def changeArchChangeComboBox(combo, name):
-    combo.setCurrentText(name)
+    if combo is not None:
+        combo.setCurrentText(name)
 
 
 def Cancel():
@@ -203,6 +204,9 @@ def structureCommit(parent, called=False, inputs=None, outputs=None):
 
     if parent.StructureFilename.text() != "":
         structure.setStructureFilename(parent.StructureFilename.text())
+
+    if parent.LossFunction.currentText() != "":
+        structure.setCostFunction(parent.LossFunction.currentText())
 
     if structure.checkTopology():
         structure.commitTopology()
@@ -275,17 +279,6 @@ class Window(QtWidgets.QLabel):
         self.rubberBand = QtWidgets.QRubberBand(QtWidgets.QRubberBand.Rectangle, self)
 
 
-class CostBlock(QtWidgets.QComboBox):
-
-    def __init__(self, parent):
-        super().__init__(parent=parent)
-
-        for item in costants.COST_FUNCTION:
-            self.addItem(item)
-
-        self.hide()
-
-
 class BlockProperties(QtWidgets.QComboBox):
 
     def __init__(self, parent):
@@ -300,19 +293,17 @@ class BlockProperties(QtWidgets.QComboBox):
         self.text = "LAYER"
 
     def textChanged(self):
-    #     if self.text == "COST" or self.text == "INPUT":
-    #         self.parent.cost.hide()
-    #         self.parent.neurons.show()
 
-        if self.text != "LAYER" and self.text != "BLANK" and self.text != "COST" and self.text != "INPUT" \
-                and (self.currentText() == "LAYER" or self.currentText() == "BLANK" or self.currentText() == "COST" or self.currentText() == "INPUT"):
+        if self.text != "LAYER" and self.text != "BLANK" and self.text != "INPUT"\
+                and (self.currentText() == "LAYER" or self.currentText() == "BLANK" or self.currentText() == "INPUT"):
             while len(self.parent.PrevArch) > 0:
                 for arch in self.parent.PrevArch:
                     arch.__del__()
 
-        elif self.currentText() == "COST":
+        elif self.currentText() == "OUTPUT":
             self.parent.neurons.hide()
-            self.parent.cost.show()
+            for arch in self.parent.SuccArch:
+                arch.__del__()
 
         elif self.currentText() == "INPUT":
             self.parent.neurons.hide()
@@ -522,7 +513,6 @@ class StructBlock(QtWidgets.QFrame):
 
         self.layer = BlockProperties(self)
         self.neurons = TextInStructBox(self, "Neurons")
-        self.cost = CostBlock(self)
 
         if loaded is not None:
             self.loaded(loaded)
@@ -536,7 +526,6 @@ class StructBlock(QtWidgets.QFrame):
 
         self.layout.addWidget(self.layer, alignment=Qt.AlignCenter)
         self.layout.addWidget(self.neurons, alignment=Qt.AlignCenter)
-        self.layout.addWidget(self.cost, alignment=Qt.AlignCenter)
 
         layers.append(self)
         self.show()
@@ -548,9 +537,6 @@ class StructBlock(QtWidgets.QFrame):
         if loaded["type"] == "LAYER":
             self.neurons.setText(loaded["neurons"] + self.neurons.text().replace("**", ""))
         else:
-            if loaded["type"] == "COST" and loaded["cost"] in costants.COST_FUNCTION:
-                self.cost.setCurrentText(loaded["cost"])
-                self.show()
             self.neurons.hide()
 
     def addLoadedArchs(self, arch, prev):
@@ -728,6 +714,11 @@ class MainW(QtWidgets.QMainWindow, Ui_MainWindow):
         for frame in costants.FRAMEWORKS:
             item = QtGui.QStandardItem(str(frame))
             mod = self.Framework.model()
+            mod.appendRow(item)
+
+        for cost in costants.COST_FUNCTION:
+            item = QtGui.QStandardItem(str(cost))
+            mod = self.LossFunction.model()
             mod.appendRow(item)
 
         self.FrameworkCommit.clicked.connect(lambda: frameworkCommit(self))
