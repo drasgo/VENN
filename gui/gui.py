@@ -154,8 +154,7 @@ def changeComboBox(self, pos):
 
 
 def changeArchChangeComboBox(combo, name):
-    if combo is not None:
-        combo.setCurrentText(name)
+    combo.setCurrentText(name)
 
 
 def Cancel():
