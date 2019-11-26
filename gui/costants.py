@@ -23,6 +23,8 @@ INPUT_OUTPUT_DATA_FILE_EXTENSION = "Text Files (*.txt, *.json, *.dat)"
 
 STRUCTURE_EXTENSION = ".dr"
 
+TENSORFLOW_EXTENSION = ".h5"
+
 
 def arrow_stylesheet(color=ACTIVATION_FUNCTIONS[ARROW_DEFAULT_FUNC]):
     return "border-color: black; background-color: " + color + ";"

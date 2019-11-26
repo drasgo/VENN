@@ -170,7 +170,7 @@ class NNStructure:
         else:
             import nn.pytorchWrapper as frameChosen
 
-        frameStruc = frameChosen.FrameStructure(self.numberOutputs, self.numberOutputs, structure=self.topology)
+        frameStruc = frameChosen.FrameStructure(self.numberOutputs, self.numberOutputs, structure=self.topology, structureName=self.file)
         frameStruc.prepareModel()
         frameStruc.saveModel()
 

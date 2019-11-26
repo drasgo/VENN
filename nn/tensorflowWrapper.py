@@ -1,13 +1,16 @@
 from tensorflow import keras
 from tensorflow.keras import layers
+from gui.costants import STRUCTURE_EXTENSION
+from gui.costants import TENSORFLOW_EXTENSION
 
 
 class FrameStructure:
 
-    def __init__(self, numberInput, numberOutput, structure):
+    def __init__(self, numberInput, numberOutput, structure, structureName):
         self.ninput = numberInput
         self.noutput = numberOutput
         self.structure = structure.copy()
+        self.name = structureName
         self.model = None
 
     def prepareModel(self):
@@ -115,3 +118,4 @@ class FrameStructure:
         else:
             self.prepareModel()
             self.model.summary()
+            self.model.save("tensorflow-" + self.name.replace(STRUCTURE_EXTENSION, TENSORFLOW_EXTENSION))
