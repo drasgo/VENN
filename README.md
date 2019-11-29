@@ -9,8 +9,10 @@ To use this project you have to install:
 - (Optional) keras
 - (Optional) scikit-learn
 
+# WIKI
 
-This work is licensed under the Creative Commons Attribution-NonCommercial 4.0 International License. To view a copy of this license, visit http://creativecommons.org/licenses/by-nc/4.0/ or send a letter to Creative Commons, PO Box 1866, Mountain View, CA 94042, USA.
+How to.. : github.com/drasgo/ViCreNN/blob/master/howto.md
+
 
 
 # TODO
@@ -34,3 +36,7 @@ This work is licensed under the Creative Commons Attribution-NonCommercial 4.0 I
 - general bugfix
 - comments
 - documentation
+
+
+
+This work is licensed under the Creative Commons Attribution-NonCommercial 4.0 International License. To view a copy of this license, visit http://creativecommons.org/licenses/by-nc/4.0/ or send a letter to Creative Commons, PO Box 1866, Mountain View, CA 94042, USA.

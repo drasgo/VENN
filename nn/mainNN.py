@@ -167,10 +167,12 @@ class NNStructure:
 
         if self.framework.lower() == "tensorflow":
             import nn.tensorflowWrapper as frameChosen
+            nomeFile = "tensorflow-" + self.file.replace(costants.STRUCTURE_EXTENSION, costants.TENSORFLOW_EXTENSION)
         else:
             import nn.pytorchWrapper as frameChosen
+            nomeFile = "pytorch-" + self.file.replace(costants.STRUCTURE_EXTENSION, costants.PYTORCH_EXTENSION)
 
-        frameStruc = frameChosen.FrameStructure(self.numberOutputs, self.numberOutputs, structure=self.topology, structureName=self.file)
+        frameStruc = frameChosen.FrameStructure(self.numberOutputs, self.numberOutputs, structure=self.topology, structureName=nomeFile)
         frameStruc.prepareModel()
         frameStruc.saveModel()
 

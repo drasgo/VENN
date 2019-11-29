@@ -1,16 +1,20 @@
 LINE_WIDTH = 25
 
-ACTIVATION_FUNCTIONS = {"None": "white",
-                        "Tanh": "blue",
-                        "Linear": "red",
-                        "Softmax": "purple",
-                        "Other": "orange"}
+ACTIVATION_FUNCTIONS = {"None": "cyan",
+                        "Rectified Linear (ReLu)": "blue",
+                        "Hyperbolic Tangent (Tanh)": "green",
+                        "Exponential Linear (Elu)": "darkGreen",
+                        "Log Softmax": "darkYellow",
+                        "Sigmoid": "orange",
+                        "Softmax": "red",
+                        "Softplus": "darkRed",
+                        "Other": "purple"}
 
 FRAMEWORKS = ["TensorFlow", "PyTorch"]
 
 BOX_PROPERTIES = ["LAYER", "INPUT", "OUTPUT", "SUM", "SUB", "MULT", "DIV", "BLANK", "COST"]
 
-COST_FUNCTION = ["", "MSE", "CROSSENTROPY", "OTHER"]
+COST_FUNCTION = ["", "Mean Square Error (MSE)", "Cross Entropy", "OTHER"]
 
 NNSTRUCTURE_FILE = "NNStructure.dr"
 
@@ -25,6 +29,7 @@ STRUCTURE_EXTENSION = ".dr"
 
 TENSORFLOW_EXTENSION = ".h5"
 
+PYTORCH_EXTENSION = ".pyt"
 
 def arrow_stylesheet(color=ACTIVATION_FUNCTIONS[ARROW_DEFAULT_FUNC]):
     return "border-color: black; background-color: " + color + ";"
