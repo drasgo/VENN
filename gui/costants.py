@@ -31,5 +31,9 @@ TENSORFLOW_EXTENSION = ".h5"
 
 PYTORCH_EXTENSION = ".pyt"
 
+KERAS_EXTENSION = ".ke"
+SCIKIT_EXTENSION = ".sci"
+
+
 def arrow_stylesheet(color=ACTIVATION_FUNCTIONS[ARROW_DEFAULT_FUNC]):
     return "border-color: black; background-color: " + color + ";"

@@ -9,6 +9,7 @@ import nn.mainNN as mainNN
 import os
 
 
+# Selects every block/arch in the rubber multiple selection. Everything else is unselected
 def CheckMultipleSelection(self):
     for widget in self.findChildren(QtWidgets.QFrame):
         if widget.geometry() in MultipleSelect[0].geometry() and widget.objectName() != "Blocks":
@@ -17,26 +18,28 @@ def CheckMultipleSelection(self):
             UnselectBlock(widget)
 
 
+# Performs the selection action: change color and add the block/arch to tu selectedMultipleLayer list
 def SelectBlock(widget):
     widget.setStyleSheet(costants.blockSelected)
     if widget not in selectedMultipleLayer:
         selectedMultipleLayer.append(widget)
 
 
+# Performs the unselection action: change color and remove the block/arch from the selectedMultipleLayer list. If
+# no block/arch is passed, unselects every selected arch/block
 def UnselectBlock(wid=None):
     if wid is None:
         for widget in selectedMultipleLayer:
-            # widget.setStyleSheet(blockUnSelected)
             widget.unselect()
         selectedMultipleLayer.clear()
     else:
-        # wid.setStyleSheet(blockUnSelected)
         if wid in selectedMultipleLayer:
             wid.unselect()
             selectedMultipleLayer.remove(wid)
 
 
-# Function for Mouse Press Event for multiple selection in MainStruct
+# Function for Mouse Press Event for multiple selection in MainStruct. It defines the selection starting point, saving
+# it in MultipleSelect[1].
 def SelectionmousePressEvent(event):
     if event.buttons() == Qt.LeftButton:
         UnselectBlock()
@@ -47,7 +50,8 @@ def SelectionmousePressEvent(event):
         MultipleSelect[0].show()
 
 
-# Function for Mouse Move Event for multiple selection in MainStruct
+# Function for Mouse Move Event for multiple selection in MainStruct. It changes the dimension of the multiple selection
+#  rectangle (aka the blue rubber band), checking the widgets inside it
 def SelectionmouseMoveEvent(self, event):
     global MultipleSelect
 
@@ -56,7 +60,7 @@ def SelectionmouseMoveEvent(self, event):
         CheckMultipleSelection(self)
 
 
-# Function for Mouse Release Event for multiple selection in MainStruct
+# Function for Mouse Release Event for multiple selection in MainStruct. Removes the blue rubber band
 def SelectionmouseReleaseEvent(event):
     if event.button() == 1:
         global MultipleSelect
@@ -69,11 +73,12 @@ def NumberofGeneratedBlocks():
     return len(layers)
 
 
+# Returns number of generated archs
 def NumberofGeneratedArchs():
     return len(archs)
 
 
-# If number of generated layer blocks is equal to one it sets the Insert First Block to visible
+# If number of generated layer blocks is greater than 0 it sets the Insert First Block to hidden
 def CheckNumbOfLayers(parent):
     if NumberofGeneratedBlocks() > 0:
         parent.InsertFirstBlock.hide()
@@ -108,7 +113,7 @@ def dropMainStruct(self, event, parent):
     if tempBlock.objectName() == "Blocks":
         global posit
         position = event.pos()
-        newBlock = StructBlock(self, tempBlock)
+        newBlock = StructBlock(self, MainBlock=tempBlock)
         newBlock.move(position - QtCore.QPoint(newBlock.width() / 2, newBlock.height() / 2))
         UnselectBlock()
 
@@ -143,6 +148,7 @@ def mousePress(caller):
     tempBlock = caller
 
 
+# Changes every arch selected to the selected item in the activation functions combobox
 def changeComboBox(self, pos):
     global selectedMultipleLayer
     item = self.model().item(pos)
@@ -153,11 +159,14 @@ def changeComboBox(self, pos):
     UnselectBlock()
 
 
+# When selected an arch which is different from what is selected in the activation function combobox, the selected item
+# in the combobox changes to what the arch is
 def changeArchChangeComboBox(combo, name):
     if combo is not None:
         combo.setCurrentText(name)
 
 
+# Deletes every selected arch/block
 def Cancel():
     for block in selectedMultipleLayer:
         if block in layers:
@@ -170,7 +179,9 @@ def Cancel():
     selectedMultipleLayer.clear()
 
 
+# Commits the structure to one of the frameworks
 def frameworkCommit(parent):
+    # Checks the input data validity
     if parent.InputText.toPlainText() != "":
         inputs = parent.InputText.toPlainText()
     elif parent.numberInputs.text() != "" and parent.numberInputs.text().isdigit():
@@ -179,6 +190,8 @@ def frameworkCommit(parent):
     else:
         print("No informations about input data was found. Insert input data or number of inputs")
         return
+
+    # Checks the ouput data validity
     if parent.OutputText.toPlainText() != "":
         outputs = parent.OutputText.toPlainText()
     elif parent.numberOutputs.text() != "" and parent.numberOutputs.text().isdigit():
@@ -198,6 +211,7 @@ def frameworkCommit(parent):
         print("Error exporting the structure")
 
 
+# Commits the current structure into our json file, saving it
 def structureCommit(parent, called=False, inputs=None, outputs=None):
     structure = mainNN.NNStructure(blocks=layers, arrows=archs,
                                    inputData=inputs, outputData=outputs)
@@ -223,6 +237,7 @@ def structureCommit(parent, called=False, inputs=None, outputs=None):
             return None
 
 
+# It loads our json file, if existent, and recreate the saved structure
 def structureLoad(parent, comboBox):
     global layers
     global archs
@@ -245,7 +260,6 @@ def structureLoad(parent, comboBox):
             newBlock = StructBlock(parent.MainStruct, parent.Blocks, block)
 
         for arrow in [loadedData[x] for x in loadedData if loadedData[x]["block"] is False]:
-            # print(arrow)
             arrow["combo"] = comboBox
             newArrow = Arrow(parent.MainStruct, loaded=arrow)
 
@@ -257,6 +271,7 @@ def structureLoad(parent, comboBox):
         CheckNumbOfLayers(parent)
 
 
+# Open the input/output file specified and loads the data into the input/output textbox
 def inputData(parent, button):
     fileDial = QtWidgets.QFileDialog.getOpenFileName(button, "Input File", os.path.curdir, costants.INPUT_OUTPUT_DATA_FILE_EXTENSION)
     fileData = ""
@@ -279,6 +294,7 @@ class Window(QtWidgets.QLabel):
         self.rubberBand = QtWidgets.QRubberBand(QtWidgets.QRubberBand.Rectangle, self)
 
 
+# Loaded in each block and specifies the block type
 class BlockProperties(QtWidgets.QComboBox):
 
     def __init__(self, parent):
@@ -292,6 +308,7 @@ class BlockProperties(QtWidgets.QComboBox):
         self.currentIndexChanged.connect(self.textChanged)
         self.text = "LAYER"
 
+    # Defines what happens when block property changes
     def textChanged(self):
 
         if self.text != "LAYER" and self.text != "BLANK" and self.text != "INPUT"\
@@ -311,7 +328,7 @@ class BlockProperties(QtWidgets.QComboBox):
         self.text = self.currentText()
 
 
-# Class for the two labels (layer number * and number of neurons) in each generated block
+# Class for the two labels (layer number * and number of neurons) in each "LAYER" block
 class TextInStructBox(QtWidgets.QLineEdit):
     defaultText = "** "
 
@@ -324,8 +341,11 @@ class TextInStructBox(QtWidgets.QLineEdit):
         self.show()
 
 
+# Class for the arches
 class Arrow(QtWidgets.QFrame):
 
+    # When manually created, is created when two blocks are selected sequentially, and it will appear between them.
+    # If loaded, it gets its position and the two blocks
     def __init__(self, parent, initBlock=None, finalBlock=None, loaded=None):
         QtWidgets.QFrame.__init__(self, parent=parent)
 
@@ -386,8 +406,6 @@ class Arrow(QtWidgets.QFrame):
 
     def __del__(self):
         self.hide()
-        # self.activationFunc.deleteLater()
-        # self.deleteLater()
         self.setParent(None)
 
         if self in self.initBlock.SuccArch:
@@ -426,6 +444,7 @@ class Arrow(QtWidgets.QFrame):
 
         self.initBlock.updatePosition(self, self.initPoint, finalRec=True)
 
+    # It checks the position of the initial and final blocks and it will be drawn relatively  to those two
     def drawArrow(self):
         if abs(self.initBlock.y() - self.finalBlock.y()) <= abs(self.initBlock.x() - self.finalBlock.x()):
             self.lineWidth = costants.LINE_WIDTH
@@ -479,6 +498,7 @@ class Arrow(QtWidgets.QFrame):
             SelectBlock(self)
             changeArchChangeComboBox(self.combo, self.name)
 
+    # Changes the color of the arch depending the cactivation function combobox
     def changeColor(self, name, combo):
         self.name = name
         self.color = str(costants.ACTIVATION_FUNCTIONS[name])
@@ -495,7 +515,8 @@ class Arrow(QtWidgets.QFrame):
 # Class for generating new layer blocks. Inside it has two labels: one for layer number and one for number of neurons
 class StructBlock(QtWidgets.QFrame):
 
-    # It initializes its informations: its parent, its prefab, its geometry and its two labels
+    # It initializes its informations: its parent, its prefab, its geometry and the property if created manually.
+    # If not it will require its informations, like position, property and so on
     def __init__(self, parent, MainBlock, loaded=None):
 
         QtWidgets.QWidget.__init__(self, parent=parent)
@@ -530,6 +551,7 @@ class StructBlock(QtWidgets.QFrame):
         layers.append(self)
         self.show()
 
+    # Loads everything from the saved structure, except its arches
     def loaded(self, loaded):
         self.setObjectName(str(loaded["name"]))
         self.setGeometry(loaded["position"][0], loaded["position"][1], loaded["position"][2], loaded["position"][3])
@@ -539,22 +561,17 @@ class StructBlock(QtWidgets.QFrame):
         else:
             self.neurons.hide()
 
+    # Loads its arches from the saved structure
     def addLoadedArchs(self, arch, prev):
         global archs
         for arrow in arch:
             if prev is True:
                 self.PrevArch.append([ar for ar in archs if ar.objectName() == arrow][0])
             else:
-                # print(arrow)
-                # print([ar for ar in archs if ar.objectName() == arrow])
-                # print([namearch.objectName() for namearch in archs])
                 self.SuccArch.append([ar for ar in archs if ar.objectName() == arrow][0])
 
     def __del__(self):
         self.hide()
-        # self.layer.deleteLater()
-        # self.neurons.deleteLater()
-        # self.deleteLater()
         self.setParent(None)
 
         for arch in self.PrevArch + self.SuccArch:
@@ -564,6 +581,8 @@ class StructBlock(QtWidgets.QFrame):
     def isSelected(self):
         return self.select
 
+    # When it is selected it defines what to do. If it wasn't the first block manually selected it checks if it is
+    # allowed to have multiple prev arches. If so it proceeds.
     def selected(self):
         self.neurons.setEnabled(False)
         SelectBlock(widget=self)
@@ -586,6 +605,7 @@ class StructBlock(QtWidgets.QFrame):
                     UnselectBlock()
                 # self.updatePosition(prevArch, prevArch.endPoint)
 
+    # Updates its position according to where its previous arch is
     def updatePosition(self, arch, point, finalRec=False):
         if finalRec is True:
 
@@ -636,9 +656,9 @@ class StructBlock(QtWidgets.QFrame):
         elif e.buttons() == Qt.RightButton:
             self.selected()
 
+    # It updates the next arch
     def updateArches(self, succ=False, recursion=False):
         # Called if block is moved and there are no more succ blocks
-        # print("blocco: " + str(self.objectName()) + "; numero chiamate: " + str(None if self.initRecursion is None else self.initRecursion.objectName()))
         if succ is False:
             for arch in self.PrevArch:
                 arch.Update(self)
@@ -672,6 +692,7 @@ class StructBlock(QtWidgets.QFrame):
             self.neurons.setEnabled(False)
 
 
+# It loads everything up
 class MainW(QtWidgets.QMainWindow, Ui_MainWindow):
 
     def __init__(self):

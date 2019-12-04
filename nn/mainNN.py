@@ -149,7 +149,7 @@ class NNStructure:
         with open(self.file, "w", encoding="utf-8") as f:
             json.dump(self.topology, f, indent=4)
 
-    def exportAs(self):
+    def exportAs(self, run=False):
         if isinstance(self.input, str) and isinstance(self.output, str):
             self.prepareIOData()
 
@@ -168,13 +168,32 @@ class NNStructure:
         if self.framework.lower() == "tensorflow":
             import nn.tensorflowWrapper as frameChosen
             nomeFile = "tensorflow-" + self.file.replace(costants.STRUCTURE_EXTENSION, costants.TENSORFLOW_EXTENSION)
-        else:
+
+        elif self.framework.lower() == "pytorch":
             import nn.pytorchWrapper as frameChosen
             nomeFile = "pytorch-" + self.file.replace(costants.STRUCTURE_EXTENSION, costants.PYTORCH_EXTENSION)
 
+        elif self.framework.lower() == "keras":
+            import nn.kerasWrapper as frameChosen
+            nomeFile = "keras-" + self.file.replace(costants.STRUCTURE_EXTENSION, costants.KERAS_EXTENSION)
+
+        else:
+            import nn.scikitlearnWrapper as frameChosen
+            nomeFile = "scikitlearn-" + self.file.replace(costants.STRUCTURE_EXTENSION, costants.SCIKIT_EXTENSION)
+
         frameStruc = frameChosen.FrameStructure(self.numberOutputs, self.numberOutputs, structure=self.topology, structureName=nomeFile)
         frameStruc.prepareModel()
-        frameStruc.saveModel()
+
+        if run is False:
+            frameStruc.saveModel()
+        else:
+            return frameStruc
+
+    def runAs(self):
+        structure = self.exportAs(run=True)
+        structure.setCost(cost=self.cost)
+        structure.setInputOuptut(inputData=self.input, outputData=self.output)
+        structure.run()
 
     def prepareIOData(self):
         self.finalInput = self.splitInputOuput(inp=True)

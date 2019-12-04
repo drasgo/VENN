@@ -10,6 +10,9 @@ class FrameStructure:
         self.structure = structure.copy()
         self.name = structureName
         self.model = None
+        self.cost = None
+        self.input = None
+        self.output = None
 
     def prepareModel(self):
         structInput = []
@@ -101,19 +104,41 @@ class FrameStructure:
             yield layers.Dense(neurons, activation=self.chooseActivation(activFunc), name=block["name"])(prevLayer)
 
     def chooseActivation(self, activ):
-        if activ == "Tanh":
-            return 'relu'
+        if activ == "Hyperbolic Tangent (Tanh)":
+            return 'tanh'
         elif activ == "Softmax":
             return 'softmax'
-        # TODO
-        # Add activation function
+        elif activ == "Rectified Linear (ReLu)":
+            return "relu"
+        elif activ == "Exponential Linear (Elu)":
+            pass
+        elif activ == "Log Softmax":
+            pass
+        elif activ == "Sigmoid":
+            pass
+        elif activ == "Softplus":
+            pass
         else:
+            print("Error selecting activation function " + activ + " in Tensorflow. Quitting")
+            quit()
             return None
+
+    def setCost(self, cost):
+        self.cost = cost
+
+    def setInputOuptut(self, inputData, outputData):
+        self.input = inputData
+        self.output = outputData
 
     def saveModel(self):
         if self.model is not None:
             self.model.summary()
+
         else:
             self.prepareModel()
             self.model.summary()
-            self.model.save(self.name)
+
+        self.model.save(self.name)
+
+    def run(self):
+        pass
