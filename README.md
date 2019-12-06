@@ -11,7 +11,7 @@ To use this project you have to install:
 
 # WIKI
 
-How to.. : github.com/drasgo/ViCreNN/blob/master/howto.md
+How to.. : https://www.github.com/drasgo/ViCreNN/blob/master/howto.md
 
 
 

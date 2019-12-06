@@ -12,7 +12,7 @@ ACTIVATION_FUNCTIONS = {"None": "cyan",
 
 FRAMEWORKS = ["TensorFlow", "PyTorch"]
 
-BOX_PROPERTIES = ["LAYER", "INPUT", "OUTPUT", "SUM", "SUB", "MULT", "DIV", "BLANK", "COST"]
+BOX_PROPERTIES = ["LAYER", "INPUT", "OUTPUT", "SUM", "SUB", "MULT", "DIV", "BLANK"]
 
 COST_FUNCTION = ["", "Mean Square Error (MSE)", "Cross Entropy", "OTHER"]
 

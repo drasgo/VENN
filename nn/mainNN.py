@@ -85,8 +85,8 @@ class NNStructure:
             temp = dict()
             temp["block"] = True
             temp["name"] = str(block.objectName())
-            temp["FirstBlock"] = True if len(block.PrevArch) == 0 else False
-            temp["LastBlock"] = True if len(block.SuccArch) == 0 else False
+            temp["FirstBlock"] = True if len(block.PrevArch) == 0 else False and block.layer.currentText() == "INPUT"
+            temp["LastBlock"] = True if len(block.SuccArch) == 0 else False and block.layer.currentText() == "OUTPUT"
             temp["PrevArch"] = [bl.objectName() for bl in block.PrevArch]
             temp["SuccArch"] = [bl.objectName() for bl in block.SuccArch]
             temp["type"] = str(block.layer.currentText())
