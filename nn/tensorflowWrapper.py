@@ -1,5 +1,6 @@
 from tensorflow import keras
 from tensorflow.keras import layers
+import gui.costants as costants
 
 
 class FrameStructure:
@@ -139,6 +140,7 @@ class FrameStructure:
             self.model.summary()
 
         self.model.save(self.name)
+        keras.utils.plot_model(self.model, self.name + costants.IMAGE_EXTENSION)
 
     def run(self):
         pass

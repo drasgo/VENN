@@ -108,6 +108,11 @@ venv.bak/
 *.autosave
 .idea/
 
+# Other extensions for saving structures and image of models
 *.nn
 *.dr
 *.h5
+*.pyt
+*.ke
+*.sci
+*.png

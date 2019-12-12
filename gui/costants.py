@@ -10,7 +10,7 @@ ACTIVATION_FUNCTIONS = {"None": "cyan",
                         "Softplus": "darkRed",
                         "Other": "purple"}
 
-FRAMEWORKS = ["TensorFlow", "PyTorch"]
+FRAMEWORKS = ["TensorFlow", "PyTorch", "Keras", "Scikit-Learn"]
 
 BOX_PROPERTIES = ["LAYER", "INPUT", "OUTPUT", "SUM", "SUB", "MULT", "DIV", "BLANK"]
 
@@ -32,7 +32,10 @@ TENSORFLOW_EXTENSION = ".h5"
 PYTORCH_EXTENSION = ".pyt"
 
 KERAS_EXTENSION = ".ke"
+
 SCIKIT_EXTENSION = ".sci"
+
+IMAGE_EXTENSION = ".png"
 
 
 def arrow_stylesheet(color=ACTIVATION_FUNCTIONS[ARROW_DEFAULT_FUNC]):

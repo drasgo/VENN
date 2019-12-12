@@ -114,11 +114,11 @@ def dropMainStruct(self, event, parent):
         global posit
         position = event.pos()
         newBlock = StructBlock(self, MainBlock=tempBlock)
-        newBlock.move(position - QtCore.QPoint(newBlock.width() / 2, newBlock.height() / 2))
+        newBlock.move(position - QtCore.QPoint(int(newBlock.width() / 2), int(newBlock.height() / 2)))
         UnselectBlock()
 
     else:
-        posit = event.pos() - QtCore.QPoint(tempBlock.width() / 2, tempBlock.height() / 2)
+        posit = event.pos() - QtCore.QPoint(int(tempBlock.width() / 2), int(tempBlock.height() / 2))
 
     tempBlock.move(posit)
     event.setDropAction(Qt.MoveAction)
@@ -610,26 +610,26 @@ class StructBlock(QtWidgets.QFrame):
         if finalRec is True:
 
             if arch.upRightLayout:
-                self.move(point - QtCore.QPoint(self.width() / 2, self.height()))
+                self.move(point - QtCore.QPoint(int(self.width() / 2), self.height()))
             else:
-                self.move(point - QtCore.QPoint(self.width() / 2, 0))
+                self.move(point - QtCore.QPoint(int(self.width() / 2), 0))
 
         elif self.initRecursion is None:
             if arch.horizontalLayout:
 
                 if arch.upRightLayout:
-                    self.move(point - QtCore.QPoint(self.width(), self.height() / 2))
+                    self.move(point - QtCore.QPoint(self.width(), int(self.height() / 2)))
 
                 else:
-                    self.move(point - QtCore.QPoint(0, self.height() / 2))
+                    self.move(point - QtCore.QPoint(0, int(self.height() / 2)))
 
             else:
 
                 if arch.upRightLayout:
-                    self.move(point - QtCore.QPoint(self.width() / 2, self.height()))
+                    self.move(point - QtCore.QPoint(int(self.width() / 2), self.height()))
 
                 else:
-                    self.move(point - QtCore.QPoint(self.width() / 2, 0))
+                    self.move(point - QtCore.QPoint(int(self.width() / 2), 0))
 
             self.initRecursion = arch
             self.updateArches(True)
@@ -733,6 +733,31 @@ class MainW(QtWidgets.QMainWindow, Ui_MainWindow):
         self.OutputFi.clicked.connect(lambda: inputData(self, self.OutputFi))
 
         for frame in costants.FRAMEWORKS:
+
+            if frame == "TensorFlow":
+                try:
+                    import tensorflow
+                except ImportError as e:
+                    continue
+            elif frame == "PyTorch":
+                try:
+                    import torch
+                except ImportError as e:
+                    continue
+            elif frame == "Keras":
+                try:
+                    import keras
+                except ImportError as e:
+                    continue
+            elif frame == "Scikit-Learn":
+                try:
+                    import sklearn
+                except ImportError as e:
+                    continue
+
+            if self.Framework.currentText() == "No Framework Found":
+                self.Framework.removeItem(0)
+
             item = QtGui.QStandardItem(str(frame))
             mod = self.Framework.model()
             mod.appendRow(item)
