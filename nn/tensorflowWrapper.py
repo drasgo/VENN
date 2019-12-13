@@ -112,17 +112,20 @@ class FrameStructure:
         elif activ == "Rectified Linear (ReLu)":
             return "relu"
         elif activ == "Exponential Linear (Elu)":
-            pass
+            return "elu"
         elif activ == "Log Softmax":
-            pass
+            return "log_softmax"
         elif activ == "Sigmoid":
-            pass
+            return "sigmoid"
         elif activ == "Softplus":
-            pass
+            return "softplus"
+        elif activ == "Linear":
+            return "linear"
+        elif activ == "Hard Sigmoid":
+            return "hard_sigmoid"
         else:
             print("Error selecting activation function " + activ + " in Tensorflow. Quitting")
             quit()
-            return None
 
     def setCost(self, cost):
         self.cost = cost

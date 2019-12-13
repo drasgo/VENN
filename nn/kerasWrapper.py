@@ -80,21 +80,24 @@ class FrameStructure:
             quit()
 
         initBlockIndex = self.checkSequential()
-        blockIndex = initBlockIndex
 
         for arch, block in self.getArchBlock(initBlockIndex):
 
             if initBlockIndex is not None:
                 print("nodi in input: " + str(self.ninput))
-                self.model.add(keras.layers.Dense(int(self.structure[block]["neurons"]), activation='relu', input_dim=int(self.ninput)))
+                self.model.add(keras.layers.Dense(int(self.structure[block]["neurons"]),
+                                                  activation=self.chooseActivation(self.structure[arch]["activFunc"]),
+                                                  input_dim=int(self.ninput)))
                 initBlockIndex = None
 
             elif self.structure[block]["LastBlock"] is True:
-                self.model.add(keras.layers.Dense(int(self.noutput), activation='relu'))
+                self.model.add(keras.layers.Dense(int(self.noutput),
+                                                  activation=self.chooseActivation(self.structure[arch]["activFunc"])))
                 print("rete finita")
 
             else:
-                self.model.add(keras.layers.Dense(int(self.structure[block]["neurons"]), activation='relu'))
+                self.model.add(keras.layers.Dense(int(self.structure[block]["neurons"]),
+                                                  activation=self.chooseActivation(self.structure[arch]["activFunc"])))
                 print("nodi in " + self.structure[block]["name"] + ": " + str(self.structure[block]["neurons"]))
 
     def getArchBlock(self, index):
@@ -106,6 +109,27 @@ class FrameStructure:
             print("nuova coppia arco-blocco: " + nextArchName + " " + nextBlockName)
             index = nextBlockIndex
             yield nextArchIndex, nextBlockIndex
+
+    def chooseActivation(self, activ):
+        if activ == "Linear":
+            return "linear"
+        elif activ == "Rectified Linear (ReLu)":
+            return "relu"
+        elif activ == "Hyperbolic Tangent (Tanh)":
+            return "tanh"
+        elif activ == "Exponential Linear (Elu)":
+            return "elu"
+        elif activ == "Hard Sigmoid":
+            return "hard_sigmoid"
+        elif activ == "Sigmoid":
+            return "sigmoid"
+        elif activ == "Softmax":
+            return "softmax"
+        elif activ == "Softplus":
+            return "softplus"
+        elif activ == "Other":
+            print("Not supported activation function: " + activ + " in Keras. Quitting")
+            quit()
 
     def setCost(self, cost):
         pass
@@ -120,15 +144,5 @@ class FrameStructure:
         self.model.save(self.name)
         keras.utils.plot_model(self.model, to_file=self.name + costants.IMAGE_EXTENSION)
 
-
-# model = Sequential()
-#
-# model.add(Convolution2D(32, 3, 3, activation='relu', input_shape=(1, 28, 28)))
-# model.add(Convolution2D(32, 3, 3, activation='relu'))
-# model.add(MaxPooling2D(pool_size=(2, 2)))
-# model.add(Dropout(0.25))
-#
-# model.add(Flatten())
-# model.add(Dense(128, activation='relu'))
-# model.add(Dropout(0.5))
-# model.add(Dense(10, activation='softmax'))
+    def run(self):
+        pass
