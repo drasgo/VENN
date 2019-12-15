@@ -737,22 +737,23 @@ class MainW(QtWidgets.QMainWindow, Ui_MainWindow):
             if frame == "TensorFlow":
                 try:
                     import tensorflow
-                except ImportError as e:
+                except ImportError:
                     continue
             elif frame == "PyTorch":
                 try:
                     import torch
-                except ImportError as e:
+                except ImportError:
                     continue
             elif frame == "Keras":
                 try:
                     import keras
-                except ImportError as e:
+                except ImportError:
                     continue
             elif frame == "Scikit-Learn":
                 try:
+                    #  TODO change to fastai
                     import sklearn
-                except ImportError as e:
+                except ImportError:
                     continue
 
             if self.Framework.currentText() == "No Framework Found":

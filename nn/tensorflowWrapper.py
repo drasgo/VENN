@@ -2,6 +2,8 @@ from tensorflow import keras
 from tensorflow.keras import layers
 import gui.costants as costants
 
+# TODO : Total Refactor
+
 
 class FrameStructure:
 
@@ -103,25 +105,29 @@ class FrameStructure:
 
         else:
             yield layers.Dense(neurons, activation=self.chooseActivation(activFunc), name=block["name"])(prevLayer)
-
+    
+    # TODO
+    def chooseBlock(self, block):
+        pass
+    
     def chooseActivation(self, activ):
-        if activ == "Hyperbolic Tangent (Tanh)":
+        if activ.lower() in "Hyperbolic Tangent (Tanh)".lower():
             return 'tanh'
-        elif activ == "Softmax":
+        elif activ.lower() in "Softmax".lower():
             return 'softmax'
-        elif activ == "Rectified Linear (ReLu)":
+        elif activ.lower() in "Rectified Linear (ReLu)".lower():
             return "relu"
-        elif activ == "Exponential Linear (Elu)":
+        elif activ.lower() in "Exponential Linear (Elu)".lower():
             return "elu"
-        elif activ == "Log Softmax":
+        elif activ.lower() in "Log Softmax".lower():
             return "log_softmax"
-        elif activ == "Sigmoid":
+        elif activ.lower() in "Sigmoid".lower():
             return "sigmoid"
-        elif activ == "Softplus":
+        elif activ.lower() in "Softplus".lower():
             return "softplus"
-        elif activ == "Linear":
+        elif activ.lower() in "Linear".lower():
             return "linear"
-        elif activ == "Hard Sigmoid":
+        elif activ.lower() in "Hard Sigmoid".lower():
             return "hard_sigmoid"
         else:
             print("Error selecting activation function " + activ + " in Tensorflow. Quitting")

@@ -167,22 +167,26 @@ class NNStructure:
 
         if self.framework.lower() == "tensorflow":
             import nn.tensorflowWrapper as frameChosen
-            nomeFile = "tensorflow-" + self.file.replace(costants.STRUCTURE_EXTENSION, costants.TENSORFLOW_EXTENSION)
+            nomeFile = self.framework.lower() + "-" + self.file.replace(costants.STRUCTURE_EXTENSION, costants.TENSORFLOW_EXTENSION)
 
         elif self.framework.lower() == "pytorch":
             import nn.pytorchWrapper as frameChosen
-            nomeFile = "pytorch-" + self.file.replace(costants.STRUCTURE_EXTENSION, costants.PYTORCH_EXTENSION)
+            nomeFile = self.framework.lower() + "-" + self.file.replace(costants.STRUCTURE_EXTENSION, costants.PYTORCH_EXTENSION)
 
         elif self.framework.lower() == "keras":
             import nn.kerasWrapper as frameChosen
-            nomeFile = "keras-" + self.file.replace(costants.STRUCTURE_EXTENSION, costants.KERAS_EXTENSION)
+            nomeFile = self.framework.lower() + "-" + self.file.replace(costants.STRUCTURE_EXTENSION, costants.KERAS_EXTENSION)
 
         else:
+            #  TODO change to fastai
             import nn.scikitlearnWrapper as frameChosen
-            nomeFile = "scikitlearn-" + self.file.replace(costants.STRUCTURE_EXTENSION, costants.SCIKIT_EXTENSION)
+            nomeFile = self.framework.lower() + "-" + self.file.replace(costants.STRUCTURE_EXTENSION, costants.SCIKIT_EXTENSION)
 
         frameStruc = frameChosen.FrameStructure(self.numberOutputs, self.numberOutputs, structure=self.topology, structureName=nomeFile)
-        frameStruc.prepareModel()
+
+        if frameStruc.prepareModel() is False:
+            print("Error preparing the Neural Network structure. Aborted")
+            return
 
         if run is False:
             frameStruc.saveModel()

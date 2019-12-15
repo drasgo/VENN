@@ -116,3 +116,6 @@ venv.bak/
 *.ke
 *.sci
 *.png
+
+# Ignore every test file
+test.*
