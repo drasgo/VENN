@@ -749,10 +749,10 @@ class MainW(QtWidgets.QMainWindow, Ui_MainWindow):
                     import keras
                 except ImportError:
                     continue
-            elif frame == "Scikit-Learn":
+            elif frame == "FastAI":
                 try:
                     #  TODO change to fastai
-                    import sklearn
+                    import fastai
                 except ImportError:
                     continue
 

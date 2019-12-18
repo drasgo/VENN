@@ -179,8 +179,8 @@ class NNStructure:
 
         else:
             #  TODO change to fastai
-            import nn.scikitlearnWrapper as frameChosen
-            nomeFile = self.framework.lower() + "-" + self.file.replace(costants.STRUCTURE_EXTENSION, costants.SCIKIT_EXTENSION)
+            import nn.fastaiWrapper as frameChosen
+            nomeFile = self.framework.lower() + "-" + self.file.replace(costants.STRUCTURE_EXTENSION, costants.FASTAI_EXTENSION)
 
         frameStruc = frameChosen.FrameStructure(self.numberOutputs, self.numberOutputs, structure=self.topology, structureName=nomeFile)
 
