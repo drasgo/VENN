@@ -1,10 +1,13 @@
-import sklearn
+import fastai
+import nn.pytorchWrapper
 
 
-# TODO
-class FrameStructure:
+# FastAI actually uses Pytorch models and runs those models in its own way.
+# So the models are created using Pytorch and then it will handle the run
+class FrameStructure(nn.pytorchWrapper.FrameStructure):
 
     def __init__(self, numberInput, numberOutput, structure, structureName):
+        super(FrameStructure, self).__init__(numberInput, numberOutput, structure, structureName)
         self.ninput = numberInput
         self.noutput = numberOutput
         self.structure = structure.copy()
@@ -14,17 +17,6 @@ class FrameStructure:
         self.input = None
         self.output = None
 
-    def prepareModel(self):
-        pass
-
-    def setCost(self, cost):
-        pass
-
-    def setInputOutput(self, inputData, outputData):
-        pass
-
-    def saveModel(self):
-        pass
-
+    # Need to override for fastAI usage
     def run(self):
         pass
