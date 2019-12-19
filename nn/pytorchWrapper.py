@@ -1,43 +1,33 @@
 import torch
 import torch.nn as nn
-import gui.costants as costants
 from torchsummary import summary
+from nn.wrapperTemplate import WrapperTemplate
 
 
 # TODO
-class FrameStructure(nn.Module):
+class FrameStructure(WrapperTemplate, nn.Module):
 
     def __init__(self, numberInput, numberOutput, structure, structureName):
-        super(FrameStructure, self).__init__()
-        self.ninput = numberInput
-        self.noutput = numberOutput
-        self.structure = structure.copy()
-        self.name = structureName
-        self.model = None
-        self.cost = None
-        self.input = None
-        self.output = None
-        self.isSequential = True
-        self.archs = list()
-        self.blocks = list()
+        nn.Module.__init__(self)
+        WrapperTemplate.__init__(self, numberInput, numberOutput, structure, structureName)
 
     def prepareModel(self):
         # TODO
         #  Implement multiple branches
-        if costants.checkNumBranches(self.structure) == 0:
+        if self.checkNumBranches(self.structure) == 0:
             self.isSequential = True
         else:
             print("Error in Pytorch: only sequential networks currently supported. Exiting")
             return False
 
-        initBlockIndex = costants.returnFirstCompleteSequential(self.structure)
+        initBlockIndex = self.returnFirstCompleteSequential(self.structure)
         inNeurons = self.ninput
         outNeurons = inNeurons
 
         self.model = nn.Sequential()
         self.model.add_module("blockInput", torch.nn.Linear(inNeurons, outNeurons))
 
-        for arch, block in costants.getArchBlock(self.structure, initBlockIndex):
+        for arch, block in self.getArchBlock(self.structure, initBlockIndex):
 
             if self.structure[block]["LastBlock"] is False:
                 outNeurons = int(self.structure[block]["neurons"])
@@ -52,11 +42,12 @@ class FrameStructure(nn.Module):
     def forward(self, x):
         return self.model.forward(x)
 
-    def setCost(self, cost):
-        self.cost = cost
-
     # TODO
     def chooseCost(self):
+        pass
+
+    # TODO
+    def chooseBlock(self, block):
         pass
 
     def chooseActivation(self, activ):
@@ -81,9 +72,6 @@ class FrameStructure(nn.Module):
         else:
             print("Error selecting activation function " + activ + " in Pytorch. Quitting")
             quit()
-
-    def setInputOutput(self, inputData, outputData):
-        pass
 
     def saveModel(self):
         torch.save(self.model, "test.txt")

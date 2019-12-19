@@ -1,4 +1,4 @@
-import fastai
+# import fastai
 import nn.pytorchWrapper
 
 
@@ -8,15 +8,18 @@ class FrameStructure(nn.pytorchWrapper.FrameStructure):
 
     def __init__(self, numberInput, numberOutput, structure, structureName):
         super(FrameStructure, self).__init__(numberInput, numberOutput, structure, structureName)
-        self.ninput = numberInput
-        self.noutput = numberOutput
-        self.structure = structure.copy()
-        self.name = structureName
-        self.model = None
-        self.cost = None
-        self.input = None
-        self.output = None
 
-    # Need to override for fastAI usage
+    def prepareModel(self):
+        super(FrameStructure, self).prepareModel()
+
+    # TODO
+    def chooseCost(self):
+        pass
+
+    # TODO
+    def chooseBlock(self, block):
+        pass
+
+    # TODO
     def run(self):
         pass

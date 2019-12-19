@@ -1,38 +1,31 @@
 from tensorflow import keras
 from tensorflow.keras import layers
 import gui.costants as costants
+from nn.wrapperTemplate import WrapperTemplate
 
 
-class FrameStructure:
+class FrameStructure(WrapperTemplate):
 
     def __init__(self, numberInput, numberOutput, structure, structureName):
-        self.ninput = numberInput
-        self.noutput = numberOutput
-        self.structure = structure.copy()
-        self.name = structureName
-        self.model = None
-        self.cost = None
-        self.input = None
-        self.output = None
-        self.isSequential = None
+        super(FrameStructure, self).__init__(numberInput, numberOutput, structure, structureName)
 
     def prepareModel(self):
         # TODO
         #  Implement multiple branches
-        if costants.checkNumBranches(self.structure) == 0:
+        if self.checkNumBranches(self.structure) == 0:
             self.isSequential = True
 
         else:
             print("Error in Keras: only sequential networks currently supported. Exiting")
             return False
 
-        initBlockIndex = costants.returnFirstCompleteSequential(self.structure)
+        initBlockIndex = self.returnFirstCompleteSequential(self.structure)
 
         inputNode = keras.Input(shape=(self.ninput,), name="input")
         outputNode = None
         initIndex = True
 
-        for arch, block in costants.getArchBlock(self.structure, initBlockIndex):
+        for arch, block in self.getArchBlock(self.structure, initBlockIndex):
 
             if initIndex is True:
                 outputNode = inputNode
@@ -75,12 +68,9 @@ class FrameStructure:
             print("Error selecting activation function " + activ + " in Tensorflow. Quitting")
             quit()
 
-    def setCost(self, cost):
-        self.cost = cost
-
-    def setInputOuptut(self, inputData, outputData):
-        self.input = inputData
-        self.output = outputData
+    # TODO
+    def chooseCost(self):
+        pass
 
     def saveModel(self):
         if self.model is not None:
@@ -93,5 +83,6 @@ class FrameStructure:
         self.model.save(self.name)
         keras.utils.plot_model(self.model, self.name + costants.IMAGE_EXTENSION)
 
+    # TODO
     def run(self):
         pass
