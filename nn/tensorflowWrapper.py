@@ -1,4 +1,5 @@
 from tensorflow import keras
+from tensorflow import GradientTape
 from tensorflow.keras import layers
 import gui.costants as costants
 from nn.wrapperTemplate import WrapperTemplate
@@ -41,10 +42,6 @@ class FrameStructure(WrapperTemplate):
 
         self.model = keras.Model(inputs=inputNode, outputs=outputNode)
     
-    # TODO
-    def chooseBlock(self, block):
-        pass
-    
     def chooseActivation(self, activ):
         if activ.lower() in "Hyperbolic Tangent (Tanh)".lower():
             return 'tanh'
@@ -68,10 +65,6 @@ class FrameStructure(WrapperTemplate):
             print("Error selecting activation function " + activ + " in Tensorflow. Quitting")
             quit()
 
-    # TODO
-    def chooseCost(self):
-        pass
-
     def saveModel(self):
         if self.model is not None:
             self.model.summary()
@@ -85,4 +78,30 @@ class FrameStructure(WrapperTemplate):
 
     # TODO
     def run(self):
+        train_loss = keras.metrics.Mean(name='train_loss')
+        train_accuracy = keras.metrics.SparseCategoricalAccuracy(name='train_accuracy')
+
+        with GradientTape() as tape:
+            predictions = self.model(self.input)
+            loss = self.loss_object(self.output, predictions)
+            gradients = tape.gradient(loss, self.model.trainable_variables)
+            self.optimizer.apply_gradients(zip(gradients, self.model.trainable_variables))
+
+        train_loss(loss)
+        train_accuracy(self.output, predictions)
+
+    # TODO
+    def chooseCost(self):
+        self.loss_object = keras.losses.SparseCategoricalCrossentropy()
+
+    # TODO
+    def chooseOptimizer(self):
+        self.optimizer = keras.optimizers.Adam()
+
+    # TODO
+    def test(self):
+        pass
+
+    # TODO
+    def chooseBlock(self, block):
         pass

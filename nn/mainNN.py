@@ -5,7 +5,7 @@ import gui.costants as costants
 
 class NNStructure:
 
-    def __init__(self, blocks=None, arrows=None, inputData=None, outputData=None, cost=None):
+    def __init__(self, blocks=None, arrows=None, inputData=None, outputData=None, cost=None, optimizer = None):
         self.topology = {}
         self.file = costants.NNSTRUCTURE_FILE
         self.input = inputData
@@ -16,6 +16,7 @@ class NNStructure:
         self.numberInputs = 0
         self.numberOutputs = 0
         self.cost = cost
+        self.optimizer = optimizer
 
         if blocks is not None and arrows is not None:
             self.blocks = blocks[:]
@@ -31,6 +32,9 @@ class NNStructure:
 
     def setCostFunction(self, cost):
         self.cost = cost
+
+    def setOptimizer(self, optim):
+        self.optimizer = optim
 
     def checkTopology(self):
         # print([lay.objectName() for lay in self.blocks])
@@ -199,6 +203,7 @@ class NNStructure:
         structure.setInputOuptut(inputData=self.input, outputData=self.output)
         structure.run()
 
+    # TODO : Flatten IO data for run/test
     def prepareIOData(self):
         self.finalInput = self.splitInputOuput(inp=True)
         self.finalOutput = self.splitInputOuput(inp=False)

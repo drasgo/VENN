@@ -10,6 +10,8 @@ class WrapperTemplate:
         self.input = None
         self.output = None
         self.isSequential = None
+        self.optimizer = None
+        self.loss_object = None
 
     # Override it
     def chooseBlock(self, block):
@@ -24,6 +26,10 @@ class WrapperTemplate:
         pass
 
     # Override it
+    def chooseOptimizer(self):
+        pass
+
+    # Override it
     def prepareModel(self):
         pass
 
@@ -35,6 +41,11 @@ class WrapperTemplate:
     def run(self):
         pass
 
+    # Override it
+    def test(self):
+        pass
+
+    #
     # TODO: gets input and output data. Don't touch it
     def setInputOutput(self, inputData, outputData):
         pass
@@ -42,6 +53,10 @@ class WrapperTemplate:
     # Sets which cost to use. Don't touch it
     def setCost(self, cost):
         self.cost = cost
+
+    # Sets which optimizer to use. Don't touch it
+    def setOptimizer(self, optim):
+        self.optimizer = optim
 
     # Checks how many branches has the structure. Don't touch it
     def checkNumBranches(self, structure):
