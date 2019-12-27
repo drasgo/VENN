@@ -19,6 +19,10 @@ BOX_PROPERTIES = ["LAYER", "INPUT", "OUTPUT", "SUM", "SUB", "MULT", "DIV", "BLAN
 
 COST_FUNCTION = ["", "Mean Square Error (MSE)", "Cross Entropy", "OTHER"]
 
+OPTIMIZERS = ["Adam"]
+
+INPUT_TYPE = ["normal", "cnn", "rnn"]
+
 ARROW_DEFAULT_FUNC = "None"
 
 blockSelected = "background-color: dimgray;"

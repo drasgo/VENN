@@ -5,7 +5,7 @@ import ViCreNN.costants as costants
 
 class NNStructure:
 
-    def __init__(self, blocks=None, arrows=None, cost=None, optimizer=None):
+    def __init__(self, blocks=None, arrows=None):
         self.topology = {}
         self.file = costants.NNSTRUCTURE_FILE
         self.input = ""
@@ -15,9 +15,10 @@ class NNStructure:
         self.finalOutput = []
         self.numberInputs = 0
         self.numberOutputs = 0
-        self.cost = cost
-        self.optimizer = optimizer
-        self.frameStruck = None
+        self.cost = ""
+        self.optimizer = costants.OPTIMIZERS[0]
+        self.frameStruct = None
+        self.inputType = costants.INPUT_TYPE[0]
 
         if blocks is not None and arrows is not None:
             self.blocks = blocks[:]
@@ -36,6 +37,9 @@ class NNStructure:
 
     def setOptimizer(self, optim):
         self.optimizer = optim
+        
+    def setInputType(self, inputType):
+        self.inputType = inputType
 
     def setInputOutput(self, inputData, outputData):
         self.input = inputData
@@ -171,41 +175,49 @@ class NNStructure:
             return
 
         if self.framework.lower() == "tensorflow":
-            import nn.tensorflowWrapper as frameChosen
+            import ViCreNN.nn.tensorflowWrapper as frameChosen
             nomeFile = self.framework.lower() + "-" + self.file.replace(costants.STRUCTURE_EXTENSION, costants.TENSORFLOW_EXTENSION)
 
         elif self.framework.lower() == "pytorch":
-            import nn.pytorchWrapper as frameChosen
+            import ViCreNN.nn.pytorchWrapper as frameChosen
             nomeFile = self.framework.lower() + "-" + self.file.replace(costants.STRUCTURE_EXTENSION, costants.PYTORCH_EXTENSION)
 
         elif self.framework.lower() == "keras":
-            import nn.kerasWrapper as frameChosen
+            import ViCreNN.nn.kerasWrapper as frameChosen
             nomeFile = self.framework.lower() + "-" + self.file.replace(costants.STRUCTURE_EXTENSION, costants.KERAS_EXTENSION)
 
         elif self.framework.lower() == "fastai":
-            import nn.fastaiWrapper as frameChosen
+            import ViCreNN.nn.fastaiWrapper as frameChosen
             nomeFile = self.framework.lower() + "-" + self.file.replace(costants.STRUCTURE_EXTENSION, costants.FASTAI_EXTENSION)
 
         else:
             print("Error choosing framework: " + self.framework.lower())
             return
 
-        self.frameStruck = frameChosen.FrameStructure(self.numberInputs, self.numberOutputs, structure=self.topology, structureName=nomeFile)
+        self.frameStruct = frameChosen.FrameStructure(self.numberInputs, self.numberOutputs, structure=self.topology, structureName=nomeFile)
 
-        if self.frameStruck.prepareModel() is False:
+        if self.frameStruct.prepareModel() is False:
             print("Error preparing the Neural Network model with " + self.framework.lower() + " framework. Aborted")
             return
 
         if run is False:
-            self.frameStruck.saveModel()
+            self.frameStruct.saveModel()
 
-    def runAs(self):
-        if self.frameStruck is None:
+    def runAs(self, test=False):
+        if self.frameStruct is None:
             self.exportAs(run=True)
+        elif self.input != "" and self.output != "":
+            self.prepareIOData()
 
-        self.frameStruck.setCost(cost=self.cost)
-        self.frameStruck.setInputOuptut(inputData=self.input, outputData=self.output)
-        self.frameStruck.run()
+        self.frameStruct.setCost(cost=self.cost)
+        self.frameStruct.setOptimizer(optim=self.optimizer)
+        self.frameStruct.setInputOutput(inputData=self.finalInput, outputData=self.finalOutput, test=test)
+
+        if test is False:
+            return self.frameStruct.run()
+
+        else:
+            return self.frameStruct.run() + "\n" + self.frameStruct.test()
 
     def prepareIOData(self):
         self.finalInput = self.splitInputOuput(inp=True)
@@ -252,13 +264,22 @@ class NNStructure:
                 break
             count += 1
 
+        # This divides different inputs/outputs
         temp = reference.split(str(count * counterpar) + "," + str(count * par))
         lista = []
-
+        
+        # TODO
+        # This flattens the data. This mustn't be performed if input data is for convo nets or recurrent nets
+        
+        # if self.type == "mlp":
         for x in temp:
             x = x.replace(counterpar, "")
             x = x.replace(par, "")
             lista.append(x.split(","))
+        # elif self.type == "cnn":
+        # ...
+        # elif self.type == "rnn":
+        # ...
         return lista
 
     def checkInputOutput(self, inputLen, outputLen):

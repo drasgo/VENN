@@ -76,32 +76,43 @@ class FrameStructure(WrapperTemplate):
         self.model.save(self.name)
         keras.utils.plot_model(self.model, self.name + costants.IMAGE_EXTENSION)
 
-    # TODO
     def run(self):
         train_loss = keras.metrics.Mean(name='train_loss')
         train_accuracy = keras.metrics.SparseCategoricalAccuracy(name='train_accuracy')
 
         with GradientTape() as tape:
-            predictions = self.model(self.input)
-            loss = self.loss_object(self.output, predictions)
+            predictions = self.model(self.inputTrain)
+            loss = self.loss_object(self.outputTrain, predictions)
             gradients = tape.gradient(loss, self.model.trainable_variables)
             self.optimizer.apply_gradients(zip(gradients, self.model.trainable_variables))
 
         train_loss(loss)
-        train_accuracy(self.output, predictions)
+        train_accuracy(self.outputTrain, predictions)
+
+        return "Train --> Loss: " + str(train_loss.result()) + ", Accuracy: " + str(train_accuracy.result() * 100)
+
+    def test(self):
+        test_loss = keras.metrics.Mean(name='test_loss')
+        test_accuracy = keras.metrics.SparseCategoricalAccuracy(name='test_accuracy')
+
+        predictions = self.model(self.inputTest)
+        t_loss = self.loss_object(self.outputTest, predictions)
+
+        test_loss(t_loss)
+        test_accuracy(self.outputTest, predictions)
+
+        return "Test --> Loss: " + str(test_loss.result()) + ", Accuracy: " + str(test_accuracy.result() * 100)
 
     # TODO
     def chooseCost(self):
-        self.loss_object = keras.losses.SparseCategoricalCrossentropy()
+        if self.cost == "Cross Entropy":
+            self.loss_object = keras.losses.SparseCategoricalCrossentropy()
+        else:
+            self.loss_object = None
 
     # TODO
     def chooseOptimizer(self):
-        self.optimizer = keras.optimizers.Adam()
-
-    # TODO
-    def test(self):
-        pass
-
-    # TODO
-    def chooseBlock(self, block):
-        pass
+        if self.cost == "Adam":
+            self.optimizer = keras.optimizers.Adam()
+        else:
+            self.optimizer = None

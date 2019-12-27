@@ -4,7 +4,7 @@ except ImportError:
     from distutils.core import setup
 
 setup(
-    name="ViCreNN", # Replace with your own username
+    name="ViCreNN",
     version="0.5.0",
     author="Drasgo",
     author_email="tommasocastiglione@gmail.com",
@@ -13,11 +13,11 @@ setup(
     long_description=open('README.md').read(),
     long_description_content_type="text/markdown",
     url="https://github.com/drasgo/ViCreNN",
-    packages=["ViCreNN", "ViCreNN/gui", "ViCreNN/nn",],
+    packages=["ViCreNN", "ViCreNN/gui", "ViCreNN/nn", ],
     install_requires=['PyQt5'],
     extras_require={
         'TensorFlow': ['tensorflow'],
-        'PyTorch': ['torch'],
+        'PyTorch': ['torch', "torchsummary"],
         'Keras': ['keras'],
         'FastAI': ['fastai']
     },

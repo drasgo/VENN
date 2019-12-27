@@ -1,4 +1,4 @@
-import fastai
+# import fastai
 from ViCreNN.nn.pytorchWrapper import FrameStructure as PyTFrame
 
 
@@ -14,10 +14,6 @@ class FrameStructure(PyTFrame):
 
     # TODO
     def chooseCost(self):
-        pass
-
-    # TODO
-    def chooseBlock(self, block):
         pass
 
     # TODO

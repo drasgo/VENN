@@ -7,15 +7,13 @@ class WrapperTemplate:
         self.name = structureName
         self.model = None
         self.cost = None
-        self.input = None
-        self.output = None
+        self.inputTrain = None
+        self.outputTrain = None
+        self.inputTest = None
+        self.outputTest = None
         self.isSequential = None
         self.optimizer = None
         self.loss_object = None
-
-    # Override it
-    def chooseBlock(self, block):
-        pass
 
     # Override it
     def chooseActivation(self, activ):
@@ -46,9 +44,16 @@ class WrapperTemplate:
         pass
 
     #
-    # TODO: gets input and output data. Don't touch it
-    def setInputOutput(self, inputData, outputData):
-        pass
+    # Gets input and output data. Don't touch it
+    def setInputOutput(self, inputData, outputData, test):
+        if test is False:
+            self.inputTrain = inputData
+            self.outputTrain = outputData
+        else:
+            self.inputTrain = inputData[:len(inputData)*0.6]
+            self.inputTest = inputData[len(inputData)*0.6:]
+            self.outputTrain = outputData[:len(inputData)*0.6]
+            self.outputTest = outputData[len(inputData)*0.6:]
 
     # Sets which cost to use. Don't touch it
     def setCost(self, cost):

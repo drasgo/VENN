@@ -40,10 +40,6 @@ class FrameStructure(WrapperTemplate):
                                                   activation=self.chooseActivation(self.structure[arch]["activFunc"])))
                 print("nodi in " + self.structure[block]["name"] + ": " + str(self.structure[block]["neurons"]))
 
-    # TODO
-    def chooseBlock(self, block):
-        pass
-
     def chooseActivation(self, activ):
         if activ.lower() in "Linear".lower():
             return "linear"

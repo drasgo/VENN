@@ -46,10 +46,6 @@ class FrameStructure(WrapperTemplate, nn.Module):
     def chooseCost(self):
         pass
 
-    # TODO
-    def chooseBlock(self, block):
-        pass
-
     def chooseActivation(self, activ):
         if activ == "Hyperbolic Tangent (Tanh)":
             return nn.Tanh

@@ -1,6 +1,6 @@
 import sys
 from PyQt5 import QtWidgets
-import gui.gui as gui
+import ViCreNN.gui.gui as gui
 
 if __name__ == '__main__':
 

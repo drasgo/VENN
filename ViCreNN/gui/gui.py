@@ -179,14 +179,19 @@ def Cancel():
     selectedMultipleLayer.clear()
 
 
-# TODO
-def frameworkTest(parent):
-    pass
-
-
-# TODO
+# TODO: Add tick box for testing: Run or Run + Test
 def frameworkRun(parent):
-    pass
+    global structure
+
+    if structure is None or structure.frameStruct is None or structure.framework != parent.Framework.currentText():
+        frameworkCommit(parent)
+
+    setupNNStructure(parent)
+
+    result = structure.runAs()
+    # resultTrain, resultTest = structure.runAs(parent.Test.getOption() ?
+
+    print(result)
 
 
 # Commits the structure to one of the frameworks
@@ -258,7 +263,6 @@ def structureLoad(parent, comboBox):
         CheckNumbOfLayers(parent)
 
 
-# TODO: group setup
 def setupNNStructure(parent):
     global structure
 
@@ -279,7 +283,15 @@ def setupNNStructure(parent):
         temp1 = parent.numberOutputs.text()
         structure.setInputOutputNumber(int(temp), int(temp1))
 
-    structure.setFramework(parent.Framework.currentText())
+    if parent.Framework.currentText() != "":
+        structure.setFramework(parent.Framework.currentText())
+
+    # TODO: Add in the GUI the optimizer option
+    #
+    #     if parent.Optimizer.currentText() != "":
+    #           structure.setOptimizer(parent.Optimizer.currentText())
+    #
+    #     Also implement choice of input data: normal (aka matrix data for mlp and such), images for CNN, time series for RNN..
 
 
 # Open the input/output file specified and loads the data into the input/output textbox
