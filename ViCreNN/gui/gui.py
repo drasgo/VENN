@@ -3,9 +3,9 @@ from PyQt5.QtCore import Qt, QMimeData
 from PyQt5.QtGui import QDrag
 from PyQt5 import QtGui
 from PyQt5 import QtCore
-import gui.costants as costants
-from gui.mainwindow import Ui_MainWindow
-import nn.mainNN as mainNN
+import ViCreNN.costants as costants
+from ViCreNN.gui.mainwindow import Ui_MainWindow
+import ViCreNN.nn.mainNN as mainNN
 import os
 
 
@@ -179,55 +179,41 @@ def Cancel():
     selectedMultipleLayer.clear()
 
 
+# TODO
+def frameworkTest(parent):
+    pass
+
+
+# TODO
+def frameworkRun(parent):
+    pass
+
+
 # Commits the structure to one of the frameworks
 def frameworkCommit(parent):
-    # Checks the input data validity
-    if parent.InputText.toPlainText() != "":
-        inputs = parent.InputText.toPlainText()
-    elif parent.numberInputs.text() != "" and parent.numberInputs.text().isdigit():
-        temp = parent.numberInputs.text()
-        inputs = int(temp)
-    else:
-        print("No informations about input data was found. Insert input data or number of inputs")
-        return
+    global structure
 
-    # Checks the ouput data validity
-    if parent.OutputText.toPlainText() != "":
-        outputs = parent.OutputText.toPlainText()
-    elif parent.numberOutputs.text() != "" and parent.numberOutputs.text().isdigit():
-        temp = parent.numberOutputs.text()
-        outputs = int(temp)
-    else:
-        print("No informations about output data was found. Insert output data or number of outputs")
-        return
+    if structure is None:
+        if structureCommit(parent, True) is None:
+            print("Error producing scheme of neural network for exporting. Aborting")
+            return
 
-    structure = structureCommit(parent, True, inputs=inputs, outputs=outputs)
+    setupNNStructure(parent)
 
-    if structure is not None:
-        structure.setFramework(parent.Framework.currentText())
-        structure.exportAs()
-
-    else:
-        print("Error exporting the structure")
+    structure.exportAs()
 
 
 # Commits the current structure into our json file, saving it
-def structureCommit(parent, called=False, inputs=None, outputs=None):
-    structure = mainNN.NNStructure(blocks=layers, arrows=archs,
-                                   inputData=inputs, outputData=outputs)
+def structureCommit(parent, called=False):
+    global structure
 
-    if parent.StructureFilename.text() != "":
-        structure.setStructureFilename(parent.StructureFilename.text())
-
-    if parent.LossFunction.currentText() != "":
-        structure.setCostFunction(parent.LossFunction.currentText())
+    structure = mainNN.NNStructure(blocks=layers, arrows=archs)
+    setupNNStructure(parent)
 
     if structure.checkTopology():
         structure.commitTopology()
 
-        if called is True:
-            return structure
-        else:
+        if called is not True:
             structure.saveTopology()
 
     else:
@@ -241,11 +227,12 @@ def structureCommit(parent, called=False, inputs=None, outputs=None):
 def structureLoad(parent, comboBox):
     global layers
     global archs
+    global structure
 
-    structure = mainNN.NNStructure()
+    if structure is None:
+        structure = mainNN.NNStructure()
 
-    if parent.StructureFilename.text() != "":
-        structure.setStructureFilename(parent.StructureFilename.text())
+    setupNNStructure(parent)
 
     loadedData = structure.loadTopology()
 
@@ -269,6 +256,30 @@ def structureLoad(parent, comboBox):
                 comp.addLoadedArchs(block["SuccArch"], prev=False)
 
         CheckNumbOfLayers(parent)
+
+
+# TODO: group setup
+def setupNNStructure(parent):
+    global structure
+
+    if parent.StructureFilename.text() != "":
+        structure.setStructureFilename(parent.StructureFilename.text())
+
+    if parent.LossFunction.currentText() != "":
+        structure.setCostFunction(parent.LossFunction.currentText())
+
+    # Checks input output data
+    if parent.InputText.toPlainText() != "" and parent.OutputText.toPlainText() != "":
+        structure.setInputOutput(parent.InputText.toPlainText(), parent.OutputText.toPlainText())
+
+    # Checks input output data quantity
+    elif (parent.numberInputs.text() != "" and parent.numberInputs.text().isdigit()) and \
+            (parent.numberOutputs.text() != "" and parent.numberOutputs.text().isdigit()):
+        temp = parent.numberInputs.text()
+        temp1 = parent.numberOutputs.text()
+        structure.setInputOutputNumber(int(temp), int(temp1))
+
+    structure.setFramework(parent.Framework.currentText())
 
 
 # Open the input/output file specified and loads the data into the input/output textbox
@@ -751,7 +762,6 @@ class MainW(QtWidgets.QMainWindow, Ui_MainWindow):
                     continue
             elif frame == "FastAI":
                 try:
-                    #  TODO change to fastai
                     import fastai
                 except ImportError:
                     continue
@@ -774,6 +784,7 @@ class MainW(QtWidgets.QMainWindow, Ui_MainWindow):
 # Global variables for original position of a moved widget and block which is dropped after a drag event
 posit = None
 tempBlock = None
+structure = None
 MultipleSelect = {}
 archs = []
 layers = []

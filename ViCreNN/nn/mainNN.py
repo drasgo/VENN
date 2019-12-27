@@ -1,15 +1,15 @@
 import json
 import os
-import gui.costants as costants
+import ViCreNN.costants as costants
 
 
 class NNStructure:
 
-    def __init__(self, blocks=None, arrows=None, inputData=None, outputData=None, cost=None, optimizer = None):
+    def __init__(self, blocks=None, arrows=None, cost=None, optimizer=None):
         self.topology = {}
         self.file = costants.NNSTRUCTURE_FILE
-        self.input = inputData
-        self.output = outputData
+        self.input = ""
+        self.output = ""
         self.framework = None
         self.finalInput = []
         self.finalOutput = []
@@ -17,6 +17,7 @@ class NNStructure:
         self.numberOutputs = 0
         self.cost = cost
         self.optimizer = optimizer
+        self.frameStruck = None
 
         if blocks is not None and arrows is not None:
             self.blocks = blocks[:]
@@ -35,6 +36,14 @@ class NNStructure:
 
     def setOptimizer(self, optim):
         self.optimizer = optim
+
+    def setInputOutput(self, inputData, outputData):
+        self.input = inputData
+        self.output = outputData
+
+    def setInputOutputNumber(self, inputCount, outputCount):
+        self.numberInputs = inputCount
+        self.numberOutputs = outputCount
 
     def checkTopology(self):
         # print([lay.objectName() for lay in self.blocks])
@@ -154,19 +163,11 @@ class NNStructure:
             json.dump(self.topology, f, indent=4)
 
     def exportAs(self, run=False):
-        if isinstance(self.input, str) and isinstance(self.output, str):
+        if self.input != "" and self.output != "":
             self.prepareIOData()
 
-        elif isinstance(self.input, int) and isinstance(self.output, int):
-            self.numberInputs = self.input
-            self.numberOutputs = self.output
-
-        else:
+        if self.numberInputs == 0 and self.numberOutputs == 0:
             print("Error preparing input/output data")
-            return
-
-        if len(self.finalInput) != len(self.finalOutput):
-            print("Error preparing input/target data while exporting structure into " + self.framework)
             return
 
         if self.framework.lower() == "tensorflow":
@@ -181,29 +182,31 @@ class NNStructure:
             import nn.kerasWrapper as frameChosen
             nomeFile = self.framework.lower() + "-" + self.file.replace(costants.STRUCTURE_EXTENSION, costants.KERAS_EXTENSION)
 
-        else:
-            #  TODO change to fastai
+        elif self.framework.lower() == "fastai":
             import nn.fastaiWrapper as frameChosen
             nomeFile = self.framework.lower() + "-" + self.file.replace(costants.STRUCTURE_EXTENSION, costants.FASTAI_EXTENSION)
 
-        frameStruc = frameChosen.FrameStructure(self.numberOutputs, self.numberOutputs, structure=self.topology, structureName=nomeFile)
+        else:
+            print("Error choosing framework: " + self.framework.lower())
+            return
 
-        if frameStruc.prepareModel() is False:
-            print("Error preparing the Neural Network structure. Aborted")
+        self.frameStruck = frameChosen.FrameStructure(self.numberInputs, self.numberOutputs, structure=self.topology, structureName=nomeFile)
+
+        if self.frameStruck.prepareModel() is False:
+            print("Error preparing the Neural Network model with " + self.framework.lower() + " framework. Aborted")
             return
 
         if run is False:
-            frameStruc.saveModel()
-        else:
-            return frameStruc
+            self.frameStruck.saveModel()
 
     def runAs(self):
-        structure = self.exportAs(run=True)
-        structure.setCost(cost=self.cost)
-        structure.setInputOuptut(inputData=self.input, outputData=self.output)
-        structure.run()
+        if self.frameStruck is None:
+            self.exportAs(run=True)
 
-    # TODO : Flatten IO data for run/test
+        self.frameStruck.setCost(cost=self.cost)
+        self.frameStruck.setInputOuptut(inputData=self.input, outputData=self.output)
+        self.frameStruck.run()
+
     def prepareIOData(self):
         self.finalInput = self.splitInputOuput(inp=True)
         self.finalOutput = self.splitInputOuput(inp=False)
@@ -212,21 +215,51 @@ class NNStructure:
             print("Number of input data is different of number of target data: Input:" +
                   str(len(self.finalInput)) + ", Output: " + str(len(self.finalOutput)))
             return
-        self.numberInputs = self.finalInput[0]
-        self.numberOutputs = self.finalOutput[0]
 
+        elif self.finalInput.count("[") != self.finalInput.count("]"):
+            print("Inconsistency with paretheses in input data. Numebr of [: " + str(self.finalInput.count("[")) +
+                  "; number of ]:" + str(self.finalInput.count("]")))
+            return
+
+        elif self.finalOutput.count("[") != self.finalOutput.count("]"):
+            print("Inconsistency with paretheses in output data. Numebr of [: " + str(self.finalOutput.count("[")) +
+                  "; number of ]:" + str(self.finalOutput.count("]")))
+            return
+
+        self.numberInputs = len(self.finalInput[0])
+        self.numberOutputs = len(self.finalOutput[0])
+
+    # Split and flattens input and output data
     def splitInputOuput(self, inp):
         reference = self.input if inp else self.output
-        if "[" not in reference:
-            return reference.split(",")
+
+        if "[" in reference:
+            par = "["
+            counterpar = "]"
+        elif "(" in reference:
+            par = "("
+            counterpar = ")"
+        elif "{" in reference:
+            par = "{"
+            counterpar = "}"
         else:
-            temp = reference.split("],[")
-            lista = []
-            for x in temp:
-                temp1 = x.replace("]", "")
-                temp1 = temp1.replace("[", "")
-                lista.append(temp1.split(","))
-            return lista
+            return reference.split(",")
+
+        count = 0
+
+        for x in reference:
+            if x != par:
+                break
+            count += 1
+
+        temp = reference.split(str(count * counterpar) + "," + str(count * par))
+        lista = []
+
+        for x in temp:
+            x = x.replace(counterpar, "")
+            x = x.replace(par, "")
+            lista.append(x.split(","))
+        return lista
 
     def checkInputOutput(self, inputLen, outputLen):
         return True if inputLen == outputLen else False

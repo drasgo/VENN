@@ -1,8 +1,8 @@
 from tensorflow import keras
 from tensorflow import GradientTape
 from tensorflow.keras import layers
-import gui.costants as costants
-from nn.wrapperTemplate import WrapperTemplate
+import ViCreNN.costants as costants
+from ViCreNN.nn.wrapperTemplate import WrapperTemplate
 
 
 class FrameStructure(WrapperTemplate):

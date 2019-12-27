@@ -1,7 +1,7 @@
 import torch
 import torch.nn as nn
 from torchsummary import summary
-from nn.wrapperTemplate import WrapperTemplate
+from ViCreNN.nn.wrapperTemplate import WrapperTemplate
 
 
 # TODO
