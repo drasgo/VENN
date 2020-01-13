@@ -17,7 +17,17 @@ FRAMEWORKS = ["TensorFlow", "PyTorch", "Keras", "FastAI"]
 
 BOX_PROPERTIES = ["LAYER", "INPUT", "OUTPUT", "SUM", "SUB", "MULT", "DIV", "BLANK"]
 
-COST_FUNCTION = ["", "Mean Square Error (MSE)", "Cross Entropy", "OTHER"]
+COST_FUNCTION = ["", "Mean Square Error (MSE)",
+                 "Mean Absolute Error (MAE)",
+                 "Hinge",
+                 "Huber",
+                 "Logaritmic Cosine (LogCosh)",
+                 "Poisson",
+                 "Categorical Cross Entropy",
+                 "Sparse Categorical Cross Entropy",
+                 "Kullback-Leibler (KLDivergence",
+                 "CosineS imilarity",
+                 "OTHER"]
 
 OPTIMIZERS = ["Adam"]
 

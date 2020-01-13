@@ -80,6 +80,11 @@ class FrameStructure(WrapperTemplate):
         train_loss = keras.metrics.Mean(name='train_loss')
         train_accuracy = keras.metrics.SparseCategoricalAccuracy(name='train_accuracy')
 
+        self.chooseCost()
+
+        if self.loss_object is None:
+            return "Error choosing cost function in TensorFlow"
+
         with GradientTape() as tape:
             predictions = self.model(self.inputTrain)
             loss = self.loss_object(self.outputTrain, predictions)
@@ -103,10 +108,25 @@ class FrameStructure(WrapperTemplate):
 
         return "Test --> Loss: " + str(test_loss.result()) + ", Accuracy: " + str(test_accuracy.result() * 100)
 
-    # TODO
     def chooseCost(self):
-        if self.cost == "Cross Entropy":
-            self.loss_object = keras.losses.SparseCategoricalCrossentropy()
+        if self.cost == "Mean Absolute Error (MAE)":
+            self.loss_object = keras.losses.MeanAbsoluteError()
+        elif self.cost == "Hinge":
+            self.loss_object = keras.losses.Hinge()
+        elif self.cost == "Huber":
+            self.loss_object = keras.losses.Huber()
+        elif self.cost == "Logaritmic Cosine (LogCosh)":
+            self.loss_object = keras.losses.LogCosh()
+        elif self.cost == "Poisson":
+            self.loss_object = keras.losses.Poisson()
+        elif self.cost == "Categorical Cross Entropy":
+            self.loss_object = keras.losses.CategoricalCrossentropy
+        elif self.cost == "Kullback-Leibler (KLDivergence":
+            self.loss_object = keras.losses.KLDivergence()
+        elif self.cost == "Sparse Categorical Cross Entropy":
+            self.loss_object = keras.losses.SparseCategoricalCrossentropy
+        elif self.cost == "Cosine Similarity":
+            self.loss_object = keras.losses.CosineSimilarity()
         else:
             self.loss_object = None
 
