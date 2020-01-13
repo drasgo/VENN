@@ -5,8 +5,8 @@ from ViCreNN.nn.wrapperTemplate import WrapperTemplate
 
 class FrameStructure(WrapperTemplate):
 
-    def __init__(self, numberInput, numberOutput, structure, structureName):
-        super(FrameStructure, self).__init__(numberInput, numberOutput, structure, structureName)
+    def __init__(self, numberInput, numberOutput, structure, structureName, logger):
+        super(FrameStructure, self).__init__(numberInput, numberOutput, structure, structureName, logger)
 
     def prepareModel(self):
 
@@ -16,7 +16,7 @@ class FrameStructure(WrapperTemplate):
             self.model = keras.models.Sequential()
             self.isSequential = True
         else:
-            print("Error in Keras: only sequential networks currently supported. Exiting")
+            self.logger("Error in Keras: only sequential networks currently supported. Exiting")
             return False
 
         initBlockIndex = self.returnFirstCompleteSequential(self.structure)
@@ -24,7 +24,7 @@ class FrameStructure(WrapperTemplate):
         for arch, block in self.getArchBlock(self.structure, initBlockIndex):
 
             if initBlockIndex is not None:
-                print("nodi in input: " + str(self.ninput))
+                self.logger("nodi in input: " + str(self.ninput))
                 self.model.add(keras.layers.Dense(int(self.structure[block]["neurons"]),
                                                   activation=self.chooseActivation(self.structure[arch]["activFunc"]),
                                                   input_dim=int(self.ninput)))
@@ -33,12 +33,12 @@ class FrameStructure(WrapperTemplate):
             elif self.structure[block]["LastBlock"] is True:
                 self.model.add(keras.layers.Dense(int(self.noutput),
                                                   activation=self.chooseActivation(self.structure[arch]["activFunc"])))
-                print("rete finita")
+                self.logger("rete finita")
 
             else:
                 self.model.add(keras.layers.Dense(int(self.structure[block]["neurons"]),
                                                   activation=self.chooseActivation(self.structure[arch]["activFunc"])))
-                print("nodi in " + self.structure[block]["name"] + ": " + str(self.structure[block]["neurons"]))
+                self.logger("nodi in " + self.structure[block]["name"] + ": " + str(self.structure[block]["neurons"]))
 
     def chooseActivation(self, activ):
         if activ.lower() in "Linear".lower():
@@ -58,7 +58,7 @@ class FrameStructure(WrapperTemplate):
         elif activ.lower() in "Softplus".lower():
             return "softplus"
         elif activ.lower() in "Other".lower():
-            print("Not supported activation function: " + activ + " in Keras. Quitting")
+            self.logger("Not supported activation function: " + activ + " in Keras. Quitting")
             quit()
 
     #  TODO

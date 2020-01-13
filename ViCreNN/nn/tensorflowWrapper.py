@@ -7,8 +7,8 @@ from ViCreNN.nn.wrapperTemplate import WrapperTemplate
 
 class FrameStructure(WrapperTemplate):
 
-    def __init__(self, numberInput, numberOutput, structure, structureName):
-        super(FrameStructure, self).__init__(numberInput, numberOutput, structure, structureName)
+    def __init__(self, numberInput, numberOutput, structure, structureName, logger):
+        super(FrameStructure, self).__init__(numberInput, numberOutput, structure, structureName, logger)
 
     def prepareModel(self):
         # TODO
@@ -17,7 +17,7 @@ class FrameStructure(WrapperTemplate):
             self.isSequential = True
 
         else:
-            print("Error in Keras: only sequential networks currently supported. Exiting")
+            self.logger("Error in Keras: only sequential networks currently supported. Exiting")
             return False
 
         initBlockIndex = self.returnFirstCompleteSequential(self.structure)
@@ -62,7 +62,7 @@ class FrameStructure(WrapperTemplate):
         elif activ.lower() in "Hard Sigmoid".lower():
             return "hard_sigmoid"
         else:
-            print("Error selecting activation function " + activ + " in Tensorflow. Quitting")
+            self.logger("Error selecting activation function " + activ + " in Tensorflow. Quitting")
             quit()
 
     def saveModel(self):

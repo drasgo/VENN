@@ -1,6 +1,6 @@
 class WrapperTemplate:
 
-    def __init__(self, numberInput, numberOutput, structure, structureName):
+    def __init__(self, numberInput, numberOutput, structure, structureName, logger):
         self.ninput = numberInput
         self.noutput = numberOutput
         self.structure = structure.copy()
@@ -14,6 +14,7 @@ class WrapperTemplate:
         self.isSequential = None
         self.optimizer = None
         self.loss_object = None
+        self.logger = logger
 
     # Override it
     def chooseActivation(self, activ):

@@ -7,17 +7,17 @@ from ViCreNN.nn.wrapperTemplate import WrapperTemplate
 # TODO
 class FrameStructure(WrapperTemplate, nn.Module):
 
-    def __init__(self, numberInput, numberOutput, structure, structureName):
+    def __init__(self, numberInput, numberOutput, structure, structureName, logger):
         nn.Module.__init__(self)
-        WrapperTemplate.__init__(self, numberInput, numberOutput, structure, structureName)
+        WrapperTemplate.__init__(self, numberInput, numberOutput, structure, structureName, logger)
 
     def prepareModel(self):
         # TODO
         #  Implement multiple branches
         if self.checkNumBranches(self.structure) == 0:
             self.isSequential = True
-        else:
-            print("Error in Pytorch: only sequential networks currently supported. Exiting")
+        else:   
+            self.logger("Error in Pytorch: only sequential networks currently supported. Exiting")
             return False
 
         initBlockIndex = self.returnFirstCompleteSequential(self.structure)
@@ -66,7 +66,7 @@ class FrameStructure(WrapperTemplate, nn.Module):
         elif activ == "Hard Hyperbolic Tangent(HardTanh)":
             return nn.Hardtanh
         else:
-            print("Error selecting activation function " + activ + " in Pytorch. Quitting")
+            self.logger("Error selecting activation function " + activ + " in Pytorch. Quitting")
             quit()
 
     def saveModel(self):

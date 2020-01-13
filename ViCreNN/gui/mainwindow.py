@@ -114,7 +114,7 @@ class Ui_MainWindow(object):
         font.setPointSize(12)
         self.label_4.setFont(font)
         self.label_4.setObjectName("label_4")
-        self.LogWindow = QtWidgets.QPlainTextEdit(self.tab)
+        self.LogWindow = QtWidgets.QTextEdit(self.tab)
         self.LogWindow.setGeometry(QtCore.QRect(310, 499, 611, 61))
         self.LogWindow.setObjectName("LogWindow")
         self.Log = QtWidgets.QLabel(self.tab)

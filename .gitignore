@@ -119,3 +119,6 @@ venv.bak/
 
 # Ignore every test file
 test.*
+
+# Ignore Documentation folder
+html/

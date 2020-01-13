@@ -154,16 +154,16 @@ def changeComboBox(self, pos):
     item = self.model().item(pos)
 
     for arch in [arch for arch in selectedMultipleLayer if "arch" in arch.objectName()]:
-        arch.changeColor(item.text(), self)
+        arch.changeColor(item.text())
 
     UnselectBlock()
 
 
 # When selected an arch which is different from what is selected in the activation function combobox, the selected item
 # in the combobox changes to what the arch is
-def changeArchChangeComboBox(combo, name):
-    if combo is not None:
-        combo.setCurrentText(name)
+def changeArchChangeComboBox(name):
+    global comboBox
+    comboBox.setCurrentText(name)
 
 
 # Deletes every selected arch/block
@@ -191,7 +191,7 @@ def frameworkRun(parent):
     result = structure.runAs()
     # resultTrain, resultTest = structure.runAs(parent.Test.getOption() ?
 
-    print(result)
+    logger(result)
 
 
 # Commits the structure to one of the frameworks
@@ -200,7 +200,7 @@ def frameworkCommit(parent):
 
     if structure is None:
         if structureCommit(parent, True) is None:
-            print("Error producing scheme of neural network for exporting. Aborting")
+            logger("Error producing scheme of neural network for exporting. Aborting")
             return
 
     setupNNStructure(parent)
@@ -222,14 +222,14 @@ def structureCommit(parent, called=False):
             structure.saveTopology()
 
     else:
-        print("qualcosa è andato starto")
+        logger("qualcosa è andato starto")
 
         if called is True:
             return None
 
 
 # It loads our json file, if existent, and recreate the saved structure
-def structureLoad(parent, comboBox):
+def structureLoad(parent):
     global layers
     global archs
     global structure
@@ -242,25 +242,31 @@ def structureLoad(parent, comboBox):
     loadedData = structure.loadTopology()
 
     if loadedData is None:
-        print("Error  opening previous structure")
+        logger("Error  opening previous structure")
     else:
         # Uncomment if previous blocks need to be deleted before loading other blocks
-        for comp in layers + archs:
+        for comp in layers:
             comp.__del__()
+
+        del layers[:]
+        del archs[:]
 
         for block in [loadedData[x] for x in loadedData if loadedData[x]["block"] is True]:
             newBlock = StructBlock(parent.MainStruct, parent.Blocks, block)
 
         for arrow in [loadedData[x] for x in loadedData if loadedData[x]["block"] is False]:
-            arrow["combo"] = comboBox
             newArrow = Arrow(parent.MainStruct, loaded=arrow)
 
+        # Grab every block in the gui and checks which of the newly created blocks in the loaded structure is.
+        # For each block then attach the previous and following arches
         for block in [loadedData[x] for x in loadedData if loadedData[x]["block"] is True]:
             for comp in [x for x in layers if block["name"] == x.objectName()]:
                 comp.addLoadedArchs(block["PrevArch"], prev=True)
                 comp.addLoadedArchs(block["SuccArch"], prev=False)
 
         CheckNumbOfLayers(parent)
+
+        logger("Model loaded!")
 
 
 def setupNNStructure(parent):
@@ -286,6 +292,8 @@ def setupNNStructure(parent):
     if parent.Framework.currentText() != "":
         structure.setFramework(parent.Framework.currentText())
 
+    structure.setLogger(logger)
+
     # TODO: Add in the GUI the optimizer option
     #
     #     if parent.Optimizer.currentText() != "":
@@ -310,11 +318,10 @@ def inputData(parent, button):
         parent.OutputText.appendPlainText(fileData)
 
 
-# Label for multiple selection (this is the actual blue rectangle which is used for selecting multiple elements)
-class Window(QtWidgets.QLabel):
-    def __init__(self, parent=None):
-        QtWidgets.QLabel.__init__(self, parent)
-        self.rubberBand = QtWidgets.QRubberBand(QtWidgets.QRubberBand.Rectangle, self)
+def logger(text="", color="black"):
+    global loggerWindow
+    loggerWindow.setTextColor(QtGui.QColor(color))
+    loggerWindow.append(text)
 
 
 # Loaded in each block and specifies the block type
@@ -334,21 +341,26 @@ class BlockProperties(QtWidgets.QComboBox):
     # Defines what happens when block property changes
     def textChanged(self):
 
-        if self.text != "LAYER" and self.text != "BLANK" and self.text != "INPUT"\
-                and (self.currentText() == "LAYER" or self.currentText() == "BLANK" or self.currentText() == "INPUT"):
-            while len(self.parent.PrevArch) > 0:
-                for arch in self.parent.PrevArch:
-                    arch.__del__()
+        # if self.text != "LAYER" and self.text != "BLANK" and self.text != "INPUT"\
+        #         and (self.currentText() == "LAYER" or self.currentText() == "BLANK" or self.currentText() == "INPUT"):
+        #
 
-        elif self.currentText() == "OUTPUT":
+        if self.currentText() == "OUTPUT":
             self.parent.neurons.hide()
             for arch in self.parent.SuccArch:
                 arch.__del__()
 
         elif self.currentText() == "INPUT":
             self.parent.neurons.hide()
+            for arch in self.parent.PrevArch:
+                arch.__del__()
 
-        self.text = self.currentText()
+        else:
+            self.parent.neurons.show()
+            for arch in self.parent.PrevArch:
+                arch.__del__()
+
+        # self.text = self.currentText()
 
 
 # Class for the two labels (layer number * and number of neurons) in each "LAYER" block
@@ -447,7 +459,7 @@ class Arrow(QtWidgets.QFrame):
 
     # TODO recursive connections
     def drawRecursiveArrow(self):
-        # print("in recursive draw arrow. arrow: " + str(self.objectName()))
+        # logger("in recursive draw arrow. arrow: " + str(self.objectName()))
         if abs(self.initBlock.y() < self.finalBlock.y()):
             self.endPoint = QtCore.QPoint(self.finalBlock.x() + self.finalBlock.width() / 2, self.finalBlock.y())
             self.initPoint = QtCore.QPoint(
@@ -518,15 +530,14 @@ class Arrow(QtWidgets.QFrame):
     def mousePressEvent(self, e):
         if e.buttons() == Qt.LeftButton:
             self.selected = True
+            changeArchChangeComboBox(self.name)
             SelectBlock(self)
-            changeArchChangeComboBox(self.combo, self.name)
 
     # Changes the color of the arch depending the cactivation function combobox
-    def changeColor(self, name, combo):
+    def changeColor(self, name):
         self.name = name
         self.color = str(costants.ACTIVATION_FUNCTIONS[name])
         self.activationFunc.setText(self.name)
-        self.combo = combo
         self.stylesheet = "border-color: " + self.color + "; background-color: " + self.color + ";"
         self.setStyleSheet(self.stylesheet)
 
@@ -722,7 +733,10 @@ class MainW(QtWidgets.QMainWindow, Ui_MainWindow):
         super(MainW, self).__init__()
         self.setupUi(self)
 
+        global loggerWindow
         global MultipleSelect
+        global comboBox
+
         MultipleSelect[0] = QtWidgets.QRubberBand(QtWidgets.QRubberBand.Rectangle, self.MainStruct)
         MultipleSelect[1] = QtCore.QPoint()
 
@@ -750,7 +764,7 @@ class MainW(QtWidgets.QMainWindow, Ui_MainWindow):
             mod.appendRow(item)
 
         self.CommSave.clicked.connect(lambda: structureCommit(self))
-        self.LoadStr.clicked.connect(lambda: structureLoad(self, self.ChooseArrow))
+        self.LoadStr.clicked.connect(lambda: structureLoad(self))
 
         self.InputFi.clicked.connect(lambda: inputData(self, self.InputFi))
         self.OutputFi.clicked.connect(lambda: inputData(self, self.OutputFi))
@@ -792,11 +806,16 @@ class MainW(QtWidgets.QMainWindow, Ui_MainWindow):
 
         self.FrameworkCommit.clicked.connect(lambda: frameworkCommit(self))
 
+        loggerWindow = self.LogWindow
+        comboBox = self.ChooseArrow
+
 
 # Global variables for original position of a moved widget and block which is dropped after a drag event
 posit = None
 tempBlock = None
 structure = None
+loggerWindow = None
+comboBox = None
 MultipleSelect = {}
 archs = []
 layers = []

@@ -6,6 +6,7 @@ import ViCreNN.costants as costants
 class NNStructure:
 
     def __init__(self, blocks=None, arrows=None):
+        self.logger = None
         self.topology = {}
         self.file = costants.NNSTRUCTURE_FILE
         self.input = ""
@@ -37,7 +38,7 @@ class NNStructure:
 
     def setOptimizer(self, optim):
         self.optimizer = optim
-        
+
     def setInputType(self, inputType):
         self.inputType = inputType
 
@@ -49,46 +50,49 @@ class NNStructure:
         self.numberInputs = inputCount
         self.numberOutputs = outputCount
 
+    def setLogger(self, logger):
+        self.logger = logger
+
     def checkTopology(self):
-        # print([lay.objectName() for lay in self.blocks])
+        # self.logger([lay.objectName() for lay in self.blocks])
 
         if len(self.blocks) < 2 or len(self.arrows) == 0:
-            print("non ci sono abbastanza blocchi o abbastanza frecce")
+            self.logger("non ci sono abbastanza blocchi o abbastanza frecce", "red")
             return 0
 
         for layer in self.blocks:
 
             if layer.layer.currentText() == "LAYER" and not any(ch.isdigit() for ch in layer.neurons.text()):
-                print("non ci sono numeri in blocco: " + layer.neurons.text())
+                self.logger("non ci sono numeri in blocco: " + layer.neurons.text(), "red")
                 return 0
 
             if len(layer.PrevArch) == 0 and len(layer.SuccArch) == 0:
-                print("non ci sono arco precedente o successivo in blocco " + layer.objectName())
+                self.logger("non ci sono arco precedente o successivo in blocco " + layer.objectName(), "red")
                 layer.__del__()
                 return 0
 
             if len(layer.SuccArch) > 0 and layer.layer.currentText() == "OUTPUT":
-                print("blocco output ha archi successivi")
+                self.logger("blocco output ha archi successivi", "red")
                 return 0
 
-        if not any(len(lay.PrevArch) == 0 for lay in self.blocks if lay.layer.text == "INPUT"):
-            print("initial block absent")
-            print("number of prev arches: " + str([len(lay.PrevArch) for lay in self.blocks]))
+        if not any(lay for lay in self.blocks if lay.layer.currentText() == "INPUT"):
+            self.logger("initial block absent", "red")
+            self.logger("number of prev arches: " + str([len(lay.PrevArch) for lay in self.blocks]), "red")
             return 0
 
-        if not any(len(lay.SuccArch) == 0 for lay in self.blocks):
-            print("final block absent")
-            print("number of succ arches: " + str([len(lay.SuccArch) for lay in self.blocks]))
+        if not any(lay for lay in self.blocks if lay.layer.currentText() == "OUTPUT"):
+            self.logger("final block absent", "red")
+            self.logger("number of succ arches: " + str([len(lay.SuccArch) for lay in self.blocks]), "red")
             return 0
 
         for arch in self.arrows:
 
-            # if arch.name == "None":
-            #     print("funzione di attivazione è None in " + arch.objectName())
-            #     return 0
+            if arch.name == "None":
+                self.logger("funzione di attivazione è None in " + arch.objectName())
+                return 0
 
             if arch.initBlock is None or arch.finalBlock is None:
-                print("blocco iniziale o finale è None in arco " + arch.objectName())
+                self.logger("blocco iniziale o finale è None in arco " + arch.objectName(), "red")
                 return 0
 
         return 1
@@ -98,7 +102,7 @@ class NNStructure:
         initialIndex = 0
 
         def getBlockProperties(block):
-            # print("in get block properties")
+            # self.logger("in get block properties")
             temp = dict()
             temp["block"] = True
             temp["name"] = str(block.objectName())
@@ -113,7 +117,7 @@ class NNStructure:
             return temp
 
         def getArrowProperties(arch):
-            # print("in get arrow properties")
+            # self.logger("in get arrow properties")
             temp = dict()
             temp["block"] = False
             temp["name"] = str(arch.objectName())
@@ -125,33 +129,33 @@ class NNStructure:
 
         def getNextArrow(block):
             if block.block is True:
-                # print("in get next arrow")
+                # self.logger("in get next arrow")
                 return block.SuccArch
 
         def getNextBlock(arch):
             if arch.block is False:
-                # print("in get next block")
+                # self.logger("in get next block")
                 return arch.finalBlock
 
         def recursive(component):
             nonlocal initialIndex
 
-            if (initialIndex == 0 or self.topology[str(initialIndex-1)]["block"] is False) and len(self.blocks) > 0:
-                # print(component.objectName())
+            if (initialIndex == 0 or self.topology[str(initialIndex - 1)]["block"] is False) and len(self.blocks) > 0:
+                # self.logger(component.objectName())
                 self.topology[str(initialIndex)] = getBlockProperties(component)
-                # print("index: " + str(initialIndex) + "; in block step")
-                # print(self.topology)
+                # self.logger("index: " + str(initialIndex) + "; in block step")
+                # self.logger(self.topology)
                 self.blocks.remove(component)
 
                 for arch in getNextArrow(component):
                     initialIndex = initialIndex + 1
-                    # print("In piu archi in uscita da blocco")
+                    # self.logger("In piu archi in uscita da blocco")
                     recursive(arch)
 
-            elif self.topology[str(initialIndex-1)]["block"] is True and len(self.arrows) > 0:
+            elif self.topology[str(initialIndex - 1)]["block"] is True and len(self.arrows) > 0:
                 self.topology[str(initialIndex)] = getArrowProperties(component)
-                # print("index: " + str(initialIndex) + "; in arrow step")
-                # print(self.topology)
+                # self.logger("index: " + str(initialIndex) + "; in arrow step")
+                # self.logger(self.topology)
                 self.arrows.remove(component)
                 initialIndex = initialIndex + 1
                 recursive(getNextBlock(component))
@@ -166,42 +170,51 @@ class NNStructure:
         with open(self.file, "w", encoding="utf-8") as f:
             json.dump(self.topology, f, indent=4)
 
+        self.logger("Model saved!")
+
     def exportAs(self, run=False):
         if self.input != "" and self.output != "":
             self.prepareIOData()
 
         if self.numberInputs == 0 and self.numberOutputs == 0:
-            print("Error preparing input/output data")
+            self.logger("Error preparing input/output data")
             return
 
         if self.framework.lower() == "tensorflow":
             import ViCreNN.nn.tensorflowWrapper as frameChosen
-            nomeFile = self.framework.lower() + "-" + self.file.replace(costants.STRUCTURE_EXTENSION, costants.TENSORFLOW_EXTENSION)
+            nomeFile = self.framework.lower() + "-" + self.file.replace(costants.STRUCTURE_EXTENSION,
+                                                                        costants.TENSORFLOW_EXTENSION)
 
         elif self.framework.lower() == "pytorch":
             import ViCreNN.nn.pytorchWrapper as frameChosen
-            nomeFile = self.framework.lower() + "-" + self.file.replace(costants.STRUCTURE_EXTENSION, costants.PYTORCH_EXTENSION)
+            nomeFile = self.framework.lower() + "-" + self.file.replace(costants.STRUCTURE_EXTENSION,
+                                                                        costants.PYTORCH_EXTENSION)
 
         elif self.framework.lower() == "keras":
             import ViCreNN.nn.kerasWrapper as frameChosen
-            nomeFile = self.framework.lower() + "-" + self.file.replace(costants.STRUCTURE_EXTENSION, costants.KERAS_EXTENSION)
+            nomeFile = self.framework.lower() + "-" + self.file.replace(costants.STRUCTURE_EXTENSION,
+                                                                        costants.KERAS_EXTENSION)
 
         elif self.framework.lower() == "fastai":
             import ViCreNN.nn.fastaiWrapper as frameChosen
-            nomeFile = self.framework.lower() + "-" + self.file.replace(costants.STRUCTURE_EXTENSION, costants.FASTAI_EXTENSION)
+            nomeFile = self.framework.lower() + "-" + self.file.replace(costants.STRUCTURE_EXTENSION,
+                                                                        costants.FASTAI_EXTENSION)
 
         else:
-            print("Error choosing framework: " + self.framework.lower())
+            self.logger("Error choosing framework: " + self.framework.lower(), "red")
             return
 
-        self.frameStruct = frameChosen.FrameStructure(self.numberInputs, self.numberOutputs, structure=self.topology, structureName=nomeFile)
+        self.frameStruct = frameChosen.FrameStructure(self.numberInputs, self.numberOutputs, structure=self.topology,
+                                                      structureName=nomeFile, logger=self.logger)
 
         if self.frameStruct.prepareModel() is False:
-            print("Error preparing the Neural Network model with " + self.framework.lower() + " framework. Aborted")
+            self.logger(
+                "Error preparing the Neural Network model with " + self.framework.lower() + " framework. Aborted", "red")
             return
 
         if run is False:
             self.frameStruct.saveModel()
+            self.logger("Model saved using " + self.framework)
 
     def runAs(self, test=False):
         if self.frameStruct is None:
@@ -224,18 +237,19 @@ class NNStructure:
         self.finalOutput = self.splitInputOuput(inp=False)
 
         if self.checkInputOutput(len(self.finalOutput), len(self.finalOutput)) is False:
-            print("Number of input data is different of number of target data: Input:" +
-                  str(len(self.finalInput)) + ", Output: " + str(len(self.finalOutput)))
+            self.logger("Number of input data is different of number of target data: Input:" +
+                        str(len(self.finalInput)) + ", Output: " + str(len(self.finalOutput)), "red")
             return
 
         elif self.finalInput.count("[") != self.finalInput.count("]"):
-            print("Inconsistency with paretheses in input data. Numebr of [: " + str(self.finalInput.count("[")) +
-                  "; number of ]:" + str(self.finalInput.count("]")))
+            self.logger("Inconsistency with paretheses in input data. Numebr of [: " + str(self.finalInput.count("[")) +
+                        "; number of ]:" + str(self.finalInput.count("]")), "red")
             return
 
         elif self.finalOutput.count("[") != self.finalOutput.count("]"):
-            print("Inconsistency with paretheses in output data. Numebr of [: " + str(self.finalOutput.count("[")) +
-                  "; number of ]:" + str(self.finalOutput.count("]")))
+            self.logger(
+                "Inconsistency with paretheses in output data. Numebr of [: " + str(self.finalOutput.count("[")) +
+                "; number of ]:" + str(self.finalOutput.count("]")), "red")
             return
 
         self.numberInputs = len(self.finalInput[0])
@@ -267,10 +281,10 @@ class NNStructure:
         # This divides different inputs/outputs
         temp = reference.split(str(count * counterpar) + "," + str(count * par))
         lista = []
-        
+
         # TODO
         # This flattens the data. This mustn't be performed if input data is for convo nets or recurrent nets
-        
+
         # if self.type == "mlp":
         for x in temp:
             x = x.replace(counterpar, "")
@@ -288,10 +302,10 @@ class NNStructure:
     def loadTopology(self):
         if os.path.exists(self.file):
             with open(self.file, "r") as data:
-                # print(str(data))
+                # self.logger(str(data))
                 loaded = json.load(data)
         else:
-            print("Previous structure not found")
+            self.logger("Previous structure not found", "red")
             loaded = None
 
         return loaded

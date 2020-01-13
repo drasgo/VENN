@@ -8,8 +8,15 @@ To use this project you have to install:
 - (Optional) torch torchvision (Pytorch)
 - (Optional) keras
 - (Optional) scikit-learn
+- (Optional) pdoc 
 
 # WIKI
+
+To generate documentation run on the terminal
+
+pdoc --html path/to/projeject/directory
+
+This will generate a folder called html with the documentation
 
 How to.. : https://www.github.com/drasgo/ViCreNN/blob/master/howto.md
 

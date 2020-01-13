@@ -6,8 +6,8 @@ from ViCreNN.nn.pytorchWrapper import FrameStructure as PyTFrame
 # So the models are created using Pytorch and then it will handle the run
 class FrameStructure(PyTFrame):
 
-    def __init__(self, numberInput, numberOutput, structure, structureName):
-        super(FrameStructure, self).__init__(numberInput, numberOutput, structure, structureName)
+    def __init__(self, numberInput, numberOutput, structure, structureName, logger):
+        super(FrameStructure, self).__init__(numberInput, numberOutput, structure, structureName, logger)
 
     def prepareModel(self):
         super(FrameStructure, self).prepareModel()

@@ -19,7 +19,8 @@ setup(
         'TensorFlow': ['tensorflow'],
         'PyTorch': ['torch', "torchsummary"],
         'Keras': ['keras'],
-        'FastAI': ['fastai']
+        'FastAI': ['fastai'],
+	'Documentation': ['pdoc'] 
     },
     classifiers=[
         "Programming Language :: Python :: 3",
