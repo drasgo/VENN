@@ -18,7 +18,7 @@ class FrameStructure(WrapperTemplate):
             self.isSequential = True
 
         else:
-            self.logger("Error in Keras: only sequential networks currently supported. Exiting")
+            self.logger("Error in Keras: only sequential networks currently supported")
             return False
 
         initBlockIndex = self.returnFirstCompleteSequential(self.structure)
@@ -28,6 +28,11 @@ class FrameStructure(WrapperTemplate):
         initIndex = True
 
         for arch, block in self.getArchBlock(self.structure, initBlockIndex):
+            activationFunc = self.chooseActivation(self.structure[arch]["activFunc"])
+
+            if activationFunc is None:
+                self.logger("Error choosing activation function in TensorFlow: " + str(self.structure[arch]["activFunc"]) + " not available in TensorFlow")
+                return False
 
             if initIndex is True:
                 outputNode = inputNode
@@ -42,7 +47,18 @@ class FrameStructure(WrapperTemplate):
                                       name=("block" + str(self.structure[block]["name"])))(outputNode)
 
         self.model = keras.Model(inputs=inputNode, outputs=outputNode)
-    
+
+    def saveModel(self):
+        if self.model is not None:
+            self.model.summary()
+
+        else:
+            self.prepareModel()
+            self.model.summary()
+
+        self.model.save(self.name)
+        keras.utils.plot_model(self.model, self.name + costants.IMAGE_EXTENSION)
+
     def chooseActivation(self, activ):
         if activ.lower() in "Hyperbolic Tangent (Tanh)".lower():
             return 'tanh'
@@ -63,19 +79,59 @@ class FrameStructure(WrapperTemplate):
         elif activ.lower() in "Hard Sigmoid".lower():
             return "hard_sigmoid"
         else:
-            self.logger("Error selecting activation function " + activ + " in Tensorflow. Quitting")
-            quit()
+            return None
 
-    def saveModel(self):
-        if self.model is not None:
-            self.model.summary()
-
+    def chooseCost(self):
+        if self.cost == "Mean Absolute Error (MAE)":
+            self.loss_object = keras.losses.MeanAbsoluteError
+        if self.cost == "Mean Absolute Percentage Error (MAPE)":
+            self.loss_object = keras.losses.MeanAbsolutePercentageError
+        elif self.cost == "Mean Squared Error (MSE)":
+            self.loss_object = keras.losses.MeanSquaredError
+        elif self.cost == "Mean Squared Logarithmic Error (MSLE)":
+            self.loss_object = keras.losses.MeanSquaredLogarithmicError
+        elif self.cost == "Hinge":
+            self.loss_object = keras.losses.Hinge
+        elif self.cost == "Huber":
+            self.loss_object = keras.losses.Huber
+        elif self.cost == "Logaritmic Cosine (LogCosh)":
+            self.loss_object = keras.losses.LogCosh
+        elif self.cost == "Poisson":
+            self.loss_object = keras.losses.Poisson
+        elif self.cost == "Binary Cross Entropy (BCE)":
+            self.loss_object = keras.losses.BinaryCrossentropy
+        elif self.cost == "Categorical Cross Entropy":
+            self.loss_object = keras.losses.CategoricalCrossentropy
+        elif self.cost == "Kullback-Leibler (KLDivergence)":
+            self.loss_object = keras.losses.KLDivergence
+        elif self.cost == "Sparse Categorical Cross Entropy":
+            self.loss_object = keras.losses.SparseCategoricalCrossentropy
+        elif self.cost == "Cosine Similarity":
+            self.loss_object = keras.losses.CosineSimilarity
+        elif self.cost == "Log-Likelihood":
+            self.loss_object = tf.nn.log_poisson_loss
         else:
-            self.prepareModel()
-            self.model.summary()
+            self.loss_object = None
 
-        self.model.save(self.name)
-        keras.utils.plot_model(self.model, self.name + costants.IMAGE_EXTENSION)
+    def chooseOptimizer(self):
+        if self.optimizer == "Adam":
+            self.optimizer_object = keras.optimizers.Adam
+        elif self.optimizer == "SDG":
+            self.optimizer_object = keras.optimizers.SGD
+        elif self.optimizer == "Adadelta":
+            self.optimizer_object = keras.optimizers.Adadelta
+        elif self.optimizer == "Adagrad":
+            self.optimizer_object = keras.optimizers.Adagrad
+        elif self.optimizer == "Adamax":
+            self.optimizer_object = keras.optimizers.Adamax
+        elif self.optimizer == "Nadam":
+            self.optimizer_object = keras.optimizers.Nadam
+        elif self.optimizer == "RMSprop":
+            self.optimizer_object = keras.optimizers.RMSprop
+        elif self.optimizer == "Ftrl":
+            self.optimizer_object = keras.optimizers.Ftrl
+        else:
+            self.optimizer_object = None
 
     def run(self):
         train_loss = keras.metrics.Mean(name='train_loss')
@@ -112,44 +168,3 @@ class FrameStructure(WrapperTemplate):
         test_accuracy(self.outputTest, predictions)
 
         return "Test --> Loss: " + str(test_loss.result()) + ", Accuracy: " + str(test_accuracy.result() * 100)
-
-    def chooseCost(self):
-        if self.cost == "Mean Absolute Error (MAE)":
-            self.loss_object = keras.losses.MeanAbsoluteError
-        if self.cost == "Mean Absolute Percentage Error (MAPE)":
-            self.loss_object = keras.losses.MeanAbsolutePercentageError
-        elif self.cost == "Mean Squared Error (MSE)":
-            self.loss_object = keras.losses.MeanSquaredError
-        elif self.cost == "Mean Squared Logarithmic Error (MSLE)":
-            self.loss_object = keras.losses.MeanSquaredLogarithmicError
-        elif self.cost == "Hinge":
-            self.loss_object = keras.losses.Hinge
-        elif self.cost == "Huber":
-            self.loss_object = keras.losses.Huber
-        elif self.cost == "Logaritmic Cosine (LogCosh)":
-            self.loss_object = keras.losses.LogCosh
-        elif self.cost == "Poisson":
-            self.loss_object = keras.losses.Poisson
-        elif self.cost == "Binary Cross Entropy (BCE)":
-            self.loss_object = keras.losses.BinaryCrossentropy
-        elif self.cost == "Categorical Cross Entropy":
-            self.loss_object = keras.losses.CategoricalCrossentropy
-        elif self.cost == "Kullback-Leibler (KLDivergence)":
-            self.loss_object = keras.losses.KLDivergence
-        elif self.cost == "Sparse Categorical Cross Entropy":
-            self.loss_object = keras.losses.SparseCategoricalCrossentropy
-        elif self.cost == "Cosine Proximity":
-            self.loss_object = keras.losses.CosineSimilarity
-        elif self.cost == "Log-Likelihood":
-            self.loss_object = tf.nn.log_poisson_loss
-        else:
-            self.loss_object = None
-
-    # TODO
-    def chooseOptimizer(self):
-        if self.optimizer == "ADAM":
-            self.optimizer_object = keras.optimizers.Adam
-        elif self.optimizer == "SDG":
-            self.optimizer_object = keras.optimizers.SGD
-        else:
-            self.optimizer_object = None

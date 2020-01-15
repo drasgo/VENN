@@ -7,8 +7,8 @@ To use this project you have to install:
 - (Optional) tensorflow
 - (Optional) torch torchvision (Pytorch)
 - (Optional) keras
-- (Optional) scikit-learn
-- (Optional) pdoc 
+- (Optional) fastai
+- (Optional) pdoc (Documentation)
 
 # WIKI
 
@@ -34,7 +34,8 @@ How to.. : https://www.github.com/drasgo/ViCreNN/blob/master/howto.md
 - add multiple dimensions for layers
 - add famous models prefab
 - add ideal models for given input/output
-- add "run the model" option, for Pytorch, fastAI and Keras
+- add "run the model" option, for fastAI and Keras
 - general bugfix
 - comments
+- Double check for cost and loss functions for all frameworks
 

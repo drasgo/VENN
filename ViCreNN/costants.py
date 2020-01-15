@@ -37,7 +37,13 @@ COST_FUNCTION = ["",
                  "Cosine Similarity"]
 
 OPTIMIZERS = ["",
-              "ADAM",
+              "Adam",
+              "Adadelta",
+              "Adagrad",
+              "Adamax",
+              "Nadam",
+              "RMSprop",
+              "Ftrl",
               "SDG"]
 
 INPUT_TYPE = ["normal", "cnn", "rnn"]

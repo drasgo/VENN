@@ -17,7 +17,7 @@ class FrameStructure(WrapperTemplate, nn.Module):
         if self.checkNumBranches(self.structure) == 0:
             self.isSequential = True
         else:   
-            self.logger("Error in Pytorch: only sequential networks currently supported. Exiting")
+            self.logger("Error in Pytorch: only sequential networks currently supported")
             return False
 
         initBlockIndex = self.returnFirstCompleteSequential(self.structure)
@@ -28,19 +28,28 @@ class FrameStructure(WrapperTemplate, nn.Module):
         self.model.add_module("blockInput", torch.nn.Linear(inNeurons, outNeurons))
 
         for arch, block in self.getArchBlock(self.structure, initBlockIndex):
+            activationFunc = self.chooseActivation(self.structure[arch]["activFunc"])
+
+            if activationFunc is None:
+                self.logger("Error choosing activation function in Pytorch: " + str(self.structure[arch]["activFunc"]) + " not available in Pytorch")
+                return False
 
             if self.structure[block]["LastBlock"] is False:
                 outNeurons = int(self.structure[block]["neurons"])
             else:
                 outNeurons = self.noutput
 
-            self.model.add_module("arch" + self.structure[arch]["name"], self.chooseActivation(self.structure[arch]["activFunc"]))
+            self.model.add_module("arch" + self.structure[arch]["name"], activationFunc)
             self.model.add_module("block" + self.structure[block]["name"], torch.nn.Linear(inNeurons, outNeurons))
 
             inNeurons = outNeurons
 
     def forward(self, x):
         return self.model.forward(x)
+
+    def saveModel(self):
+        torch.save(self.model, "test.txt")
+        summary(self.model, (self.ninput,))
 
     def chooseActivation(self, activ):
         if activ == "Hyperbolic Tangent (Tanh)":
@@ -62,12 +71,7 @@ class FrameStructure(WrapperTemplate, nn.Module):
         elif activ == "Hard Hyperbolic Tangent(HardTanh)":
             return nn.Hardtanh
         else:
-            self.logger("Error selecting activation function " + activ + " in Pytorch. Quitting")
-            quit()
-
-    def saveModel(self):
-        torch.save(self.model, "test.txt")
-        summary(self.model, (self.ninput,))
+            return None
 
     def chooseCost(self):
         if self.cost == "Mean Square Error (MSE)":
@@ -93,12 +97,19 @@ class FrameStructure(WrapperTemplate, nn.Module):
         else:
             self.loss_object = None
 
-    # TODO
     def chooseOptimizer(self):
-        if self.optimizer == "ADAM":
+        if self.optimizer == "Adam":
             self.optimizer_object = torch.optim.Adam
         elif self.optimizer == "SDG":
             self.optimizer_object = torch.optim.SGD
+        elif self.optimizer == "Adadelta":
+            self.optimizer_object = torch.optim.Adadelta
+        elif self.optimizer == "Adagrad":
+            self.optimizer_object = torch.optim.Adagrad
+        elif self.optimizer == "Adamax":
+            self.optimizer_object = torch.optim.Adamax
+        elif self.optimizer == "RMSprop":
+            self.optimizer_object = torch.optim.RMSprop
         else:
             self.optimizer_object = None
 
