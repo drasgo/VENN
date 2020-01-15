@@ -1,5 +1,6 @@
 from tensorflow import keras
 from tensorflow import GradientTape
+import tensorflow as tf
 from tensorflow.keras import layers
 import ViCreNN.costants as costants
 from ViCreNN.nn.wrapperTemplate import WrapperTemplate
@@ -81,15 +82,19 @@ class FrameStructure(WrapperTemplate):
         train_accuracy = keras.metrics.SparseCategoricalAccuracy(name='train_accuracy')
 
         self.chooseCost()
+        self.chooseOptimizer()
 
         if self.loss_object is None:
-            return "Error choosing cost function in TensorFlow"
+            return "Error choosing cost function in TensorFlow: " + self.cost + " not available in TensorFlow"
+        if self.optimizer_object is None:
+            return "Error choosing optimizer in TensorFlow: " + self.optimizer + " not available in TensorFlow"
 
         with GradientTape() as tape:
-            predictions = self.model(self.inputTrain)
-            loss = self.loss_object(self.outputTrain, predictions)
-            gradients = tape.gradient(loss, self.model.trainable_variables)
-            self.optimizer.apply_gradients(zip(gradients, self.model.trainable_variables))
+            for epoch in range(self.epoch):
+                predictions = self.model(self.inputTrain)
+                loss = self.loss_object(self.outputTrain, predictions)
+                gradients = tape.gradient(loss, self.model.trainable_variables)
+                self.optimizer_object.apply_gradients(zip(gradients, self.model.trainable_variables))
 
         train_loss(loss)
         train_accuracy(self.outputTrain, predictions)
@@ -110,29 +115,41 @@ class FrameStructure(WrapperTemplate):
 
     def chooseCost(self):
         if self.cost == "Mean Absolute Error (MAE)":
-            self.loss_object = keras.losses.MeanAbsoluteError()
+            self.loss_object = keras.losses.MeanAbsoluteError
+        if self.cost == "Mean Absolute Percentage Error (MAPE)":
+            self.loss_object = keras.losses.MeanAbsolutePercentageError
+        elif self.cost == "Mean Squared Error (MSE)":
+            self.loss_object = keras.losses.MeanSquaredError
+        elif self.cost == "Mean Squared Logarithmic Error (MSLE)":
+            self.loss_object = keras.losses.MeanSquaredLogarithmicError
         elif self.cost == "Hinge":
-            self.loss_object = keras.losses.Hinge()
+            self.loss_object = keras.losses.Hinge
         elif self.cost == "Huber":
-            self.loss_object = keras.losses.Huber()
+            self.loss_object = keras.losses.Huber
         elif self.cost == "Logaritmic Cosine (LogCosh)":
-            self.loss_object = keras.losses.LogCosh()
+            self.loss_object = keras.losses.LogCosh
         elif self.cost == "Poisson":
-            self.loss_object = keras.losses.Poisson()
+            self.loss_object = keras.losses.Poisson
+        elif self.cost == "Binary Cross Entropy (BCE)":
+            self.loss_object = keras.losses.BinaryCrossentropy
         elif self.cost == "Categorical Cross Entropy":
             self.loss_object = keras.losses.CategoricalCrossentropy
-        elif self.cost == "Kullback-Leibler (KLDivergence":
-            self.loss_object = keras.losses.KLDivergence()
+        elif self.cost == "Kullback-Leibler (KLDivergence)":
+            self.loss_object = keras.losses.KLDivergence
         elif self.cost == "Sparse Categorical Cross Entropy":
             self.loss_object = keras.losses.SparseCategoricalCrossentropy
-        elif self.cost == "Cosine Similarity":
-            self.loss_object = keras.losses.CosineSimilarity()
+        elif self.cost == "Cosine Proximity":
+            self.loss_object = keras.losses.CosineSimilarity
+        elif self.cost == "Log-Likelihood":
+            self.loss_object = tf.nn.log_poisson_loss
         else:
             self.loss_object = None
 
     # TODO
     def chooseOptimizer(self):
-        if self.cost == "Adam":
-            self.optimizer = keras.optimizers.Adam()
+        if self.optimizer == "ADAM":
+            self.optimizer_object = keras.optimizers.Adam
+        elif self.optimizer == "SDG":
+            self.optimizer_object = keras.optimizers.SGD
         else:
-            self.optimizer = None
+            self.optimizer_object = None

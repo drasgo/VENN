@@ -17,19 +17,28 @@ FRAMEWORKS = ["TensorFlow", "PyTorch", "Keras", "FastAI"]
 
 BOX_PROPERTIES = ["LAYER", "INPUT", "OUTPUT", "SUM", "SUB", "MULT", "DIV", "BLANK"]
 
-COST_FUNCTION = ["", "Mean Square Error (MSE)",
+COST_FUNCTION = ["",
                  "Mean Absolute Error (MAE)",
+                 "Mean Absolute Percentage Error (MAPE)",
+                 "Mean Squared Error (MSE)",
+                 "Mean Squared Logarithmic Error (MSLE)",
+                 "Binary Cross Entropy (BCE)",
+                 "Soft Margin Loss (SML)",
+                 "Log-Likelihood",
+                 "Negative Log-Likelihood",
                  "Hinge",
                  "Huber",
                  "Logaritmic Cosine (LogCosh)",
                  "Poisson",
+                 "Poisson Negative Log-Likelihood",
                  "Categorical Cross Entropy",
                  "Sparse Categorical Cross Entropy",
-                 "Kullback-Leibler (KLDivergence",
-                 "CosineS imilarity",
-                 "OTHER"]
+                 "Kullback-Leibler (KLDivergence)",
+                 "Cosine Similarity"]
 
-OPTIMIZERS = ["Adam"]
+OPTIMIZERS = ["",
+              "ADAM",
+              "SDG"]
 
 INPUT_TYPE = ["normal", "cnn", "rnn"]
 

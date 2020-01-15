@@ -42,10 +42,6 @@ class FrameStructure(WrapperTemplate, nn.Module):
     def forward(self, x):
         return self.model.forward(x)
 
-    # TODO
-    def chooseCost(self):
-        pass
-
     def chooseActivation(self, activ):
         if activ == "Hyperbolic Tangent (Tanh)":
             return nn.Tanh
@@ -73,6 +69,74 @@ class FrameStructure(WrapperTemplate, nn.Module):
         torch.save(self.model, "test.txt")
         summary(self.model, (self.ninput,))
 
+    def chooseCost(self):
+        if self.cost == "Mean Square Error (MSE)":
+            self.loss_object = torch.nn.MSELoss
+        elif self.cost == "Mean Absolute Error (MAE)":
+            self.loss_object = torch.nn.L1Loss
+        elif self.cost == "Categorical Cross Entropy":
+            self.loss_object = torch.nn.CrossEntropyLoss
+        elif self.cost == "Kullback-Leibler (KLDivergence)":
+            self.loss_object = torch.nn.KLDivLoss
+        elif self.cost == "Hinge":
+            self.loss_object = torch.nn.HingeEmbeddingLoss
+        elif self.cost == "Cosine Similarity":
+            self.loss_object = torch.nn.CosineSimilarity
+        elif self.cost == "Binary Cross Entropy (BCE)":
+            self.loss_object = torch.nn.BCELoss
+        elif self.cost == "Soft Margin Loss (SML)":
+            self.loss_object = torch.nn.SoftMarginLoss
+        elif self.cost == "Poisson Negative Log-Likelihood":
+            self.loss_object = torch.nn.PoissonNLLLoss
+        elif self.cost == "Negative Log-Likelihood":
+            self.loss_object = torch.nn.NLLLoss
+        else:
+            self.loss_object = None
+
     # TODO
+    def chooseOptimizer(self):
+        if self.optimizer == "ADAM":
+            self.optimizer_object = torch.optim.Adam
+        elif self.optimizer == "SDG":
+            self.optimizer_object = torch.optim.SGD
+        else:
+            self.optimizer_object = None
+
     def run(self):
-        pass
+        self.chooseCost()
+        self.chooseOptimizer()
+
+        if self.loss_object is None:
+            return "Error choosing cost function in PyTorch: " + self.cost + " not available in Pytorch"
+        if self.optimizer_object is None:
+            return "Error choosing optimizer in Pytorch: " + self.optimizer + " not available in Pytorch"
+
+        optimizer = self.optimizer_object(self.model.parameters(), lr=0.01)
+        self.model.train()
+
+        y_pred = None
+        loss = None
+
+        for epoch in range(self.epoch):
+
+            optimizer.zero_grad()  # Forward pass
+            y_pred = self.model(self.inputTrain)  # Compute Loss
+            loss = self.loss_object(y_pred.squeeze(), self.outputTrain)
+            loss.backward()
+            optimizer.step()
+
+        correct = 0
+        correct += (y_pred == self.outputTrain).sum().item()
+
+        return "Train --> Loss: " + str(loss.item()) + ", Accuracy: " + str((correct/len(self.outputTrain)) * 100)
+
+    def test(self):
+        self.model.eval()
+        y_pred = self.model(self.inputTest)
+        after_train = self.loss_object(y_pred.squeeze(), self.outputTest)
+
+        correct = 0
+        correct += (y_pred == self.outputTest).sum().item()
+
+        return "Test --> Loss: " + str(after_train.item()) + ", Accuracy: " + str((correct/len(self.outputTest)) * 100)
+

@@ -6,14 +6,16 @@ class WrapperTemplate:
         self.structure = structure.copy()
         self.name = structureName
         self.model = None
-        self.cost = None
         self.inputTrain = None
         self.outputTrain = None
         self.inputTest = None
         self.outputTest = None
         self.isSequential = None
-        self.optimizer = None
+        self.cost = ""
+        self.optimizer = ""
         self.loss_object = None
+        self.optimizer_object = None
+        self.epoch = 0
         self.logger = logger
 
     # Override it
@@ -63,6 +65,10 @@ class WrapperTemplate:
     # Sets which optimizer to use. Don't touch it
     def setOptimizer(self, optim):
         self.optimizer = optim
+
+    # Sets number of epochs for training
+    def setEpochs(self, epochs):
+        self.epoch = epochs
 
     # Checks how many branches has the structure. Don't touch it
     def checkNumBranches(self, structure):
