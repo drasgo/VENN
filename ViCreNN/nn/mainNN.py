@@ -195,10 +195,10 @@ class NNStructure:
             nomeFile = self.framework.lower() + "-" + self.file.replace(costants.STRUCTURE_EXTENSION,
                                                                         costants.KERAS_EXTENSION)
 
-        elif self.framework.lower() == "fastai":
-            import ViCreNN.nn.fastaiWrapper as frameChosen
-            nomeFile = self.framework.lower() + "-" + self.file.replace(costants.STRUCTURE_EXTENSION,
-                                                                        costants.FASTAI_EXTENSION)
+        # elif self.framework.lower() == "fastai":
+        #     import ViCreNN.nn.fastaiWrapper as frameChosen
+        #     nomeFile = self.framework.lower() + "-" + self.file.replace(costants.STRUCTURE_EXTENSION,
+        #                                                                 costants.FASTAI_EXTENSION)
 
         else:
             self.logger("Error choosing framework: " + self.framework.lower(), "red")

@@ -786,11 +786,11 @@ class MainW(QtWidgets.QMainWindow, Ui_MainWindow):
                     import keras
                 except ImportError:
                     continue
-            elif frame == "FastAI":
-                try:
-                    import fastai
-                except ImportError:
-                    continue
+            # elif frame == "FastAI":
+            #     try:
+            #         import fastai
+            #     except ImportError:
+            #         continue
 
             if self.Framework.currentText() == "No Framework Found":
                 self.Framework.removeItem(0)

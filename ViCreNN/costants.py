@@ -13,7 +13,8 @@ ACTIVATION_FUNCTIONS = {"None": "white",
                         "Softplus": "darkRed",
                         "Other": "purple"}
 
-FRAMEWORKS = ["TensorFlow", "PyTorch", "Keras", "FastAI"]
+FRAMEWORKS = ["TensorFlow", "PyTorch", "Keras"]
+# , "FastAI"]
 
 BOX_PROPERTIES = ["LAYER", "INPUT", "OUTPUT", "SUM", "SUB", "MULT", "DIV", "BLANK"]
 
