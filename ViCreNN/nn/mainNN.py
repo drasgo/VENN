@@ -88,7 +88,7 @@ class NNStructure:
         for arch in self.arrows:
 
             if arch.name == "None":
-                self.logger("funzione di attivazione è None in " + arch.objectName())
+                self.logger("funzione di attivazione è None in " + arch.objectName(), "red")
                 return 0
 
             if arch.initBlock is None or arch.finalBlock is None:

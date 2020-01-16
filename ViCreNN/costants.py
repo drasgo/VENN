@@ -16,7 +16,16 @@ ACTIVATION_FUNCTIONS = {"None": "white",
 FRAMEWORKS = ["TensorFlow", "PyTorch", "Keras"]
 # , "FastAI"]
 
-BOX_PROPERTIES = ["LAYER", "INPUT", "OUTPUT", "SUM", "SUB", "MULT", "DIV", "BLANK"]
+BOX_PROPERTIES = ["DENSE",
+                  "CNN",
+                  "POOLING",
+                  "DROPOUT",
+                  "INPUT",
+                  "OUTPUT",
+                  "SUM",
+                  "SUB",
+                  "MULT",
+                  "BLANK"]
 
 COST_FUNCTION = ["",
                  "Mean Absolute Error (MAE)",

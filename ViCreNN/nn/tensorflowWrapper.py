@@ -29,9 +29,14 @@ class FrameStructure(WrapperTemplate):
 
         for arch, block in self.getArchBlock(self.structure, initBlockIndex):
             activationFunc = self.chooseActivation(self.structure[arch]["activFunc"])
+            layerT = self.chooseNode(self.structure[block]["type"])
 
-            if activationFunc is None:
-                self.logger("Error choosing activation function in TensorFlow: " + str(self.structure[arch]["activFunc"]) + " not available in TensorFlow")
+            if layerT is None:
+                continue
+
+            elif activationFunc is None:
+                self.logger("Error choosing activation function in TensorFlow: " +
+                            str(self.structure[arch]["activFunc"]) + " not available in TensorFlow")
                 return False
 
             if initIndex is True:
@@ -47,6 +52,20 @@ class FrameStructure(WrapperTemplate):
                                       name=("block" + str(self.structure[block]["name"])))(outputNode)
 
         self.model = keras.Model(inputs=inputNode, outputs=outputNode)
+
+    def chooseNode(self, layerType):
+        if layerType == "LAYER":
+            return layers.Dense
+        elif layerType == "SUM":
+            return layers.Add
+        elif layerType == "SUB":
+            return layers.Subtract
+        elif layerType == "MULT":
+            return layers.Multiply
+        elif layerType == "DROPOUT":
+            return layers.Dropout
+        else:
+            return None
 
     def saveModel(self):
         if self.model is not None:

@@ -318,6 +318,7 @@ def inputData(parent, button):
         parent.OutputText.appendPlainText(fileData)
 
 
+# Hook the Log window for all the log printing
 def logger(text="", color="black"):
     global loggerWindow
     loggerWindow.setTextColor(QtGui.QColor(color))
@@ -411,8 +412,9 @@ class Arrow(QtWidgets.QFrame):
             self.finalBlock = finalBlock
 
             temp = str(NumberofGeneratedArchs()) + "arch"
-            while any(x.objectName() == temp for x in archs):
+            while any(x.objectName() == temp for x in archs) and len(archs) > 0:
                 temp = str(NumberofGeneratedArchs() + 1) + "arch"
+                print(str(temp) + ", " + str([x.objectName() for x in archs]))
 
             self.setObjectName(temp)
 
@@ -450,34 +452,26 @@ class Arrow(QtWidgets.QFrame):
 
         del self
 
-    def Update(self, block):
-        if block.objectName() == self.initBlock.objectName():
-            self.initBlock = block
-        else:
-            self.finalBlock = block
-        self.drawArrow()
+    def isSelected(self):
+        return self.selected
 
-    # TODO recursive connections
-    def drawRecursiveArrow(self):
-        # logger("in recursive draw arrow. arrow: " + str(self.objectName()))
-        if abs(self.initBlock.y() < self.finalBlock.y()):
-            self.endPoint = QtCore.QPoint(self.finalBlock.x() + self.finalBlock.width() / 2, self.finalBlock.y())
-            self.initPoint = QtCore.QPoint(
-                (self.finalBlock.x() + self.finalBlock.width() / 2 - costants.LINE_WIDTH / 2),
-                self.initBlock.y() + self.initBlock.height())
-            self.upRightLayout = True
-            self.setGeometry(self.initPoint.x(), self.endPoint.y(), costants.LINE_WIDTH,
-                             self.initPoint.y() - self.endPoint.y())
-        else:
-            self.endPoint = QtCore.QPoint(self.finalBlock.x() + self.finalBlock.width() / 2,
-                                          self.finalBlock.y() + self.finalBlock.height())
-            self.initPoint = QtCore.QPoint(
-                (self.finalBlock.x() + self.finalBlock.width() / 2 - costants.LINE_WIDTH / 2), self.initBlock.y())
-            self.upRightLayout = False
-            self.setGeometry(self.initPoint.x(), self.initPoint.y(), costants.LINE_WIDTH,
-                             self.endPoint.y() - self.initPoint.y())
+    def mousePressEvent(self, e):
+        if e.buttons() == Qt.LeftButton:
+            self.selected = True
+            changeArchChangeComboBox(self.name)
+            SelectBlock(self)
 
-        self.initBlock.updatePosition(self, self.initPoint, finalRec=True)
+    # Changes the color of the arch depending the cactivation function combobox
+    def changeColor(self, name):
+        self.name = name
+        self.color = str(costants.ACTIVATION_FUNCTIONS[name])
+        self.activationFunc.setText(self.name)
+        self.stylesheet = "border-color: " + self.color + "; background-color: " + self.color + ";"
+        self.setStyleSheet(self.stylesheet)
+
+    def unselect(self):
+        self.setStyleSheet(self.stylesheet)
+        self.selected = False
 
     # It checks the position of the initial and final blocks and it will be drawn relatively  to those two
     def drawArrow(self):
@@ -524,27 +518,6 @@ class Arrow(QtWidgets.QFrame):
 
         UnselectBlock()
 
-    def isSelected(self):
-        return self.selected
-
-    def mousePressEvent(self, e):
-        if e.buttons() == Qt.LeftButton:
-            self.selected = True
-            changeArchChangeComboBox(self.name)
-            SelectBlock(self)
-
-    # Changes the color of the arch depending the cactivation function combobox
-    def changeColor(self, name):
-        self.name = name
-        self.color = str(costants.ACTIVATION_FUNCTIONS[name])
-        self.activationFunc.setText(self.name)
-        self.stylesheet = "border-color: " + self.color + "; background-color: " + self.color + ";"
-        self.setStyleSheet(self.stylesheet)
-
-    def unselect(self):
-        self.setStyleSheet(self.stylesheet)
-        self.selected = False
-
 
 # Class for generating new layer blocks. Inside it has two labels: one for layer number and one for number of neurons
 class StructBlock(QtWidgets.QFrame):
@@ -585,6 +558,14 @@ class StructBlock(QtWidgets.QFrame):
         layers.append(self)
         self.show()
 
+    def __del__(self):
+        self.hide()
+        self.setParent(None)
+
+        for arch in self.PrevArch + self.SuccArch:
+            arch.__del__()
+        del self
+
     # Loads everything from the saved structure, except its arches
     def loaded(self, loaded):
         self.setObjectName(str(loaded["name"]))
@@ -604,16 +585,47 @@ class StructBlock(QtWidgets.QFrame):
             else:
                 self.SuccArch.append([ar for ar in archs if ar.objectName() == arrow][0])
 
-    def __del__(self):
-        self.hide()
-        self.setParent(None)
+    # Mouse Press Event function: if its right button or double-click left button it allows changing label for the number of neurons
+    # If it's single left button it starts saving itself as moving block, because it is starting the dragging event
+    def mousePressEvent(self, e):
+        self.unselect()
 
-        for arch in self.PrevArch + self.SuccArch:
-            arch.__del__()
-        del self
+        if e.type() == QtCore.QEvent.MouseButtonDblClick and e.buttons() == Qt.LeftButton:
+            self.neurons.setEnabled(True)
+
+        elif e.buttons() == Qt.LeftButton:
+            global tempBlock
+            tempBlock = self
+
+        elif e.buttons() == Qt.RightButton:
+            self.selected()
+
+    # Mouse Move Event function: if it single left button it calls the original block Mouse Move Event function
+    # Unless it does nothing
+    def mouseMoveEvent(self, e):
+        if e.buttons() != Qt.LeftButton:
+            return
+
+        mouseMove(e, self.parent())
+
+        if len(self.SuccArch) > 0:
+            for arch in self.PrevArch:
+                arch.__del__()
+
+        self.updateArches()
+        self.updateArches(True)
+
+    # Key Press Event funciton: If the number of neurons label was active than if it is pressed the enter key it will be disabled
+    def keyPressEvent(self, e):
+        if e.key() == Qt.Key_Return and self.neurons.isEnabled():
+            self.neurons.setEnabled(False)
 
     def isSelected(self):
         return self.select
+
+    def unselect(self):
+        self.setStyleSheet(costants.blockUnSelected)
+        self.select = False
 
     # When it is selected it defines what to do. If it wasn't the first block manually selected it checks if it is
     # allowed to have multiple prev arches. If so it proceeds.
@@ -640,90 +652,38 @@ class StructBlock(QtWidgets.QFrame):
                 # self.updatePosition(prevArch, prevArch.endPoint)
 
     # Updates its position according to where its previous arch is
-    def updatePosition(self, arch, point, finalRec=False):
-        if finalRec is True:
+    def updatePosition(self, arch, point):
+        if arch.horizontalLayout:
+
+            if arch.upRightLayout:
+                self.move(point - QtCore.QPoint(self.width(), int(self.height() / 2)))
+
+            else:
+                self.move(point - QtCore.QPoint(0, int(self.height() / 2)))
+
+        else:
 
             if arch.upRightLayout:
                 self.move(point - QtCore.QPoint(int(self.width() / 2), self.height()))
+
             else:
                 self.move(point - QtCore.QPoint(int(self.width() / 2), 0))
 
-        elif self.initRecursion is None:
-            if arch.horizontalLayout:
-
-                if arch.upRightLayout:
-                    self.move(point - QtCore.QPoint(self.width(), int(self.height() / 2)))
-
-                else:
-                    self.move(point - QtCore.QPoint(0, int(self.height() / 2)))
-
-            else:
-
-                if arch.upRightLayout:
-                    self.move(point - QtCore.QPoint(int(self.width() / 2), self.height()))
-
-                else:
-                    self.move(point - QtCore.QPoint(int(self.width() / 2), 0))
-
-            self.initRecursion = arch
+        if len(self.PrevArch) == 1:
             self.updateArches(True)
-
         else:
-            self.updateArches(True, True)
+            self.updateArches()
 
-    def unselect(self):
-        self.setStyleSheet(costants.blockUnSelected)
-        self.select = False
-
-    # Mouse Press Event function: if its right button or double-click left button it allows changing label for the number of neurons
-    # If it's single left button it starts saving itself as moving block, because it is starting the dragging event
-    def mousePressEvent(self, e):
-        self.unselect()
-
-        if e.type() == QtCore.QEvent.MouseButtonDblClick and e.buttons() == Qt.LeftButton:
-            self.neurons.setEnabled(True)
-
-        elif e.buttons() == Qt.LeftButton:
-            global tempBlock
-            tempBlock = self
-
-        elif e.buttons() == Qt.RightButton:
-            self.selected()
-
-    # It updates the next arch
-    def updateArches(self, succ=False, recursion=False):
+    # It updates the next or the previous arch
+    def updateArches(self, succ=False):
         # Called if block is moved and there are no more succ blocks
         if succ is False:
             for arch in self.PrevArch:
-                arch.Update(self)
+                arch.drawArrow()
         # Called if another block is created and every other next block's position is updated
         else:
-            if recursion is False:
-                for arch in self.SuccArch:
-                    arch.Update(self)
-            else:
-                self.initRecursion.drawRecursiveArrow()
-        self.initRecursion = None
-
-    # Mouse Move Event function: if it single left button it calls the original block Mouse Move Event function
-    # Unless it does nothing
-    def mouseMoveEvent(self, e):
-        if e.buttons() != Qt.LeftButton:
-            return
-
-        mouseMove(e, self.parent())
-
-        if len(self.SuccArch) > 0:
-            for arch in self.PrevArch:
-                arch.__del__()
-
-        self.updateArches()
-        self.updateArches(True)
-
-    # Key Press Event funciton: If the number of neurons label was active than if it is pressed the enter key it will be disabled
-    def keyPressEvent(self, e):
-        if e.key() == Qt.Key_Return and self.neurons.isEnabled():
-            self.neurons.setEnabled(False)
+            for arch in self.SuccArch:
+                arch.drawArrow()
 
 
 # It loads everything up
