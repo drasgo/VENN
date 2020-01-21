@@ -90,7 +90,9 @@ def mousePress(caller):
 
 
 def keyPress(event):
-    if event.key() == QtCore.Qt.Key_Cancel or event.key() == QtCore.Qt.Key_Escape:
+    """Bind ESC and Canc keys to the Cancel() function, which removes blocks and arrows selected"""
+    # Note: the code 16777223 identifies the canc key, which, don't know why, is not well mapped
+    if event.key() == 16777223 or event.key() == QtCore.Qt.Key_Escape:
         Cancel()
 
 
@@ -300,9 +302,11 @@ def setupNNStructure(parent):
 
     structure.setLogger(logger)
 
-    # TODO: Add in the GUI the optimizer option
+    # TODO: Add in the GUI the optimizer option and the epoch option
     # if parent.Optimizer.currentText() != "":
     #       structure.setOptimizer(parent.Optimizer.currentText())
+    # if parent.Epoch.currentText() != "" and isinstance(parent.Epoch.currentText(), int):
+    #     structure.setEpoch(parent.Epoch.currentText())
     # Also implement choice of input data: normal (aka matrix data for mlp and such), images for CNN, time series for RNN..
 
 
@@ -339,10 +343,8 @@ def logger(text="", color="black"):
 #      return (((OldValue) * (NewMax)) / (OldMax)
 
 
-""" Loaded in each block and specifies the block type"""
-
-
 class BlockProperties(QtWidgets.QComboBox):
+    """ Loaded in each block and specifies the block type"""
 
     def __init__(self, parent):
         super().__init__(parent=parent)
@@ -488,7 +490,7 @@ class Arrow(QtWidgets.QFrame):
         self.setStyleSheet(self.stylesheet)
         self.selected = False
 
-    def drawArrow(self, All=True):
+    def drawArrow(self, All=True, split=False):
         """ It checks the position of the initial and final blocks and it will be drawn relatively  to those two"""
         prevGeom = self.geometry()
         if abs(self.initBlock.y() - self.finalBlock.y()) <= abs(self.initBlock.x() - self.finalBlock.x()):
@@ -533,7 +535,7 @@ class Arrow(QtWidgets.QFrame):
         UnselectBlock()
         # TODO
         if (prevGeom != self.geometry() and All is True) or len(self.finalBlock.SuccArch) == 0:
-            self.finalBlock.updatePosition(self, self.endPoint)
+            self.finalBlock.updatePosition(self, self.endPoint, split)
 
 
 class StructBlock(QtWidgets.QFrame):
@@ -626,11 +628,19 @@ class StructBlock(QtWidgets.QFrame):
         mouseMove(e, self.parent())
 
         if len(self.SuccArch) > 0:
-            for arch in self.PrevArch:
-                arch.__del__()
-            self.updateArches(True)
+            while len(self.PrevArch) != 0:
+                for arch in self.PrevArch:
+                    arch.__del__()
+            self.updateArches(True, split=True)
         else:
             self.updateArches()
+
+    def removeArches(self, arch=None):
+        while len(self.PrevArch) > 1:
+            for arch1 in self.PrevArch:
+                if arch is not None and arch is not arch1:
+                    arch1.__del__()
+        self.updateArches(True, split=True)
 
     def keyPressEvent(self, e):
         """ Key Press Event funciton: If the number of neurons label was active than if it is pressed the enter key it will be disabled"""
@@ -668,7 +678,7 @@ class StructBlock(QtWidgets.QFrame):
                     UnselectBlock()
                 # self.updatePosition(prevArch, prevArch.endPoint)
 
-    def updatePosition(self, arch, point):
+    def updatePosition(self, arch, point, split=False):
         """ Updates its position according to where its previous arch is"""
         if arch.horizontalLayout:
 
@@ -694,7 +704,10 @@ class StructBlock(QtWidgets.QFrame):
 
             self.updateArches(True)
 
-    def updateArches(self, succ=False, arch=None):
+        if split is True:
+            self.removeArches(arch)
+
+    def updateArches(self, succ=False, arch=None, split=False):
         """ It updates the next or the previous arch"""
         # Called if block is moved and there are no more succ blocks
         if succ is False:
@@ -703,7 +716,7 @@ class StructBlock(QtWidgets.QFrame):
         # Called if another block is created and every other next block's position is updated
         else:
             for arch in self.SuccArch:
-                arch.drawArrow()
+                arch.drawArrow(split=split)
 
         if arch is not None:
             for arch1 in self.PrevArch:
