@@ -4,12 +4,12 @@ except ImportError:
     from distutils.core import setup
 
 setup(
-    name="ViCreNN",
+    name="VENN",
     version="0.5.0",
     author="Drasgo",
     author_email="tommasocastiglione@gmail.com",
     license=open('LICENSE').read(),
-    description="Visual Editor of Neural Networks",
+    description="Visual Creator of Neural Networks",
     long_description=open('README.md').read(),
     long_description_content_type="text/markdown",
     url="https://github.com/drasgo/ViCreNN",

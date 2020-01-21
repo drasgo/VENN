@@ -1,18 +1,52 @@
-# -*- coding: utf-8 -*-
-
-# Form implementation generated from reading ui file 'mainwindow.ui'
-#
-# Created by: PyQt5 UI code generator 5.13.1
-#
-# WARNING! All changes made in this file will be lost!
-
-
 from PyQt5 import QtCore, QtGui, QtWidgets
 
 
 class Ui_MainWindow(object):
+    def __init__(self):
+        self.centralwidget = None
+        self.tabWidget = None
+        self.tab = None
+        self.tab_2 = None
+        self.OutputFi = None
+        self.LoadStr = None
+        self.RunNN = None
+        self.Input = None
+        self.InputFi = None
+        self.InputText = None
+        self.horizontalLayoutWidget = None
+        self.DataType = None
+        self.Classes = None
+        self.FuncAppr = None
+        self.TimeSe = None
+        self.Image = None
+        self.CommSave = None
+        self.Output = None
+        self.OutputFi = None
+        self.OutputText = None
+        self.MainStruct = None
+        self.Blocks = None
+        self.ChooseArrow = None
+        self.Delete = None
+        self.InsertFirstBlock = None
+        self.LossFunction = None
+        self.Log = None
+        self.LogWindow = None
+        self.Framework = None
+        self.FrameworkCommit = None
+        self.label = None
+        self.label_2 = None
+        self.label_3 = None
+        self.label_4 = None
+        self.numberInputs = None
+        self.numberOutputs = None
+        self.textBrowser = None
+        self.StructureFilename = None
+        self.statusbar = None
+        self.menubar = None
+        self.toolBar = None
+
     def setupUi(self, MainWindow):
-        MainWindow.setObjectName("MainWindow")
+        MainWindow.setObjectName("VENN")
         MainWindow.resize(1261, 654)
         self.centralwidget = QtWidgets.QWidget(MainWindow)
         self.centralwidget.setObjectName("centralwidget")
@@ -79,14 +113,14 @@ class Ui_MainWindow(object):
         self.MainStruct.setAcceptDrops(False)
         self.MainStruct.setAutoFillBackground(False)
         self.MainStruct.setStyleSheet("border: 1px solid black; \n"
-"border-radius: 10px;\n"
-"")
+                                      "border-radius: 10px;\n"
+                                      "")
         self.MainStruct.setObjectName("MainStruct")
         self.Blocks = QtWidgets.QFrame(self.MainStruct)
         self.Blocks.setGeometry(QtCore.QRect(10, 320, 120, 61))
         self.Blocks.setStyleSheet("background-color: rgb(114, 159, 207);\n"
-"border: 1px solid black; \n"
-"border-radius: 10px;")
+                                  "border: 1px solid black; \n"
+                                  "border-radius: 10px;")
         self.Blocks.setLineWidth(15)
         self.Blocks.setObjectName("Blocks")
         self.ChooseArrow = QtWidgets.QComboBox(self.MainStruct)
@@ -103,7 +137,7 @@ class Ui_MainWindow(object):
         font.setPointSize(35)
         self.InsertFirstBlock.setFont(font)
         self.InsertFirstBlock.setStyleSheet("border-color: rgb(255, 255, 255);\n"
-"color: rgb(46, 52, 54);")
+                                            "color: rgb(46, 52, 54);")
         self.InsertFirstBlock.setObjectName("InsertFirstBlock")
         self.LossFunction = QtWidgets.QComboBox(self.MainStruct)
         self.LossFunction.setGeometry(QtCore.QRect(710, 340, 201, 37))
@@ -207,15 +241,16 @@ class Ui_MainWindow(object):
         self.label_3.setText(_translate("MainWindow", "or insert number of outputs:"))
         self.numberOutputs.setText(_translate("MainWindow", "10"))
         self.tabWidget.setTabText(self.tabWidget.indexOf(self.tab), _translate("MainWindow", "Let\'s Roll"))
-        self.textBrowser.setHtml(_translate("MainWindow", "<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 4.0//EN\" \"http://www.w3.org/TR/REC-html40/strict.dtd\">\n"
-"<html><head><meta name=\"qrichtext\" content=\"1\" /><style type=\"text/css\">\n"
-"p, li { white-space: pre-wrap; }\n"
-"</style></head><body style=\" font-family:\'Cantarell\'; font-size:11pt; font-weight:400; font-style:normal;\">\n"
-"<p style=\" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\">How it works</p>\n"
-"<p style=\" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\">...</p>\n"
-"<p style=\" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\">Next on the TODO list</p>\n"
-"<p style=\" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\">...</p>\n"
-"<p style=\" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\">Who I am</p>\n"
-"<p style=\" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\">...</p></body></html>"))
+        self.textBrowser.setHtml(_translate("MainWindow",
+                                            "<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 4.0//EN\" \"http://www.w3.org/TR/REC-html40/strict.dtd\">\n"
+                                            "<html><head><meta name=\"qrichtext\" content=\"1\" /><style type=\"text/css\">\n"
+                                            "p, li { white-space: pre-wrap; }\n"
+                                            "</style></head><body style=\" font-family:\'Cantarell\'; font-size:11pt; font-weight:400; font-style:normal;\">\n"
+                                            "<p style=\" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\">How it works</p>\n"
+                                            "<p style=\" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\">...</p>\n"
+                                            "<p style=\" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\">Next on the TODO list</p>\n"
+                                            "<p style=\" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\">...</p>\n"
+                                            "<p style=\" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\">Who I am</p>\n"
+                                            "<p style=\" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\">...</p></body></html>"))
         self.tabWidget.setTabText(self.tabWidget.indexOf(self.tab_2), _translate("MainWindow", "QA"))
         self.toolBar.setWindowTitle(_translate("MainWindow", "toolBar"))

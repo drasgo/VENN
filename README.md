@@ -1,5 +1,5 @@
-# ViCreNN
-Visual Creation tool for Neural Network development training and deployment
+# VENN
+Visual Editor tool for Neural Network development training and deployment
 
 To use this project you have to install:
 
@@ -14,7 +14,7 @@ To use this project you have to install:
 
 To generate documentation run on the terminal
 
-pdoc --html path/to/projeject/directory
+pdoc --html path/to/project/directory
 
 This will generate a folder called html with the documentation
 
@@ -24,6 +24,7 @@ How to.. : https://www.github.com/drasgo/ViCreNN/blob/master/howto.md
 
 # TODO
 
+- add graphical resize if window is resized
 - Fix recursive block connections
 - add support for adding, subtracting, multiplying and dividing different blocks (effectively merging different branches)
 - add optimization algorithms

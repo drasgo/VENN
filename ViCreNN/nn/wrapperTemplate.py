@@ -18,37 +18,37 @@ class WrapperTemplate:
         self.epoch = 0
         self.logger = logger
 
-    # Override it
     def chooseActivation(self, activ):
+        """ Override it"""
         pass
 
-    # Override it
     def chooseCost(self):
+        """ Override it"""
         pass
 
-    # Override it
     def chooseOptimizer(self):
+        """ Override it"""
         pass
 
-    # Override it
     def prepareModel(self):
+        """ Override it"""
         pass
 
-    # Override it
     def saveModel(self):
+        """ Override it"""
         pass
 
-    # Override it
     def run(self):
+        """ Override it"""
         pass
 
-    # Override it
     def test(self):
+        """ Override it"""
         pass
 
     #
-    # Gets input and output data. Don't touch it
     def setInputOutput(self, inputData, outputData, test):
+        """ Gets input and output data. Don't touch it"""
         if test is False:
             self.inputTrain = inputData
             self.outputTrain = outputData
@@ -58,27 +58,27 @@ class WrapperTemplate:
             self.outputTrain = outputData[:len(inputData)*0.6]
             self.outputTest = outputData[len(inputData)*0.6:]
 
-    # Sets which cost to use. Don't touch it
     def setCost(self, cost):
+        """ Sets which cost to use. Don't touch it"""
         self.cost = cost
 
-    # Sets which optimizer to use. Don't touch it
     def setOptimizer(self, optim):
+        """ Sets which optimizer to use. Don't touch it"""
         self.optimizer = optim
 
-    # Sets number of epochs for training
     def setEpochs(self, epochs):
+        """ Sets number of epochs for training"""
         self.epoch = epochs
 
-    # Checks how many branches has the structure. Don't touch it
     def checkNumBranches(self, structure):
+        """ Checks how many branches has the structure. Don't touch it"""
         # Check the numebr of aggregation blocks (aka sum, mult, div, sub blocks). Every aggregation block is a branch unified
         return len([block for block in structure if structure[block]["block"] is True and
                     (structure[block]["type"] == "SUM" or structure[block]["type"] == "SUB" or
                      structure[block]["type"] == "MULT" or structure[block]["type"] == "DIV")])
 
-    # For sequential models. Don't touch it
     def returnFirstCompleteSequential(self, structure):
+        """ For sequential models. Don't touch it"""
         index = None
         # print("in check sequential")
         while True:
@@ -127,8 +127,8 @@ class WrapperTemplate:
 
         return index
 
-    # Returns next pair of arch-block. Don't touch it
     def getArchBlock(self, structure, index):
+        """ Returns next pair of arch-block. Don't touch it"""
         while structure[index]["LastBlock"] is False:
             nextArchName = next(arch for arch in structure[index]["SuccArch"])
             nextArchIndex = next(key for key in structure if structure[key]["name"] == nextArchName)
