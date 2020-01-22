@@ -77,7 +77,7 @@ def mouseMove(event, parent):
     drag.setMimeData(mimeData)
     drag.setHotSpot(event.pos())
 
-    dropAction = drag.exec_(Qt.MoveAction)
+    drag.exec_(Qt.MoveAction)
 
 
 def mousePress(caller):
@@ -91,8 +91,7 @@ def mousePress(caller):
 
 def keyPress(event):
     """Bind ESC and Canc keys to the Cancel() function, which removes blocks and arrows selected"""
-    # Note: the code 16777223 identifies the canc key, which, don't know why, is not well mapped
-    if event.key() == 16777223 or event.key() == QtCore.Qt.Key_Escape:
+    if event.key() == QtCore.Qt.Key_Delete or event.key() == QtCore.Qt.Key_Escape:
         Cancel()
 
 
@@ -260,10 +259,10 @@ def structureLoad(parent):
         del archs[:]
 
         for block in [loadedData[x] for x in loadedData if loadedData[x]["block"] is True]:
-            newBlock = StructBlock(parent.MainStruct, parent.Blocks, block)
+            StructBlock(parent.MainStruct, parent.Blocks, block)
 
         for arrow in [loadedData[x] for x in loadedData if loadedData[x]["block"] is False]:
-            newArrow = Arrow(parent.MainStruct, loaded=arrow)
+            Arrow(parent.MainStruct, loaded=arrow)
 
         # Grab every block in the gui and checks which of the newly created blocks in the loaded structure is.
         # For each block then attach the previous and following arches
@@ -355,7 +354,6 @@ class BlockProperties(QtWidgets.QComboBox):
             self.addItem(item)
 
         self.currentIndexChanged.connect(self.textChanged)
-        self.text = "LAYER"
 
     def textChanged(self):
         """ Defines what happens when block property changes"""
@@ -363,22 +361,25 @@ class BlockProperties(QtWidgets.QComboBox):
         # if self.text != "LAYER" and self.text != "BLANK" and self.text != "INPUT"\
         #         and (self.currentText() == "LAYER" or self.currentText() == "BLANK" or self.currentText() == "INPUT"):
 
-        if self.currentText() == "OUTPUT":
-            self.parent.neurons.hide()
-            for arch in self.parent.SuccArch:
-                arch.__del__()
+        if self.currentText() != "MULT" and self.currentText() != "SUM" and \
+                self.currentText() != "SUB":
 
-        elif self.currentText() == "INPUT":
-            self.parent.neurons.hide()
-            for arch in self.parent.PrevArch:
-                arch.__del__()
+            if self.currentText() != "BLANK":
+                self.parent.neurons.show()
 
+            if len(self.parent.PrevArch) > 1:
+                for arch in self.parent.PrevArch:
+                    arch.__del__()
         else:
-            self.parent.neurons.show()
-            for arch in self.parent.PrevArch:
-                arch.__del__()
+            self.parent.neurons.hide()
 
-        # self.text = self.currentText()
+            if self.currentText() == "OUTPUT":
+                for arch in self.parent.SuccArch:
+                    arch.__del__()
+
+            elif self.currentText() == "INPUT":
+                for arch in self.parent.PrevArch:
+                    arch.__del__()
 
 
 class TextInStructBox(QtWidgets.QLineEdit):
@@ -447,6 +448,9 @@ class Arrow(QtWidgets.QFrame):
         self.layout.addWidget(self.activationFunc, alignment=Qt.AlignTop)
         self.layout.setContentsMargins(0, self.lineWidth / 10, 0, self.lineWidth / 10)
 
+        # self.xIn = 0
+        # self.yIn = 0
+
         archs.append(self)
         self.show()
 
@@ -490,6 +494,15 @@ class Arrow(QtWidgets.QFrame):
         self.setStyleSheet(self.stylesheet)
         self.selected = False
 
+    # TODO paint arrow orientation
+    # def paintEvent(self, e):
+    #     # if self.xIn != 0 and self.yIn != 0:
+    #     init = QtGui.QPainter()
+    #     init.begin(self)
+    #     init.setPen(QtGui.QPen(Qt.black, 5, Qt.SolidLine))
+    #     init.drawEllipse(QtCore.QPoint(0, 0), 5, 5)
+    #     init.end()
+
     def drawArrow(self, All=True, split=False):
         """ It checks the position of the initial and final blocks and it will be drawn relatively  to those two"""
         prevGeom = self.geometry()
@@ -529,11 +542,16 @@ class Arrow(QtWidgets.QFrame):
                 self.endPoint = QtCore.QPoint(xIn + costants.LINE_WIDTH / 2, self.finalBlock.y())
 
         self.startPoint = QtCore.QPoint(xIn, yIn)
+        # per paint orientation arrow
+        # self.xIn = xIn
+        # self.yIn = yIn
+        #
+        # self.update()
 
         self.setGeometry(xIn, yIn, xFin, self.lineWidth)
 
         UnselectBlock()
-        # TODO
+
         if (prevGeom != self.geometry() and All is True) or len(self.finalBlock.SuccArch) == 0:
             self.finalBlock.updatePosition(self, self.endPoint, split)
 
@@ -590,7 +608,7 @@ class StructBlock(QtWidgets.QFrame):
         self.setObjectName(str(loaded["name"]))
         self.setGeometry(loaded["position"][0], loaded["position"][1], loaded["position"][2], loaded["position"][3])
         self.layer.setCurrentText(loaded["type"])
-        if loaded["type"] == "LAYER":
+        if loaded["type"] == "DENSE":
             self.neurons.setText(loaded["neurons"] + self.neurons.text().replace("**", ""))
         else:
             self.neurons.hide()
@@ -664,15 +682,17 @@ class StructBlock(QtWidgets.QFrame):
         for block in layers:
 
             if block.objectName() != self.objectName() and block.isSelected():
-                if ((self.layer.text == "DENSE" or self.layer.text == "BLANK") and len(self.PrevArch) == 0) \
-                        or self.layer.text != "DENSE" or self.layer.text != "BLANK":
+
+                if (len(self.PrevArch) == 0 and self.layer.currentText() != "INPUT") or \
+                        self.layer.currentText() == "SUM" or self.layer.currentText() == "SUB" or \
+                        self.layer.currentText() == "MULT":
                     prevArch = Arrow(self.parent(), block, self)
                     block.SuccArch.append(prevArch)
                     self.PrevArch.append(prevArch)
                     prevArch.drawArrow()
                     self.updateArches()
 
-                elif (self.layer.text == "DENSE" or self.layer.text == "BLANK") and len(self.PrevArch) > 0:
+                else:
                     self.select = False
                     block.select = False
                     UnselectBlock()

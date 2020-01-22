@@ -14,42 +14,46 @@ class FrameStructure(WrapperTemplate):
     def prepareModel(self):
         # TODO
         #  Implement multiple branches
-        if self.checkNumBranches(self.structure) == 0:
-            self.isSequential = True
-
-        else:
-            self.logger("Error in Keras: only sequential networks currently supported")
-            return False
+        # if self.checkNumBranches(self.structure) == 0:
+        #     self.isSequential = True
+        #
+        # else:
+        #     self.logger("Error in TensorFlow: only sequential networks currently supported")
+        #     return False
 
         initBlockIndex = self.returnFirstCompleteSequential(self.structure)
 
         inputNode = keras.Input(shape=(self.ninput,), name="input")
         outputNode = None
         initIndex = True
+        finished = False
 
-        for arch, block in self.getArchBlock(self.structure, initBlockIndex):
-            activationFunc = self.chooseActivation(self.structure[arch]["activFunc"])
-            layerT = self.chooseNode(self.structure[block]["type"])
+        while finished is False:
 
-            if layerT is None:
-                continue
+            for arch, block in self.getArchBlock(self.structure, initBlockIndex):
+                activationFunc = self.chooseActivation(self.structure[arch]["activFunc"])
+                layerT = self.chooseNode(self.structure[block]["type"])
 
-            elif activationFunc is None:
-                self.logger("Error choosing activation function in TensorFlow: " +
-                            str(self.structure[arch]["activFunc"]) + " not available in TensorFlow")
-                return False
+                if layerT is None:
+                    continue
 
-            if initIndex is True:
-                outputNode = inputNode
-                initIndex = False
+                elif activationFunc is None:
+                    self.logger("Error choosing activation function in TensorFlow: " +
+                                str(self.structure[arch]["activFunc"]) + " not available in TensorFlow")
+                    return False
 
-            if self.structure[block]["LastBlock"]:
-                neurons = self.noutput
-            else:
-                neurons = int(self.structure[block]["neurons"])
+                if initIndex is True:
+                    outputNode = inputNode
+                    initIndex = False
 
-            outputNode = layers.Dense(neurons, activation=self.chooseActivation(self.structure[arch]["activFunc"]),
-                                      name=("block" + str(self.structure[block]["name"])))(outputNode)
+                if self.structure[block]["LastBlock"]:
+                    neurons = self.noutput
+                    finished = True
+                else:
+                    neurons = int(self.structure[block]["neurons"])
+
+                outputNode = layers.Dense(neurons, activation=self.chooseActivation(self.structure[arch]["activFunc"]),
+                                          name=("block" + str(self.structure[block]["name"])))(outputNode)
 
         self.model = keras.Model(inputs=inputNode, outputs=outputNode)
 

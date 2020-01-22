@@ -76,14 +76,22 @@ class NNStructure:
                 return 0
 
         if not any(lay for lay in self.blocks if lay.layer.currentText() == "INPUT"):
-            self.logger("initial block absent", "red")
-            self.logger("number of prev arches: " + str([len(lay.PrevArch) for lay in self.blocks]), "red")
+            self.logger("Input block absent", "red")
+            self.logger("Number of prev arches: " + str([len(lay.PrevArch) for lay in self.blocks]), "red")
             return 0
 
+        if len([lay for lay in self.blocks if lay.layer.currentText() == "INPUT"]) > 1:
+            self.logger("Only one input block supported so far", "red")
+            self.logger("Number of input blocks: " + str(len([lay for lay in self.blocks if lay.layer.currentText() == "INPUT"])), "red")
+
         if not any(lay for lay in self.blocks if lay.layer.currentText() == "OUTPUT"):
-            self.logger("final block absent", "red")
-            self.logger("number of succ arches: " + str([len(lay.SuccArch) for lay in self.blocks]), "red")
+            self.logger("Output block absent", "red")
+            self.logger("Number of succ arches: " + str([len(lay.SuccArch) for lay in self.blocks]), "red")
             return 0
+
+        if len([lay for lay in self.blocks if lay.layer.currentText() == "OUTPUT"]) > 1:
+            self.logger("Only one output block supported so far", "red")
+            self.logger("Number of output blocks: " + str(len([lay for lay in self.blocks if lay.layer.currentText() == "OUTPUT"])), "red")
 
         for arch in self.arrows:
 
@@ -303,9 +311,7 @@ class NNStructure:
         if os.path.exists(self.file):
             with open(self.file, "r") as data:
                 # self.logger(str(data))
-                loaded = json.load(data)
+                return json.load(data)
         else:
             self.logger("Previous structure not found", "red")
-            loaded = None
-
-        return loaded
+            return None

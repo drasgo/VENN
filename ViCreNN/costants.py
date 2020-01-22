@@ -6,14 +6,15 @@ ACTIVATION_FUNCTIONS = {"None": "white",
                         "Hyperbolic Tangent (Tanh)": "green",
                         "Hard Hyperbolic Tangent (HardTanh)": "darkGreen",
                         "Exponential Linear (Elu)": "yellow",
-                        "Log Softmax": "darkYellow",
                         "Sigmoid": "orange",
                         "Hard Sigmoid": "darkOrange",
                         "Softmax": "red",
                         "Softplus": "darkRed",
-                        "Other": "purple"}
+                        "Log Softmax": "purple"}
 
-FRAMEWORKS = ["TensorFlow", "PyTorch", "Keras"]
+FRAMEWORKS = ["TensorFlow",
+              "PyTorch",
+              "Keras"]
 # , "FastAI"]
 
 BOX_PROPERTIES = ["DENSE",
@@ -75,7 +76,7 @@ PYTORCH_EXTENSION = ".pyt"
 
 KERAS_EXTENSION = ".ke"
 
-FASTAI_EXTENSION = ".fai"
+# FASTAI_EXTENSION = ".fai"
 
 IMAGE_EXTENSION = ".png"
 

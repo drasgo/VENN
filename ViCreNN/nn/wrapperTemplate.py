@@ -17,6 +17,7 @@ class WrapperTemplate:
         self.optimizer_object = None
         self.epoch = 0
         self.logger = logger
+        self.prepareStructure()
 
     def chooseActivation(self, activ):
         """ Override it"""
@@ -58,6 +59,30 @@ class WrapperTemplate:
             self.outputTrain = outputData[:len(inputData)*0.6]
             self.outputTest = outputData[len(inputData)*0.6:]
 
+    # TODO: remove any blank block and any arch associated (for example in case of curved branches)
+    def prepareStructure(self):
+        toBeDeleted = []
+
+        for element in self.structure:
+
+            if self.structure[element]["block"] is True and self.structure[element]["type"] == "BLANK":
+                tempNameSuccArch = self.structure[element]["SuccArch"]
+                tempNamePrevArch = self.structure[element]["PrevArch"][0]
+                tempPrevArch = next(key for key in self.structure if self.structure[key]["name"] == tempNamePrevArch)
+
+                for arch in tempNameSuccArch:
+                    tempSuccArch = next(key for key in self.structure if self.structure[key]["name"] == arch)
+                    nextBlockName = self.structure[tempSuccArch]["finalBlock"]
+                    nextBlock = next(key for key in self.structure if self.structure[key]["name"] == nextBlockName)
+                    self.structure[tempPrevArch]["finalBlock"] = nextBlockName
+                    self.structure[nextBlock]["PrevArch"].remove(arch)
+                    self.structure[nextBlock]["PrevArch"].append(tempNamePrevArch)
+                    toBeDeleted.append(tempSuccArch)
+                toBeDeleted.append(element)
+
+        for elem in toBeDeleted:
+            self.structure.pop(elem)
+
     def setCost(self, cost):
         """ Sets which cost to use. Don't touch it"""
         self.cost = cost
@@ -80,7 +105,7 @@ class WrapperTemplate:
     def returnFirstCompleteSequential(self, structure):
         """ For sequential models. Don't touch it"""
         index = None
-        # print("in check sequential")
+        # self.logger("in check sequential")
         while True:
 
             if index is not None:
@@ -88,9 +113,9 @@ class WrapperTemplate:
 
             tempInit = next(bl for bl in structure if
                             structure[bl]["block"] is True and structure[bl]["FirstBlock"] is True)
-            # print("nome: " + self.structure[tempInit]["name"])
+            # self.logger("nome: " + self.structure[tempInit]["name"])
             if tempInit is None:
-                print("Error checking sequential structure for Keras. Exiting")
+                self.logger("Error checking sequential structure for Keras. Exiting")
                 quit()
 
             tempIndex = tempInit
@@ -102,27 +127,27 @@ class WrapperTemplate:
             while last is False:
 
                 if structure[tempIndex]["block"] is True:
-                    # print("è blocco")
+                    # self.logger("è blocco")
                     tempIndex = next(block for block in structure if any(
                         structure[block]["name"] == x for x in structure[tempIndex]["SuccArch"]))
 
                 else:
-                    # print("è arco")
+                    # self.logger("è arco")
                     tempIndex = next(block for block in structure if
                                      structure[block]["name"] == structure[tempIndex]["finalBlock"])
 
                 if structure[tempIndex]["block"] is True and structure[tempIndex]["LastBlock"] is True:
-                    # print("finito con final block")
+                    # self.logger("finito con final block")
                     last = True
                     index = tempInit
 
                 elif structure[tempIndex]["block"] is True and structure[tempIndex]["LastBlock"] is False and \
                         len(structure[tempIndex]["SuccArch"]) == 0:
-                    # print("finito senza final block")
+                    # self.logger("finito senza final block")
                     break
 
             if last is False:
-                # print("rimuovo questo primo elemento perchè questo branch non ha final block:: " + self.structure[tempInit]["name"])
+                # self.logger("rimuovo questo primo elemento perchè questo branch non ha final block:: " + self.structure[tempInit]["name"])
                 structure.pop(tempInit)
 
         return index
@@ -134,6 +159,6 @@ class WrapperTemplate:
             nextArchIndex = next(key for key in structure if structure[key]["name"] == nextArchName)
             nextBlockName = structure[nextArchIndex]["finalBlock"]
             nextBlockIndex = next(key for key in structure if structure[key]["name"] == nextBlockName)
-            # print("nuova coppia arco-blocco: " + nextArchName + " " + nextBlockName)
+            # self.logger("nuova coppia arco-blocco: " + nextArchName + " " + nextBlockName)
             index = nextBlockIndex
             yield nextArchIndex, nextBlockIndex
