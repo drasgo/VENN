@@ -19,9 +19,9 @@ class FrameStructure(WrapperTemplate):
             self.logger("Error in Keras: only sequential networks currently supported")
             return False
 
-        initBlockIndex = self.returnFirstCompleteSequential(self.structure)
+        initBlockIndex = self.returnFirstCompleteDiagram(self.structure)
 
-        for arch, block in self.getArchBlock(self.structure, initBlockIndex):
+        for arch, block in self.getPair(initBlockIndex):
             activationFunc = self.chooseActivation(self.structure[arch]["activFunc"])
 
             if activationFunc is None:

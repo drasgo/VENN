@@ -556,6 +556,9 @@ class Arrow(QtWidgets.QFrame):
             self.finalBlock.updatePosition(self, self.endPoint, split)
 
 
+# TODO blocco normale accetta 1 arco in ingresso. Blocchi speciali (mult/add/sub) accettano al massimo 2 blocchi in ingresso
+# TODO mettere controllo che 2 blocchi abbiano stessa dimensione per essere collegati a blocco add e sub
+# TODO tutti gli arch prev di add/mult/sub devono essere blank. nota: ricordarsi sia alla creazione di arch che al cambio tipo blocco
 class StructBlock(QtWidgets.QFrame):
     """ Class for generating new layer blocks. Inside it has two labels: one for layer number and one for number of neurons"""
 

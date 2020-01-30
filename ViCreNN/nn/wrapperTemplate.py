@@ -17,6 +17,7 @@ class WrapperTemplate:
         self.optimizer_object = None
         self.epoch = 0
         self.logger = logger
+
         self.prepareStructure()
 
     def chooseActivation(self, activ):
@@ -54,13 +55,13 @@ class WrapperTemplate:
             self.inputTrain = inputData
             self.outputTrain = outputData
         else:
-            self.inputTrain = inputData[:len(inputData)*0.6]
-            self.inputTest = inputData[len(inputData)*0.6:]
-            self.outputTrain = outputData[:len(inputData)*0.6]
-            self.outputTest = outputData[len(inputData)*0.6:]
+            self.inputTrain = inputData[:len(inputData) * 0.6]
+            self.inputTest = inputData[len(inputData) * 0.6:]
+            self.outputTrain = outputData[:len(inputData) * 0.6]
+            self.outputTest = outputData[len(inputData) * 0.6:]
 
-    # TODO: remove any blank block and any arch associated (for example in case of curved branches)
     def prepareStructure(self):
+        """ Removes any blank block and any arch associated (for example in case of curved branches). Don't touch it"""
         toBeDeleted = []
 
         for element in self.structure:
@@ -100,10 +101,12 @@ class WrapperTemplate:
         # Check the numebr of aggregation blocks (aka sum, mult, div, sub blocks). Every aggregation block is a branch unified
         return len([block for block in structure if structure[block]["block"] is True and
                     (structure[block]["type"] == "SUM" or structure[block]["type"] == "SUB" or
-                     structure[block]["type"] == "MULT" or structure[block]["type"] == "DIV")])
+                     structure[block]["type"] == "MULT")])
 
-    def returnFirstCompleteSequential(self, structure):
-        """ For sequential models. Don't touch it"""
+    # da modificare per il supporto dei multi branches
+    # TODO refactor function
+    def returnFirstCompleteDiagram(self, structure):
+        """ Return one complete diagram: from input to output. Don't touch it"""
         index = None
         # self.logger("in check sequential")
         while True:
@@ -115,7 +118,7 @@ class WrapperTemplate:
                             structure[bl]["block"] is True and structure[bl]["FirstBlock"] is True)
             # self.logger("nome: " + self.structure[tempInit]["name"])
             if tempInit is None:
-                self.logger("Error checking sequential structure for Keras. Exiting")
+                self.logger("Error checking sequential structure for. Exiting")
                 quit()
 
             tempIndex = tempInit
@@ -152,13 +155,83 @@ class WrapperTemplate:
 
         return index
 
-    def getArchBlock(self, structure, index):
+    def getPair(self, index):
         """ Returns next pair of arch-block. Don't touch it"""
-        while structure[index]["LastBlock"] is False:
-            nextArchName = next(arch for arch in structure[index]["SuccArch"])
-            nextArchIndex = next(key for key in structure if structure[key]["name"] == nextArchName)
-            nextBlockName = structure[nextArchIndex]["finalBlock"]
-            nextBlockIndex = next(key for key in structure if structure[key]["name"] == nextBlockName)
-            # self.logger("nuova coppia arco-blocco: " + nextArchName + " " + nextBlockName)
+        # It keeps going until either it gets to the last block or, just in case it is the recursive instance, the next
+        # block it finds is a special block (aka mult/sum/sub), in which case stops itself, returning next arch = None,
+        # next block = index (which is prev block) and special block = next block. Either way, the wrapper will always
+        #  get nextArchIndex, nextBlockIndex, None if it is sequential or None, index, specName in case the current branch
+        #  get to a special block. Note: max two branches can merge into one special block
+        while self.structure[index]["LastBlock"] is False:
+
+            # If there are more than 1 arches exiting the current block
+            if len(self.structure[index]["SuccArch"]) > 1:
+                specIndex = None
+
+                # For each exiting arch exiting the current block
+                for tempArchName in self.structure[index]["SuccArch"]:
+                    archIndex, blockIndex = self.getArchBlock(tempArchName)
+
+                    # If the next block from the current block is a special block (aka mult/add/sub) then return
+                    # to the wrapper arch=None, the current index, the name of the special block.
+                    # The wrapper is expected to put a control for checking if specName is not none, in which case it
+                    # saves the prev index with as one of the enteing nodes into the special block
+                    if self.structure[blockIndex]["type"] == "SUM" or \
+                            self.structure[blockIndex]["type"] == "SUB" or \
+                            self.structure[blockIndex]["type"] == "MULT":
+
+                        specIndex = blockIndex
+                        specName = self.structure[blockIndex]["name"]
+                        yield None, index, specName
+
+                    # If the next block is not a special one send it right away and then call itself again recursively
+                    else:
+                        yield archIndex, blockIndex, None
+                        branches = self.getPair(blockIndex)
+
+                        # Here the result from the recursive results are given. The expected behaviour is to go on until
+                        # the control if the current block is a special block is met. Then the recursive function stops
+                        # returning None, the previous index and the index of the special block
+                        for nextArchIndex, nextBlockIndex, tempSpec in branches:
+                            specIndex = tempSpec
+
+                            # If the index of the special block is None get what is returned from the recursive function
+                            #  and send it to the wrapper
+                            if specIndex is None:
+                                specName = None
+
+                            # If the index of the special block is not None then it is supposed to be the last cycle from
+                            # the recursive function, which means that it sent back nextArchIndex = None,
+                            # nextBlockIndex = index and specIndex = index of the special block. It is sent to the
+                            # wrapper and then it continues.
+                            else:
+                                specName = self.structure[specIndex]["name"]
+                            yield nextArchIndex, nextBlockIndex, specName
+
+                # This is the last piece of code after the reunion of the two arches. The current index needs to be
+                # updated to the index of the special block
+                index = specIndex
+
+            # Gets the next arch and block indeces from getArchBlock passing the arch name
+            nextArchName = next(arch for arch in self.structure[index]["SuccArch"])
+            nextArchIndex, nextBlockIndex = self.getArchBlock(nextArchName)
+
+            # This should be true just if this piece is part of the recursion (if the found next block is a special block
+            # the function stops itself, sending back nextArchIndex = None, nextBlockIndex = index (which is the prev
+            # index) and special block = nextBlockIndex
+            if self.structure[nextBlockIndex]["type"] == "SUM" or self.structure[nextBlockIndex]["type"] == "SUB" or \
+                    self.structure[nextBlockIndex]["type"] == "MULT":
+                return None, index, nextBlockIndex
+
+            # Updates the index and sends back to the wrapper the next arch-block pair
             index = nextBlockIndex
-            yield nextArchIndex, nextBlockIndex
+            yield nextArchIndex, nextBlockIndex, None
+
+    def getArchBlock(self, archName):
+        nextArchIndex = next(key for key in self.structure if self.structure[key]["name"] == archName)
+        nextBlockName = self.structure[nextArchIndex]["finalBlock"]
+        nextBlockIndex = next(key for key in self.structure if self.structure[key]["name"] == nextBlockName)
+        return nextArchIndex, nextBlockIndex
+
+    # while self.structure[index]["LastBlock"] is False:
+    #     for nextArchName in (arch for arch in self.structure[index]["SuccArch"]):

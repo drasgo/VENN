@@ -119,7 +119,7 @@ class NNStructure:
             temp["PrevArch"] = [bl.objectName() for bl in block.PrevArch]
             temp["SuccArch"] = [bl.objectName() for bl in block.SuccArch]
             temp["type"] = str(block.layer.currentText())
-            if str(block.layer.currentText()) == "LAYER":
+            if str(block.layer.currentText()) == "DENSE":
                 temp["neurons"] = str([int(s) for s in block.neurons.text().split() if s.isdigit()][0])
             temp["position"] = [block.x(), block.y(), block.height(), block.width()]
             return temp

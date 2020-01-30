@@ -21,44 +21,57 @@ class FrameStructure(WrapperTemplate):
         #     self.logger("Error in TensorFlow: only sequential networks currently supported")
         #     return False
 
-        initBlockIndex = self.returnFirstCompleteSequential(self.structure)
+        initBlockIndex = self.returnFirstCompleteDiagram(self.structure)
 
         inputNode = keras.Input(shape=(self.ninput,), name="input")
         outputNode = None
-        initIndex = True
         finished = False
+
+        nodes = {self.structure[initBlockIndex]["name"]: inputNode}
+        merge = {}
 
         while finished is False:
 
-            for arch, block in self.getArchBlock(self.structure, initBlockIndex):
+            for arch, block, specBlock in self.getPair(initBlockIndex):
                 activationFunc = self.chooseActivation(self.structure[arch]["activFunc"])
-                layerT = self.chooseNode(self.structure[block]["type"])
+                layerT = self.chooseNode(specBlock)
 
+                # Merging two branches
+                if specBlock is not None:
+                    if specBlock not in merge:
+                        merge[specBlock] = outputNode
+
+                        continue
+                    else:
+                        outputNode = layerT(outputNode, merge[specBlock])
+                        merge.pop(specBlock)
+                        continue
+
+                # Layer type not supported
                 if layerT is None:
                     continue
-
-                elif activationFunc is None:
+                # Activation function not supported
+                if activationFunc is None:
                     self.logger("Error choosing activation function in TensorFlow: " +
                                 str(self.structure[arch]["activFunc"]) + " not available in TensorFlow")
                     return False
 
-                if initIndex is True:
-                    outputNode = inputNode
-                    initIndex = False
-
+                # Last block
                 if self.structure[block]["LastBlock"]:
                     neurons = self.noutput
                     finished = True
                 else:
                     neurons = int(self.structure[block]["neurons"])
 
-                outputNode = layers.Dense(neurons, activation=self.chooseActivation(self.structure[arch]["activFunc"]),
-                                          name=("block" + str(self.structure[block]["name"])))(outputNode)
+                tempOut = nodes[self.structure[arch]["initBlock"]]
+                outputNode = layerT(neurons, activation=self.chooseActivation(self.structure[arch]["activFunc"]),
+                                    name=("block" + str(self.structure[block]["name"])))(tempOut)
+                nodes[self.structure[block]["name"]] = outputNode
 
         self.model = keras.Model(inputs=inputNode, outputs=outputNode)
 
     def chooseNode(self, layerType):
-        if layerType == "LAYER":
+        if layerType == "DENSE":
             return layers.Dense
         elif layerType == "SUM":
             return layers.Add

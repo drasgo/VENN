@@ -20,14 +20,14 @@ class FrameStructure(WrapperTemplate, nn.Module):
             self.logger("Error in Pytorch: only sequential networks currently supported")
             return False
 
-        initBlockIndex = self.returnFirstCompleteSequential(self.structure)
+        initBlockIndex = self.returnFirstCompleteDiagram(self.structure)
         inNeurons = self.ninput
         outNeurons = inNeurons
 
         self.model = nn.Sequential()
         self.model.add_module("blockInput", torch.nn.Linear(inNeurons, outNeurons))
 
-        for arch, block in self.getArchBlock(self.structure, initBlockIndex):
+        for arch, block in self.getPair(initBlockIndex):
             activationFunc = self.chooseActivation(self.structure[arch]["activFunc"])
 
             if activationFunc is None:
