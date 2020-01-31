@@ -221,7 +221,8 @@ def structureCommit(parent, called=False):
 
     structure = mainNN.NNStructure(blocks=layers, arrows=archs)
     setupNNStructure(parent)
-
+    for arch in archs:
+        print(arch.name)
     if structure.checkTopology():
         structure.commitTopology()
 
@@ -278,6 +279,8 @@ def structureLoad(parent):
 
 def setupNNStructure(parent):
     global structure
+
+    structure.setBlocksArrows(layers, archs)
 
     if parent.StructureFilename.text() != "":
         structure.setStructureFilename(parent.StructureFilename.text())
@@ -361,11 +364,13 @@ class BlockProperties(QtWidgets.QComboBox):
         # if self.text != "LAYER" and self.text != "BLANK" and self.text != "INPUT"\
         #         and (self.currentText() == "LAYER" or self.currentText() == "BLANK" or self.currentText() == "INPUT"):
 
-        if self.currentText() != "MULT" and self.currentText() != "SUM" and \
-                self.currentText() != "SUB":
+        if self.currentText() == "DENSE" or self.currentText() == "CNN" or self.currentText() == "POOLING" or \
+                self.currentText() == "DROPOUT" or self.currentText() == "BLANK":
 
             if self.currentText() != "BLANK":
                 self.parent.neurons.show()
+            else:
+                self.parent.neurons.hide()
 
             if len(self.parent.PrevArch) > 1:
                 for arch in self.parent.PrevArch:

@@ -20,10 +20,12 @@ class NNStructure:
         self.optimizer = costants.OPTIMIZERS[0]
         self.frameStruct = None
         self.inputType = costants.INPUT_TYPE[0]
+        self.blocks = None
+        self.arrows = None
 
-        if blocks is not None and arrows is not None:
-            self.blocks = blocks[:]
-            self.arrows = arrows[:]
+    def setBlocksArrows(self, blocks, arrows):
+        self.blocks = blocks[:]
+        self.arrows = arrows[:]
 
     def setStructureFilename(self, name):
         if "." not in name:
@@ -187,6 +189,9 @@ class NNStructure:
         if self.numberInputs == 0 and self.numberOutputs == 0:
             self.logger("Error preparing input/output data")
             return
+
+        if len(self.topology) == 0:
+            self.commitTopology()
 
         if self.framework.lower() == "tensorflow":
             import ViCreNN.nn.tensorflowWrapper as frameChosen

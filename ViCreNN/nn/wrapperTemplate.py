@@ -115,7 +115,7 @@ class WrapperTemplate:
                 break
 
             tempInit = next(bl for bl in structure if
-                            structure[bl]["block"] is True and structure[bl]["FirstBlock"] is True)
+                            structure[bl]["block"] is True and structure[bl]["type"] == "INPUT")
             # self.logger("nome: " + self.structure[tempInit]["name"])
             if tempInit is None:
                 self.logger("Error checking sequential structure for. Exiting")
@@ -139,12 +139,12 @@ class WrapperTemplate:
                     tempIndex = next(block for block in structure if
                                      structure[block]["name"] == structure[tempIndex]["finalBlock"])
 
-                if structure[tempIndex]["block"] is True and structure[tempIndex]["LastBlock"] is True:
+                if structure[tempIndex]["block"] is True and structure[tempIndex]["type"] == "OUTPUT":
                     # self.logger("finito con final block")
                     last = True
                     index = tempInit
 
-                elif structure[tempIndex]["block"] is True and structure[tempIndex]["LastBlock"] is False and \
+                elif structure[tempIndex]["block"] is True and structure[tempIndex]["type"] == "OUTPUT" and \
                         len(structure[tempIndex]["SuccArch"]) == 0:
                     # self.logger("finito senza final block")
                     break
@@ -152,7 +152,6 @@ class WrapperTemplate:
             if last is False:
                 # self.logger("rimuovo questo primo elemento perchè questo branch non ha final block:: " + self.structure[tempInit]["name"])
                 structure.pop(tempInit)
-
         return index
 
     def getPair(self, index):
@@ -162,16 +161,17 @@ class WrapperTemplate:
         # next block = index (which is prev block) and special block = next block. Either way, the wrapper will always
         #  get nextArchIndex, nextBlockIndex, None if it is sequential or None, index, specName in case the current branch
         #  get to a special block. Note: max two branches can merge into one special block
-        while self.structure[index]["LastBlock"] is False:
+        print("in get pair")
+        while self.structure[index]["type"] != "OUTPUT":
 
             # If there are more than 1 arches exiting the current block
             if len(self.structure[index]["SuccArch"]) > 1:
                 specIndex = None
-
+                print("in succ arch maggiore di 1")
                 # For each exiting arch exiting the current block
                 for tempArchName in self.structure[index]["SuccArch"]:
                     archIndex, blockIndex = self.getArchBlock(tempArchName)
-
+                    print("STILL IN MERGGE")
                     # If the next block from the current block is a special block (aka mult/add/sub) then return
                     # to the wrapper arch=None, the current index, the name of the special block.
                     # The wrapper is expected to put a control for checking if specName is not none, in which case it
@@ -179,7 +179,7 @@ class WrapperTemplate:
                     if self.structure[blockIndex]["type"] == "SUM" or \
                             self.structure[blockIndex]["type"] == "SUB" or \
                             self.structure[blockIndex]["type"] == "MULT":
-
+                        print("next block is special block")
                         specIndex = blockIndex
                         specName = self.structure[blockIndex]["name"]
                         yield None, index, specName
@@ -194,18 +194,20 @@ class WrapperTemplate:
                         # returning None, the previous index and the index of the special block
                         for nextArchIndex, nextBlockIndex, tempSpec in branches:
                             specIndex = tempSpec
+                            print("in get pair passing to wrapper block" + self.structure[nextBlockIndex]["name"])
 
                             # If the index of the special block is None get what is returned from the recursive function
                             #  and send it to the wrapper
                             if specIndex is None:
                                 specName = None
-
+                                print("arch " + self.structure[nextArchIndex]["name"])
                             # If the index of the special block is not None then it is supposed to be the last cycle from
                             # the recursive function, which means that it sent back nextArchIndex = None,
                             # nextBlockIndex = index and specIndex = index of the special block. It is sent to the
                             # wrapper and then it continues.
                             else:
                                 specName = self.structure[specIndex]["name"]
+                                print("block " + specName)
                             yield nextArchIndex, nextBlockIndex, specName
 
                 # This is the last piece of code after the reunion of the two arches. The current index needs to be
@@ -221,10 +223,13 @@ class WrapperTemplate:
             # index) and special block = nextBlockIndex
             if self.structure[nextBlockIndex]["type"] == "SUM" or self.structure[nextBlockIndex]["type"] == "SUB" or \
                     self.structure[nextBlockIndex]["type"] == "MULT":
-                return None, index, nextBlockIndex
+                print("in sub, mult o sum in get pair")
+                yield None, index, nextBlockIndex
+                break
 
             # Updates the index and sends back to the wrapper the next arch-block pair
             index = nextBlockIndex
+            # print("block " + self.structure[nextBlockIndex]["name"] + ", arch " + self.structure[nextArchIndex]["name"])
             yield nextArchIndex, nextBlockIndex, None
 
     def getArchBlock(self, archName):

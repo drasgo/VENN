@@ -12,77 +12,67 @@ class FrameStructure(WrapperTemplate):
         super(FrameStructure, self).__init__(numberInput, numberOutput, structure, structureName, logger)
 
     def prepareModel(self):
-        # TODO
-        #  Implement multiple branches
-        # if self.checkNumBranches(self.structure) == 0:
-        #     self.isSequential = True
-        #
-        # else:
-        #     self.logger("Error in TensorFlow: only sequential networks currently supported")
-        #     return False
-
         initBlockIndex = self.returnFirstCompleteDiagram(self.structure)
 
         inputNode = keras.Input(shape=(self.ninput,), name="input")
         outputNode = None
-        finished = False
 
         nodes = {self.structure[initBlockIndex]["name"]: inputNode}
         merge = {}
 
-        while finished is False:
+        getP = self.getPair(initBlockIndex)
 
-            for arch, block, specBlock in self.getPair(initBlockIndex):
-                activationFunc = self.chooseActivation(self.structure[arch]["activFunc"])
-                layerT = self.chooseNode(specBlock)
+        for arch, block, specBlock in getP:
+            layerT = self.chooseNode(self.structure[block]["type"])
+            print("\n\n\n indici: blocco --> " + str(block) + ", arco --> " + str(arch))
+            print("CURRENT STEP: BLOCK --> " + str(self.structure[block]["name"]) + ", SPECIAL BLOCK --> " + str(specBlock))
+            # Merging two branches
+            if specBlock is not None:
+                if specBlock not in merge:
+                    print("saved in merge output node with key " + specBlock)
 
-                # Merging two branches
-                if specBlock is not None:
-                    if specBlock not in merge:
-                        merge[specBlock] = outputNode
-
-                        continue
-                    else:
-                        outputNode = layerT(outputNode, merge[specBlock])
-                        merge.pop(specBlock)
-                        continue
-
-                # Layer type not supported
-                if layerT is None:
+                    merge[specBlock] = nodes[self.structure[block]["name"]]
                     continue
-                # Activation function not supported
-                if activationFunc is None:
-                    self.logger("Error choosing activation function in TensorFlow: " +
-                                str(self.structure[arch]["activFunc"]) + " not available in TensorFlow")
-                    return False
 
-                # Last block
-                if self.structure[block]["LastBlock"]:
-                    neurons = self.noutput
-                    finished = True
                 else:
-                    neurons = int(self.structure[block]["neurons"])
+                    print("nodo 1: " + str(outputNode) + ", nodo 2 :" + str(merge[specBlock]))
+                    outputNode = keras.layers.add([outputNode, merge[specBlock]])
+                    merge.pop(specBlock)
+                    # specIndex = next(ind for ind in self.structure if self.structure[ind]["name"] == specBlock)
+                    print("special node computed and spec block " + specBlock + " loaded in nodes dictionary")
+                    nodes[specBlock] = outputNode
+                    continue
+            # If it's not merging than it is a regular block and it needs an activation function
+            else:
+                activationFunc = self.chooseActivation(self.structure[arch]["activFunc"])
+            print("ARCH --> " + str(self.structure[arch]["name"]))
 
-                tempOut = nodes[self.structure[arch]["initBlock"]]
-                outputNode = layerT(neurons, activation=self.chooseActivation(self.structure[arch]["activFunc"]),
-                                    name=("block" + str(self.structure[block]["name"])))(tempOut)
-                nodes[self.structure[block]["name"]] = outputNode
+            # Layer type not supported
+            if layerT is None:
+                continue
+
+            # Activation function not supported
+            if activationFunc is None:
+                self.logger("Error choosing activation function in TensorFlow: " +
+                            str(self.structure[arch]["activFunc"]) + " not available in TensorFlow")
+                return False
+
+            tempOut = nodes[self.structure[arch]["initBlock"]]
+
+            # Last block
+            if self.structure[block]["type"] == "OUTPUT":
+                print("in output node ")
+                outputNode = layerT(self.noutput, activation=activationFunc,
+                                    name="Output")(tempOut)
+
+            else:
+                print("mid structure")
+                outputNode = layerT(int(self.structure[block]["neurons"]), activation=activationFunc,
+                                    name=(str(self.structure[block]["name"])))(tempOut)
+
+            nodes[self.structure[block]["name"]] = outputNode
 
         self.model = keras.Model(inputs=inputNode, outputs=outputNode)
-
-    def chooseNode(self, layerType):
-        if layerType == "DENSE":
-            return layers.Dense
-        elif layerType == "SUM":
-            return layers.Add
-        elif layerType == "SUB":
-            return layers.Subtract
-        elif layerType == "MULT":
-            return layers.Multiply
-        elif layerType == "DROPOUT":
-            return layers.Dropout
-        else:
-            return None
 
     def saveModel(self):
         if self.model is not None:
@@ -94,25 +84,44 @@ class FrameStructure(WrapperTemplate):
 
         self.model.save(self.name)
         keras.utils.plot_model(self.model, self.name + costants.IMAGE_EXTENSION)
+        # self.logger("Model saved with Tensorflow")
+
+    def chooseNode(self, layerType):
+        if layerType == "DENSE" or layerType == "OUTPUT":
+            return layers.Dense
+        elif layerType == "SUM":
+            return layers.add
+        elif layerType == "SUB":
+            return layers.subtract
+        elif layerType == "MULT":
+            return layers.multiply
+        elif layerType == "DROPOUT":
+            return layers.Dropout
+        elif layerType == "POOLING":
+            return None
+        elif layerType == "CNN":
+            return None
+        else:
+            return None
 
     def chooseActivation(self, activ):
-        if activ.lower() in "Hyperbolic Tangent (Tanh)".lower():
+        if activ.lower() == "Hyperbolic Tangent (Tanh)".lower():
             return 'tanh'
-        elif activ.lower() in "Softmax".lower():
+        elif activ.lower() == "Softmax".lower():
             return 'softmax'
-        elif activ.lower() in "Rectified Linear (ReLu)".lower():
+        elif activ.lower() == "Rectified Linear (ReLu)".lower():
             return "relu"
-        elif activ.lower() in "Exponential Linear (Elu)".lower():
+        elif activ.lower() == "Exponential Linear (Elu)".lower():
             return "elu"
-        elif activ.lower() in "Log Softmax".lower():
+        elif activ.lower() == "Log Softmax".lower():
             return "log_softmax"
-        elif activ.lower() in "Sigmoid".lower():
+        elif activ.lower() == "Sigmoid".lower():
             return "sigmoid"
-        elif activ.lower() in "Softplus".lower():
+        elif activ.lower() == "Softplus".lower():
             return "softplus"
-        elif activ.lower() in "Linear".lower():
+        elif activ.lower() == "Linear".lower():
             return "linear"
-        elif activ.lower() in "Hard Sigmoid".lower():
+        elif activ.lower() == "Hard Sigmoid".lower():
             return "hard_sigmoid"
         else:
             return None

@@ -24,8 +24,6 @@ How to.. : https://www.github.com/drasgo/ViCreNN/blob/master/howto.md
 # TODO
 
 - add graphical resize if window is resized
-- Fix recursive block connections
-- add support for adding, subtracting, multiplying and dividing different blocks (effectively merging different branches)
 - add optimization algorithms
 - add test/run option
 - add epoch label
@@ -33,7 +31,6 @@ How to.. : https://www.github.com/drasgo/ViCreNN/blob/master/howto.md
 - add more advanced settings
 - add recursive full support
 - add convolution support
-- add multiple dimensions for layers
 - add famous models prefab
 - add ideal models for given input/output
 - general bugfix
