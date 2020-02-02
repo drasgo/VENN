@@ -26,6 +26,7 @@ class NNStructure:
     def setBlocksArrows(self, blocks, arrows):
         self.blocks = blocks[:]
         self.arrows = arrows[:]
+        self.topology = {}
 
     def setStructureFilename(self, name):
         if "." not in name:
@@ -315,7 +316,6 @@ class NNStructure:
     def loadTopology(self):
         if os.path.exists(self.file):
             with open(self.file, "r") as data:
-                # self.logger(str(data))
                 return json.load(data)
         else:
             self.logger("Previous structure not found", "red")

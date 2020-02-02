@@ -209,8 +209,8 @@ def frameworkCommit(parent):
         if structureCommit(parent, True) is None:
             logger("Error producing scheme of neural network for exporting. Aborting")
             return
-
-    setupNNStructure(parent)
+    else:
+        setupNNStructure(parent)
 
     structure.exportAs()
 

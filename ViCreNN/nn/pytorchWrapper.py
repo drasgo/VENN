@@ -4,35 +4,45 @@ from torchsummary import summary
 from ViCreNN.nn.wrapperTemplate import WrapperTemplate
 
 
-# TODO
 class FrameStructure(WrapperTemplate, nn.Module):
 
     def __init__(self, numberInput, numberOutput, structure, structureName, logger):
         nn.Module.__init__(self)
         WrapperTemplate.__init__(self, numberInput, numberOutput, structure, structureName, logger)
+        self.frame = "Pytorch"
 
     def prepareModel(self):
-        # TODO
-        #  Implement multiple branches
-        if self.checkNumBranches(self.structure) == 0:
-            self.isSequential = True
-        else:   
-            self.logger("Error in Pytorch: only sequential networks currently supported")
-            return False
-
+        # Input Block
         initBlockIndex = self.returnFirstCompleteDiagram(self.structure)
         inNeurons = self.ninput
         outNeurons = inNeurons
+        # TODO
+                    self.conv1 = nn.Conv2d(1, 20, 5)
+                    self.conv2 = nn.Conv2d(20, 20, 5)
+
+                def forward(self, x):
+                    x = F.relu(self.conv1(x))
+                    return F.relu(self.conv2(x))
 
         self.model = nn.Sequential()
-        self.model.add_module("blockInput", torch.nn.Linear(inNeurons, outNeurons))
+        self.model.add_module("blockInput", torch.nn.Linear(, self.ninput))
 
-        for arch, block in self.getPair(initBlockIndex):
+        # nodes dictionary keeps track of every block as keras node
+        nodes = {self.structure[initBlockIndex]["name"]: inputNode}
+        # merge dictionary keeps track of the two branches associated to one special block
+        merge = {}
+
+        getP = self.getPair(initBlockIndex)
+
+        # starts getting the next arch-block pair
+        for arch, block in getP:
             activationFunc = self.chooseActivation(self.structure[arch]["activFunc"])
 
             if activationFunc is None:
                 self.logger("Error choosing activation function in Pytorch: " + str(self.structure[arch]["activFunc"]) + " not available in Pytorch")
                 return False
+
+            if
 
             if self.structure[block]["LastBlock"] is False:
                 outNeurons = int(self.structure[block]["neurons"])
@@ -48,8 +58,14 @@ class FrameStructure(WrapperTemplate, nn.Module):
         return self.model.forward(x)
 
     def saveModel(self):
+        if self.model is None:
+            self.prepareModel()
+
         torch.save(self.model, "test.txt")
         summary(self.model, (self.ninput,))
+
+    def chooseNode(self, layerType):
+        return None
 
     def chooseActivation(self, activ):
         if activ == "Hyperbolic Tangent (Tanh)":

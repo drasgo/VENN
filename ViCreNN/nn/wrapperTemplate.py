@@ -20,6 +20,10 @@ class WrapperTemplate:
 
         self.prepareStructure()
 
+    def chooseNode(self, layerType):
+        """ Override it"""
+        pass
+
     def chooseActivation(self, activ):
         """ Override it"""
         pass

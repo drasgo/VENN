@@ -1,48 +1,84 @@
 import keras
 import ViCreNN.costants as costants
 from ViCreNN.nn.wrapperTemplate import WrapperTemplate
+import sys
 
 
 class FrameStructure(WrapperTemplate):
 
     def __init__(self, numberInput, numberOutput, structure, structureName, logger):
         super(FrameStructure, self).__init__(numberInput, numberOutput, structure, structureName, logger)
+        self.frame = "Keras"
 
-    def prepareModel(self):
-
-        # TODO
-        #  Implement multiple branches
-        if self.checkNumBranches(self.structure) == 0:
-            self.model = keras.models.Sequential()
-            self.isSequential = True
+    def prepareModel(self, called=False):
+        # Check if this function is called from keras wrapper or from tensorflow wrapper
+        if called is True:
+            if "keras" in sys.modules:
+                del sys.modules["keras"]
+            from tensorflow import keras
         else:
-            self.logger("Error in Keras: only sequential networks currently supported")
-            return False
+            import keras
 
+        # Input Block
         initBlockIndex = self.returnFirstCompleteDiagram(self.structure)
 
-        for arch, block in self.getPair(initBlockIndex):
+        inputNode = keras.Input(shape=(self.ninput,), name="input")
+        outputNode = None
+
+        # nodes dictionary keeps track of every block as keras node
+        nodes = {self.structure[initBlockIndex]["name"]: inputNode}
+        # merge dictionary keeps track of the two branches associated to one special block
+        merge = {}
+
+        getP = self.getPair(initBlockIndex)
+
+        # starts getting the next arch-block pair
+        for arch, block, specBlock in getP:
+
+            # Merging two branches
+            if specBlock is not None:
+                if specBlock not in merge:
+                    merge[specBlock] = nodes[self.structure[block]["name"]]
+                    continue
+
+                else:
+                    specIndex = next(ind for ind in self.structure if self.structure[ind]["name"] == specBlock)
+                    layerT = self.chooseNode(self.structure[specIndex]["type"])
+                    outputNode = layerT(name=specBlock)([outputNode, merge[specBlock]])
+                    merge.pop(specBlock)
+                    nodes[specBlock] = outputNode
+                    continue
+
+            # If it's not merging than it is a regular block and it needs regular activation function and block type
+            layerT = self.chooseNode(self.structure[block]["type"])
             activationFunc = self.chooseActivation(self.structure[arch]["activFunc"])
 
-            if activationFunc is None:
+            # Check if layer typer is valid
+            if layerT is None:
                 self.logger(
-                    "Error choosing activation function in Keras: " + str(self.structure[arch]["activFunc"]) + " not available in Keras")
-                return False
+                    "Layer type " + self.structure[block]["name"] + " not supported in " + self.frame + ". Skipping layer")
+                continue
 
-            if initBlockIndex is not None:
-                self.model.add(keras.layers.Dense(int(self.structure[block]["neurons"]),
-                                                  activation=self.chooseActivation(self.structure[arch]["activFunc"]),
-                                                  input_shape=int(self.ninput, )))
-                initBlockIndex = None
+            # Check if Activation function is valid
+            if activationFunc is None:
+                self.logger("Activation function" + str(
+                    self.structure[arch]["activFunc"]) + " not supported in " + self.frame + ". Skipping layer")
+                continue
 
-            if self.structure[block]["LastBlock"]:
-                neurons = self.noutput
+            tempOut = nodes[self.structure[arch]["initBlock"]]
 
+            # Last block
+            if self.structure[block]["type"] == "OUTPUT":
+                outputNode = layerT(self.noutput, activation=activationFunc,
+                                    name="Output")(tempOut)
+            # Mid blocks
             else:
-                neurons = int(self.structure[block]["neurons"])
+                outputNode = layerT(int(self.structure[block]["neurons"]), activation=activationFunc,
+                                    name=(str(self.structure[block]["name"])))(tempOut)
 
-            self.model.add(
-                keras.layers.Dense(neurons, activation=self.chooseActivation(self.structure[arch]["activFunc"])))
+            nodes[self.structure[block]["name"]] = outputNode
+
+        self.model = keras.Model(inputs=inputNode, outputs=outputNode)
 
     def saveModel(self):
         if self.model is None:
@@ -50,6 +86,24 @@ class FrameStructure(WrapperTemplate):
 
         self.model.save(self.name)
         keras.utils.plot_model(self.model, to_file=self.name + costants.IMAGE_EXTENSION)
+
+    def chooseNode(self, layerType):
+        if layerType == "DENSE" or layerType == "OUTPUT":
+            return keras.layers.Dense
+        elif layerType == "SUM":
+            return keras.layers.Add
+        elif layerType == "SUB":
+            return keras.layers.Subtract
+        elif layerType == "MULT":
+            return keras.layers.Multiply
+        elif layerType == "DROPOUT":
+            return keras.layers.Dropout
+        elif layerType == "POOLING":
+            return None
+        elif layerType == "CNN":
+            return None
+        else:
+            return None
 
     def chooseActivation(self, activ):
         if activ.lower() in "Linear".lower():
