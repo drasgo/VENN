@@ -51,22 +51,20 @@ class FrameStructure(WrapperTemplate):
                     nodes[specBlock] = outputNode
                     continue
 
+            # Check if layer type is valid
+            if self.nodeSupport(self.structure[block]["type"]) is False:
+                self.logger("Layer type " + self.structure[block]["name"] +
+                            " not supported in " + self.frame + ". Skipping layer")
+                continue
+            # Check if Activation function is valid
+            if self.functionSupport(self.structure[arch]["activFunc"]) is False:
+                self.logger("Activation function" + str(self.structure[arch]["activFunc"]) +
+                            " not supported in " + self.frame + ". Skipping layer")
+                continue
+
             # If it's not merging than it is a regular block and it needs regular activation function and block type
             layerT = self.chooseNode(self.structure[block]["type"])
             activationFunc = self.chooseActivation(self.structure[arch]["activFunc"])
-
-            # Check if layer type is valid
-            if layerT is None:
-                self.logger(
-                    "Layer type " + self.structure[block]["name"] + " not supported in " + self.frame + ". Skipping layer")
-                continue
-
-            # Check if Activation function is valid
-            if activationFunc is None:
-                self.logger("Activation function" + str(
-                    self.structure[arch]["activFunc"]) + " not supported in " + self.frame + ". Skipping layer")
-                continue
-
             tempOut = nodes[self.structure[arch]["initBlock"]]
 
             # Last block
@@ -88,6 +86,21 @@ class FrameStructure(WrapperTemplate):
 
         self.model.save(self.name)
         keras.utils.plot_model(self.model, to_file=self.name + costants.IMAGE_EXTENSION)
+
+    def nodeSupport(self, node):
+        if node == "DENSE" or node == "SUM" or node == "SUB" or node == "MULT" or \
+                node == "DROPOUT" or node == "POOLING" or node == "CNN" or node == "INPUT" or node == "OUTPUT":
+            return True
+        else:
+            return False
+
+    def functionSupport(self, activ):
+        if activ == "Hyperbolic Tangent (Tanh)" or activ == "Softmax" or activ == "Rectified Linear (ReLu)" or \
+                activ == "Exponential Linear (Elu)" or activ == "Sigmoid" or activ == "Softplus" \
+                or activ == "Linear" or activ == "Hard Sigmoid" or activ == "Softmax":
+            return True
+        else:
+            return False
 
     def chooseNode(self, layerType, **kwargs):
         if layerType == "DENSE" or layerType == "OUTPUT":

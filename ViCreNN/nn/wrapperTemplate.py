@@ -55,6 +55,12 @@ class WrapperTemplate:
     def dimensionalityChangeforMultiply(self, node1, node2):
         pass
 
+    def nodeSupport(self, node):
+        pass
+
+    def functionSupport(self, activ):
+        pass
+
     #
     def setInputOutput(self, inputData, outputData, test):
         """ Gets input and output data. Don't touch it"""

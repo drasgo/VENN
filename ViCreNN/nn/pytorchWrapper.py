@@ -7,84 +7,11 @@ from ViCreNN.nn.wrapperTemplate import WrapperTemplate
 class FrameStructure(WrapperTemplate):
 
     def __init__(self, numberInput, numberOutput, structure, structureName, logger):
-        # nn.Module.__init__(self)
         WrapperTemplate.__init__(self, numberInput, numberOutput, structure, structureName, logger)
         self.frame = "Pytorch"
 
     def prepareModel(self):
         self.model = torchModel(self)
-
-    # def forward(self, x=None):
-    #     if x is None:
-    #         x = torch.zeros([1, self.ninput])
-    #
-    #     initBlockIndex = self.returnFirstCompleteDiagram(self.structure)
-    #     inputDim = self.ninput
-    #
-    #     # nodes dictionary keeps track of every block as keras node
-    #     nodes = {self.structure[initBlockIndex]["name"]: torch.nn.Linear(self.ninput, inputDim)(x)}
-    #     # merge dictionary keeps track of the two branches associated to one special block
-    #     merge = {}
-    #     outputNode = None
-    #     getP = self.getPair(initBlockIndex)
-    #
-    #     # TODO: nota: non ci sono nodi per l'ingresso e l'uscita della rete neurale, quindi bisogna settare il primo
-    #     # TODO: (i primi nel caso in cui l'input sia subito smezzato) blocco con la granddezzo dell'input size e primo/i blocchi
-    #     # TODO:  e lo stesso vale per l'ultimo blocco prima della'output
-    #     # starts getting the next arch-block pair
-    #     for arch, block, specBlock in getP:
-    #
-    #         # Merging two branches
-    #         if specBlock is not None:
-    #             if specBlock not in merge:
-    #                 merge[specBlock] = nodes[self.structure[block]["name"]]
-    #                 continue
-    #
-    #             else:
-    #                 specIndex = next(ind for ind in self.structure if self.structure[ind]["name"] == specBlock)
-    #                 layerT = self.chooseNode(self.structure[specIndex]["type"])
-    #                 tempBlock = nodes[self.structure[block]["name"]]
-    #                 outputBlock = layerT(inputNode=tempBlock, outputNode=merge[specBlock])
-    #                 merge.pop(specBlock)
-    #                 nodes[specBlock] = outputBlock
-    #                 continue
-    #
-    #         # Check if layer type is valid
-    #         if self.nodeSupport(self.structure[block]["type"]) is False:
-    #             self.logger("Layer type " + self.structure[block][
-    #                     "name"] + " not supported in " + self.frame + ". Skipping layer")
-    #             continue
-    #
-    #         # Check if Activation function is valid
-    #         if self.functionSupport(self.structure[arch]["activFunc"]) is False:
-    #             self.logger("Activation function" + str(
-    #                 self.structure[arch]["activFunc"]) + " not supported in " + self.frame + ". Skipping layer")
-    #             continue
-    #
-    #         if self.structure[block]["type"] == "OUTPUT":
-    #             outputDim = self.noutput
-    #         else:
-    #             outputDim = self.structure[block]["neurons"]
-    #
-    #         # If it's not merging than it is a regular block and it needs regular activation function and block type
-    #         layerT = self.chooseNode(self.structure[block]["type"], inputDim=inputDim, outputDim=outputDim)
-    #         activationFunc = self.chooseActivation(self.structure[arch]["activFunc"])()
-    #
-    #         tempBlock = nodes[self.structure[arch]["initBlock"]]
-    #         # print(str(tempBlock))
-    #         # print(str(activationFunc))
-    #         outputNode = activationFunc(tempBlock)
-    #
-    #         # Mid blocks. If this is the last block then the result is the data from passed through the last activation
-    #         # function (there are no input nor output blocks so the result is just the output data, not saved anywhere)
-    #         if self.structure[block]["type"] == "OUTPUT":
-    #             return outputNode
-    #         else:
-    #             outputBlock = layerT(outputNode)
-    #             nodes[self.structure[block]["name"]] = outputBlock
-    #             # print(str(outputBlock))
-    #             inputDim = self.structure[block]["neurons"]
-    #         # if x is None:
 
     def saveModel(self):
         if self.model is None:
@@ -118,14 +45,11 @@ class FrameStructure(WrapperTemplate):
         if layerType == "DENSE" or layerType == "OUTPUT":
             return torch.nn.Linear(int(kwargs["inputDim"]), int(kwargs["outputDim"]))
         elif layerType == "SUM":
-            # return self.sumNode(inputNode=kwargs["inputNode"], outputNode=kwargs["outputNode"])
-            return self.sumNode
+            return self.sumNode(inputNode1=kwargs["inputNode1"], inputNode2=kwargs["inputNode2"])
         elif layerType == "SUB":
-            # return self.subNode(inputNode=kwargs["inputNode"], outputNode=kwargs["outputNode"])
-            return self.subNode
+            return self.subNode(inputNode1=kwargs["inputNode1"], inputNode2=kwargs["inputNode2"])
         elif layerType == "MULT":
-            return self.multNode
-            # return self.multNode(inputNode=kwargs["inputNode"], outputNode=kwargs["outputNode"])
+            return self.multNode(inputNode1=kwargs["inputNode1"], inputNode2=kwargs["inputNode2"])
         elif layerType == "DROPOUT":
             # return torch.nn.Dropout
             return None
@@ -138,15 +62,28 @@ class FrameStructure(WrapperTemplate):
         else:
             return None
 
-    def sumNode(self, inputNode, outputNode):
-        return inputNode + outputNode
+    def dimensionalityChangeforMultiply(self, node, done=False):
+        if done is False:
+            return node.view(list(node.size())[0], list(node.size())[2], 1)
+        else:
+            return node.reshape(list(node.size())[0], 1, list(node.size())[1] * list(node.size())[2])
 
-    def subNode(self, inputNode, outputNode):
-        return inputNode - outputNode
+    def sumNode(self, inputNode1, inputNode2):
+        if inputNode1.size() != inputNode2.size():
+            # TODO add gui control
+            print("dimensionality error with " + str(inputNode1) + " and " + str(inputNode2) + " in pytorch")
+            quit()
+        return inputNode1 + inputNode2
 
-    # TODO mult
-    def multNode(self, inputNode, outputNode):
-        return inputNode * outputNode
+    def subNode(self, inputNode1, inputNode2):
+        if inputNode1.size() != inputNode2.size():
+            # TODO: add gui control
+            print("dimensionality error with " + str(inputNode1) + " and " + str(inputNode2) + " in pytorch")
+            quit()
+        return inputNode1 - inputNode2
+
+    def multNode(self, inputNode1, inputNode2):
+        return self.dimensionalityChangeforMultiply(self.dimensionalityChangeforMultiply(inputNode1) * inputNode2, True)
 
     def chooseActivation(self, activ):
         if activ == "Hyperbolic Tangent (Tanh)":
@@ -154,9 +91,9 @@ class FrameStructure(WrapperTemplate):
         elif activ == "Softmax":
             return nn.Softmax
         elif activ == "Rectified Linear (ReLu)":
-            return nn.ReLU
+            return torch.nn.ReLU
         elif activ == "Exponential Linear (Elu)":
-            return nn.ELU
+            return torch.nn.ELU
         elif activ == "Log Softmax":
             return nn.LogSoftmax
         elif activ == "Sigmoid":
@@ -252,83 +189,84 @@ class FrameStructure(WrapperTemplate):
 
 
 class torchModel(nn.Module):
+    """This class implements the creation and connection of block modules and arch modules. Unless the sequential model
+        is used, the process of creation instantiation modules and connection of the latter needs to be done in the
+        __init__function and the forward function accordingly. This cannot be done in the FrameStructure class to avoid
+        confusion when calling the prepareModel function. Now, when prepareModel is called, a torchModel object is called
+        and saved, which contains every information for the model structure.
+        """
 
     def __init__(self, parent):
+        """In this function every block and arch module is created and saved in self.nodes and self.activs ModuleDicts accordingly."""
         super(torchModel, self).__init__()
         self.parent = parent
+        self.structure = parent.structure
+        # node and archs modules are saved here
         self.activs = nn.ModuleDict()
         self.nodes = nn.ModuleDict()
-        for node in list(elem for elem in self.parent.structure if self.parent.structure[elem]["block"] is True):
-            print("nodo corrente: " + self.parent.structure[node]["name"])
+
+        # Iters on every block in the structure
+        for node in list(elem for elem in self.structure if self.structure[elem]["block"] is True):
+
             # Check if layer type is valid
-            if self.parent.nodeSupport(self.parent.structure[node]["type"]) is False:
-                self.parent.logger("Layer type " + self.parent.structure[node][
+            if self.parent.nodeSupport(self.structure[node]["type"]) is False:
+                self.parent.logger("Layer type " + self.structure[node][
                     "name"] + " not supported in " + self.parent.frame + ". Skipping layer")
                 continue
 
-            # If it is not a mult sum or sub block create normal block
-            if self.parent.structure[node]["type"] != "SUM" and self.parent.structure[node]["type"] != "SUB" and \
-                    self.parent.structure[node]["type"] != "MULT":
-                print("se nodo " + str(self.parent.structure[node]["name"]) + " non è mult/add/sub")
-                # if it is not an input or output, which don't require proper blocks, create normal block
-                if self.parent.structure[node]["type"] != "INPUT":
-                    print("se nodo " + str(self.parent.structure[node]["name"] + " non è input"))
-                    prevArchInd = next(elem for elem in self.parent.structure if
-                                       self.parent.structure[elem]["name"] in self.parent.structure[node]["PrevArch"])
+            # If it is not a mult sum or sub block
+            if self.structure[node]["type"] != "SUM" and self.structure[node]["type"] != "SUB" and \
+                    self.structure[node]["type"] != "MULT":
 
-                    prevBlockInd = next(elem for elem in self.parent.structure if
-                                        self.parent.structure[elem]["name"] == self.parent.structure[prevArchInd][
+                # if it is not an input , which doesn't require proper block, create normal block
+                if self.structure[node]["type"] != "INPUT" and self.structure[node]["type"] != "OUTPUT":
+                    # Looks for the previous block (through the previous arch) to find the input dimension
+                    prevArchInd = next(elem for elem in self.structure if
+                                       self.structure[elem]["name"] in self.structure[node]["PrevArch"])
+                    prevBlockInd = next(elem for elem in self.structure if
+                                        self.structure[elem]["name"] == self.structure[prevArchInd][
                                             "initBlock"])
-                    if self.parent.structure[prevBlockInd]["type"] == "INPUT":
+
+                    # If the previous block is input then the input dimension is equel to self.ninput
+                    if self.structure[prevBlockInd]["type"] == "INPUT":
                         inputDim = self.parent.ninput
+
                     else:
-                        if self.parent.structure[prevBlockInd]["type"] != "SUM" and \
-                                self.parent.structure[prevBlockInd]["type"] != "SUB" and \
-                                self.parent.structure[prevBlockInd]["type"] != "MULT":
-                            inputDim = self.parent.structure[prevBlockInd]["neurons"]
+                        if self.structure[prevBlockInd]["type"] != "SUM" and \
+                                self.structure[prevBlockInd]["type"] != "SUB" and \
+                                self.structure[prevBlockInd]["type"] != "MULT":
+                            inputDim = self.structure[prevBlockInd]["neurons"]
+                        # If the previous block is a special block than it calls the computeSpecBlockDim, which looks
+                        # for the output dimension of that block, which differs accordingly if the special block is
+                        # sub/sum or mult
                         else:
                             inputDim = self.parent.computeSpecBlockDim(specBlockIndex=prevBlockInd)
-                            print("nodo precedente è speciale, quindi l'output di quello è: " + str(inputDim))
-                    if self.parent.structure[node]["type"] == "OUTPUT":
-                        layerType = "DENSE"
-                        outputDim = self.parent.noutput
-                    else:
-                        layerType = self.parent.structure[node]["type"]
-                        outputDim = self.parent.structure[node]["neurons"]
 
-                    layerT = self.chooseNode(layerType=layerType, inputDim=inputDim, outputDim=outputDim)
-                    self.nodes.add_module(self.parent.structure[node]["name"], layerT)
-                    print("layer appena creato: " + str(layerT))
-            else:
-                print("in nodo " + self.parent.structure[node]["name"] + "")
-                # layerT = self.chooseNode(layerType=self.parent.structure[node]["type"])
-                # self.nodes.add_module(self.parent.structure[node]["name"], layerT)
-        print("creazione  funzioni attivazione")
-        for arch in list(elem for elem in self.parent.structure if self.parent.structure[elem]["block"] is False):
+                    layerType = self.structure[node]["type"]
+                    outputDim = self.structure[node]["neurons"]
+
+                    layerT = self.parent.chooseNode(layerType=layerType, inputDim=inputDim, outputDim=outputDim)
+                    self.nodes.add_module(self.structure[node]["name"], layerT)
+
+        for arch in list(elem for elem in self.structure if self.structure[elem]["block"] is False):
             # Check if Activation function is valid
-            if self.parent.functionSupport(self.parent.structure[arch]["activFunc"]) is False:
-                self.parent.logger("Activation function" + str(self.parent.structure[arch][
+            if self.parent.functionSupport(self.structure[arch]["activFunc"]) is False:
+                self.parent.logger("Activation function" + str(self.structure[arch][
                                                                    "activFunc"]) + " not supported in " + self.parent.frame + ". Skipping layer")
                 continue
-            tempActiv = self.chooseActivation(self.parent.structure[arch]["activFunc"])()
-            print("funzione attivazione creato: " + str(
-                self.parent.chooseActivation(self.parent.structure[arch]["activFunc"])))
-            self.activs.add_module(self.parent.structure[arch]["name"], tempActiv)
-        print("fine inizializzazione classe")
 
-        print("risultato finale: blocchi: " + str(self.nodes) + ", archi: " + str(self.activs))
+            tempActiv = self.parent.chooseActivation(self.structure[arch]["activFunc"])()
+            self.activs.add_module(self.structure[arch]["name"], tempActiv)
 
     def forward(self, x):
-
-        initBlockIndex = self.parent.returnFirstCompleteDiagram(self.parent.structure)
-        # inputDim = self.parent.ninput
-        # outputDim = self.parent.ninput
+        initBlockIndex = self.parent.returnFirstCompleteDiagram(self.structure)
 
         # nodes dictionary keeps track of every block as keras node
-        nodes = {self.parent.structure[initBlockIndex]["name"]: x}
+        nodes = {self.structure[initBlockIndex]["name"]: x}
+
         # merge dictionary keeps track of the two branches associated to one special block
         merge = {}
-        outputNode = None
+
         getP = self.parent.getPair(initBlockIndex)
 
         # starts getting the next arch-block pair
@@ -336,117 +274,38 @@ class torchModel(nn.Module):
 
             # Merging two branches
             if specBlock is not None:
+                # If it is the first time seeing a block that goes into a precise special block than it is saved in merge
                 if specBlock not in merge:
-                    merge[specBlock] = nodes[self.parent.structure[block]["name"]]
+                    merge[specBlock] = nodes[self.structure[block]["name"]]
                     continue
-
+                # If a second block goes into a specific special block then the first one is gathered and the operation
+                # is performed with the gethered one and the current one. After the computation, this precise special
+                # block is removed from the dictionary in which it was saved with the previous block
                 else:
                     specIndex = next(
-                        ind for ind in self.parent.structure if self.parent.structure[ind]["name"] == specBlock)
-                    # layerT = self.nodes[self.parent.structure[specIndex]["name"]]
-                    tempBlock = nodes[self.parent.structure[block]["name"]]
-                    outputBlock = self.chooseNode(layerType=self.parent.structure[specIndex]["type"],
-                                                  inputNode1=tempBlock, inputNode2=merge[specBlock])
+                        ind for ind in self.structure if self.structure[ind]["name"] == specBlock)
+                    tempBlock = nodes[self.structure[block]["name"]]
+                    outputBlock = self.parent.chooseNode(layerType=self.structure[specIndex]["type"],
+                                                         inputNode1=merge[specBlock], inputNode2=tempBlock)
                     merge.pop(specBlock)
                     nodes[specBlock] = outputBlock
                     continue
 
-            # If it's not merging than it is a regular block and it needs regular activation function and block type
-
-            activationFunc = self.activs[self.parent.structure[arch]["name"]]
-            print("presa funzione attivazione " + str(self.parent.structure[arch]["name"]) + " ossia: " + str(
-                activationFunc))
-
-            tempBlock = nodes[self.parent.structure[arch]["initBlock"]]
-
+            # If it's not merging than it is a regular block and it needs regular activation function and block type.
+            # The activation function is taken from the ModuleDict prepared in __init__ and it is passed with the block
+            # saved from the previous iteration in the nodes dictionary
+            activationFunc = self.activs[self.structure[arch]["name"]]
+            tempBlock = nodes[self.structure[arch]["initBlock"]]
             outputNode = activationFunc(tempBlock)
-            # print("funzione attivazione dopo passaggio dati " + str(outputNode))
-            # print("dati passati: " + str(tempBlock))
 
-            # Mid blocks. If this is the last block then the result is the data from passed through the last activation
-            # function (there are no input nor output blocks so the result is just the output data, not saved anywhere)
-            if self.parent.structure[block]["type"] == "OUTPUT":
+            # If this is the last block then the result is the data from passed through the last activation
+            # function (there are no input nor output blocks so the result is just the output data). Otherwise the data
+            # passed through the activatio function is passed through the next block and temporarly saved in the nodes
+            # dictionary using its name as key
+            if self.structure[block]["type"] == "OUTPUT":
                 return outputNode
             else:
 
-                layerT = self.nodes[self.parent.structure[block]["name"]]
-
-                print("preso blocco " + str(self.parent.structure[block]["name"]) + " ossia: " + str(layerT))
+                layerT = self.nodes[self.structure[block]["name"]]
                 outputBlock = layerT(outputNode)
-                print("dimensione layer: " + str(outputBlock.size()))
-                # print("nodo dopo passaggio dati " + str(outputBlock))
-                nodes[self.parent.structure[block]["name"]] = outputBlock
-
-    def chooseNode(self, layerType, **kwargs):
-        if layerType == "DENSE" or layerType == "OUTPUT":
-            x = torch.nn.Linear(1,2)
-            return torch.nn.Linear(int(kwargs["inputDim"]), int(kwargs["outputDim"]))
-        elif layerType == "SUM":
-            # return self.sumNode(inputNode=kwargs["inputNode"], outputNode=kwargs["outputNode"])
-            return self.sumNode(inputNode1=kwargs["inputNode1"], inputNode2=kwargs["inputNode2"])
-        elif layerType == "SUB":
-            # return self.subNode(inputNode=kwargs["inputNode"], outputNode=kwargs["outputNode"])
-            return self.subNode(inputNode1=kwargs["inputNode1"], inputNode2=kwargs["inputNode2"])
-        elif layerType == "MULT":
-            return self.multNode(inputNode1=kwargs["inputNode1"], inputNode2=kwargs["inputNode2"])
-            # return self.multNode(inputNode=kwargs["inputNode"], outputNode=kwargs["outputNode"])
-        elif layerType == "DROPOUT":
-            # return torch.nn.Dropout
-            return None
-        elif layerType == "POOLING":
-            # return torch.nn.AvgPool1d
-            return None
-        elif layerType == "CNN":
-            # return torch.nn.Conv1d
-            return None
-        else:
-            return None
-
-    def dimensionalityChangeforMultiply(self, node, done=False):
-        if done is False:
-            return node.view(list(node.size())[1], 1)
-        else:
-            return node.reshape(1, list(node.size())[0] * list(node.size())[1])
-
-    def sumNode(self, inputNode1, inputNode2):
-        if inputNode1.size() != inputNode2.size():
-            print("dimensionality error with " + str(inputNode1) + " and " + str(inputNode2) + " in pytorch")
-            quit()
-        print("nodo 1 " + str(inputNode1) + " e nodo 2 " + str(inputNode2) + " sommati in pytorch")
-        print("dimensioni nodi: " + str(inputNode1.size()) + ", " + str(inputNode2.size()))
-        print("nodo finale: "+ str(inputNode1 + inputNode2))
-        print("dimensione nodo finale: " + str((inputNode1 + inputNode2).size()))
-        return inputNode1 + inputNode2
-
-    def subNode(self, inputNode1, inputNode2):
-        if inputNode1.size() != inputNode2.size():
-            print("dimensionality error with " + str(inputNode1) + " and " + str(inputNode2) + " in pytorch")
-            quit()
-        return inputNode1 - inputNode2
-
-    # TODO mult
-    def multNode(self, inputNode1, inputNode2):
-
-        return self.dimensionalityChangeforMultiply(self.dimensionalityChangeforMultiply(inputNode1) * inputNode2, True)
-
-    def chooseActivation(self, activ):
-        if activ == "Hyperbolic Tangent (Tanh)":
-            return nn.Tanh
-        elif activ == "Softmax":
-            return nn.Softmax
-        elif activ == "Rectified Linear (ReLu)":
-            return torch.nn.ReLU
-        elif activ == "Exponential Linear (Elu)":
-            return torch.nn.ELU
-        elif activ == "Log Softmax":
-            return nn.LogSoftmax
-        elif activ == "Sigmoid":
-            return nn.Sigmoid
-        elif activ == "Softplus":
-            return nn.Softplus
-        elif activ == "Linear":
-            return nn.Linear
-        elif activ == "Hard Hyperbolic Tangent(HardTanh)":
-            return nn.Hardtanh
-        else:
-            return None
+                nodes[self.structure[block]["name"]] = outputBlock

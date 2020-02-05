@@ -27,6 +27,21 @@ class FrameStructure(kerasWrapper):
         utils.plot_model(self.model, self.name + costants.IMAGE_EXTENSION)
         # self.logger("Model saved with Tensorflow")
 
+    def nodeSupport(self, node):
+        if node == "DENSE" or node == "SUM" or node == "SUB" or node == "MULT" or \
+                node == "DROPOUT" or node == "POOLING" or node == "CNN" or node == "INPUT" or node == "OUTPUT":
+            return True
+        else:
+            return False
+
+    def functionSupport(self, activ):
+        if activ == "Hyperbolic Tangent (Tanh)" or activ == "Softmax" or activ == "Rectified Linear (ReLu)" or \
+                activ == "Exponential Linear (Elu)" or activ == "Sigmoid" or activ == "Softplus" \
+                or activ == "Linear" or activ == "Hard Sigmoid" or activ == "Softmax" or activ == "Log Softmax":
+            return True
+        else:
+            return False
+
     def chooseNode(self, layerType, **kwargs):
         if layerType == "DENSE" or layerType == "OUTPUT":
             return layers.Dense
