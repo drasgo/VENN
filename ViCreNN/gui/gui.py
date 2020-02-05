@@ -206,7 +206,7 @@ def frameworkCommit(parent):
     global structure
 
     if structure is None:
-        if structureCommit(parent, True) is None:
+        if structureCommit(parent, True) is False:
             logger("Error producing scheme of neural network for exporting. Aborting")
             return
     else:
@@ -221,19 +221,20 @@ def structureCommit(parent, called=False):
 
     structure = mainNN.NNStructure(blocks=layers, arrows=archs)
     setupNNStructure(parent)
-    for arch in archs:
-        print(arch.name)
+
     if structure.checkTopology():
         structure.commitTopology()
 
         if called is not True:
             structure.saveTopology()
+        else:
+            return True
 
     else:
         logger("qualcosa è andato starto")
 
         if called is True:
-            return None
+            return False
 
 
 def structureLoad(parent):

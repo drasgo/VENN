@@ -20,7 +20,7 @@ class WrapperTemplate:
 
         self.prepareStructure()
 
-    def chooseNode(self, layerType):
+    def chooseNode(self, layerType, **kwargs):
         """ Override it"""
         pass
 
@@ -165,17 +165,17 @@ class WrapperTemplate:
         # next block = index (which is prev block) and special block = next block. Either way, the wrapper will always
         #  get nextArchIndex, nextBlockIndex, None if it is sequential or None, index, specName in case the current branch
         #  get to a special block. Note: max two branches can merge into one special block
-        print("in get pair")
+        # print("in get pair")
         while self.structure[index]["type"] != "OUTPUT":
 
             # If there are more than 1 arches exiting the current block
             if len(self.structure[index]["SuccArch"]) > 1:
                 specIndex = None
-                print("in succ arch maggiore di 1")
+                # print("in succ arch maggiore di 1")
                 # For each exiting arch exiting the current block
                 for tempArchName in self.structure[index]["SuccArch"]:
                     archIndex, blockIndex = self.getArchBlock(tempArchName)
-                    print("STILL IN MERGGE")
+                    # print("STILL IN MERGGE")
                     # If the next block from the current block is a special block (aka mult/add/sub) then return
                     # to the wrapper arch=None, the current index, the name of the special block.
                     # The wrapper is expected to put a control for checking if specName is not none, in which case it
@@ -183,7 +183,7 @@ class WrapperTemplate:
                     if self.structure[blockIndex]["type"] == "SUM" or \
                             self.structure[blockIndex]["type"] == "SUB" or \
                             self.structure[blockIndex]["type"] == "MULT":
-                        print("next block is special block")
+                        # print("next block is special block")
                         specIndex = blockIndex
                         specName = self.structure[blockIndex]["name"]
                         yield None, index, specName
@@ -198,20 +198,20 @@ class WrapperTemplate:
                         # returning None, the previous index and the index of the special block
                         for nextArchIndex, nextBlockIndex, tempSpec in branches:
                             specIndex = tempSpec
-                            print("in get pair passing to wrapper block" + self.structure[nextBlockIndex]["name"])
+                            # print("in get pair passing to wrapper block" + self.structure[nextBlockIndex]["name"])
 
                             # If the index of the special block is None get what is returned from the recursive function
                             #  and send it to the wrapper
                             if specIndex is None:
                                 specName = None
-                                print("arch " + self.structure[nextArchIndex]["name"])
+                                # print("arch " + self.structure[nextArchIndex]["name"])
                             # If the index of the special block is not None then it is supposed to be the last cycle from
                             # the recursive function, which means that it sent back nextArchIndex = None,
                             # nextBlockIndex = index and specIndex = index of the special block. It is sent to the
                             # wrapper and then it continues.
                             else:
                                 specName = self.structure[specIndex]["name"]
-                                print("block " + specName)
+                                # print("block " + specName)
                             yield nextArchIndex, nextBlockIndex, specName
 
                 # This is the last piece of code after the reunion of the two arches. The current index needs to be
@@ -227,7 +227,7 @@ class WrapperTemplate:
             # index) and special block = nextBlockIndex
             if self.structure[nextBlockIndex]["type"] == "SUM" or self.structure[nextBlockIndex]["type"] == "SUB" or \
                     self.structure[nextBlockIndex]["type"] == "MULT":
-                print("in sub, mult o sum in get pair")
+                # print("in sub, mult o sum in get pair")
                 yield None, index, nextBlockIndex
                 break
 
@@ -242,5 +242,35 @@ class WrapperTemplate:
         nextBlockIndex = next(key for key in self.structure if self.structure[key]["name"] == nextBlockName)
         return nextArchIndex, nextBlockIndex
 
-    # while self.structure[index]["LastBlock"] is False:
-    #     for nextArchName in (arch for arch in self.structure[index]["SuccArch"]):
+    def computeSpecBlockDim(self, specBlockIndex):
+
+        if self.structure[specBlockIndex]["type"] == "SUM" or self.structure[specBlockIndex]["type"] == "SUB" or \
+                self.structure[specBlockIndex]["type"] == "MULT":
+
+            archName1 = [elem for elem in self.structure[specBlockIndex]["PrevArch"]][0]
+            archIndex1 = next(elem for elem in self.structure if self.structure[elem]["name"] == archName1)
+            blockIndex1 = next(
+                elem for elem in self.structure if
+                self.structure[elem]["name"] == self.structure[archIndex1]["initBlock"])
+
+            if self.structure[specBlockIndex]["type"] == "SUM" or self.structure[specBlockIndex]["type"] == "SUB":
+                return self.computeSpecBlockDim(blockIndex1)
+
+            elif self.structure[specBlockIndex]["type"] == "MULT":
+                archName2 = [elem for elem in self.structure[specBlockIndex]["PrevArch"]][1]
+                archIndex2 = next(elem for elem in self.structure if self.structure[elem]["name"] == archName2)
+                blockIndex2 = next(
+                    elem for elem in self.structure if
+                    self.structure[elem]["name"] == self.structure[archIndex2]["initBlock"])
+
+                return self.computeSpecBlockDim(blockIndex1) * self.computeSpecBlockDim(blockIndex2)
+        else:
+
+            if self.structure[specBlockIndex]["type"] == "DENSE":
+                return int(self.structure[specBlockIndex]["neurons"])
+
+            else:
+                return self.ninput
+
+
+

@@ -1,6 +1,7 @@
 from tensorflow.keras import utils, losses, optimizers, metrics
 from tensorflow import GradientTape
 from tensorflow import nn
+from tensorflow.keras import layers
 import ViCreNN.costants as costants
 from ViCreNN.nn.kerasWrapper import FrameStructure as kerasWrapper
 
@@ -26,23 +27,23 @@ class FrameStructure(kerasWrapper):
         utils.plot_model(self.model, self.name + costants.IMAGE_EXTENSION)
         # self.logger("Model saved with Tensorflow")
 
-    # def chooseNode(self, layerType):
-    #     if layerType == "DENSE" or layerType == "OUTPUT":
-    #         return layers.Dense
-    #     elif layerType == "SUM":
-    #         return layers.Add
-    #     elif layerType == "SUB":
-    #         return layers.Subtract
-    #     elif layerType == "MULT":
-    #         return layers.Multiply
-    #     elif layerType == "DROPOUT":
-    #         return layers.Dropout
-    #     elif layerType == "POOLING":
-    #         return None
-    #     elif layerType == "CNN":
-    #         return None
-    #     else:
-    #         return None
+    def chooseNode(self, layerType, **kwargs):
+        if layerType == "DENSE" or layerType == "OUTPUT":
+            return layers.Dense
+        elif layerType == "SUM":
+            return layers.Add
+        elif layerType == "SUB":
+            return layers.Subtract
+        elif layerType == "MULT":
+            return layers.Multiply
+        elif layerType == "DROPOUT":
+            return layers.Dropout
+        elif layerType == "POOLING":
+            return None
+        elif layerType == "CNN":
+            return None
+        else:
+            return None
 
     def chooseActivation(self, activ):
         tempActiv = kerasWrapper.chooseActivation(self, activ)

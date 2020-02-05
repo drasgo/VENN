@@ -10,6 +10,7 @@ class FrameStructure(WrapperTemplate):
         super(FrameStructure, self).__init__(numberInput, numberOutput, structure, structureName, logger)
         self.frame = "Keras"
 
+    # TODO: risolvere problema aritmetico riguardo dimensioni matrici per somma/sottrazione e moltiplicazione
     def prepareModel(self, called=False):
         # Check if this function is called from keras wrapper or from tensorflow wrapper
         if called is True:
@@ -44,7 +45,8 @@ class FrameStructure(WrapperTemplate):
                 else:
                     specIndex = next(ind for ind in self.structure if self.structure[ind]["name"] == specBlock)
                     layerT = self.chooseNode(self.structure[specIndex]["type"])
-                    outputNode = layerT(name=specBlock)([outputNode, merge[specBlock]])
+                    tempNode = nodes[self.structure[block]["name"]]
+                    outputNode = layerT(name=specBlock)([tempNode, merge[specBlock]])
                     merge.pop(specBlock)
                     nodes[specBlock] = outputNode
                     continue
@@ -53,7 +55,7 @@ class FrameStructure(WrapperTemplate):
             layerT = self.chooseNode(self.structure[block]["type"])
             activationFunc = self.chooseActivation(self.structure[arch]["activFunc"])
 
-            # Check if layer typer is valid
+            # Check if layer type is valid
             if layerT is None:
                 self.logger(
                     "Layer type " + self.structure[block]["name"] + " not supported in " + self.frame + ". Skipping layer")
@@ -74,7 +76,7 @@ class FrameStructure(WrapperTemplate):
             # Mid blocks
             else:
                 outputNode = layerT(int(self.structure[block]["neurons"]), activation=activationFunc,
-                                    name=(str(self.structure[block]["name"])))(tempOut)
+                                    name=str(self.structure[block]["name"]))(tempOut)
 
             nodes[self.structure[block]["name"]] = outputNode
 
@@ -87,7 +89,7 @@ class FrameStructure(WrapperTemplate):
         self.model.save(self.name)
         keras.utils.plot_model(self.model, to_file=self.name + costants.IMAGE_EXTENSION)
 
-    def chooseNode(self, layerType):
+    def chooseNode(self, layerType, **kwargs):
         if layerType == "DENSE" or layerType == "OUTPUT":
             return keras.layers.Dense
         elif layerType == "SUM":
