@@ -287,7 +287,8 @@ class torchModel(nn.Module):
                                 self.parent.structure[prevBlockInd]["type"] != "MULT":
                             inputDim = self.parent.structure[prevBlockInd]["neurons"]
                         else:
-                            inputDim = self.parent.computeSpecBlockDim(specBlockIndex=node)
+                            inputDim = self.parent.computeSpecBlockDim(specBlockIndex=prevBlockInd)
+                            print("nodo precedente è speciale, quindi l'output di quello è: " + str(inputDim))
                     if self.parent.structure[node]["type"] == "OUTPUT":
                         layerType = "DENSE"
                         outputDim = self.parent.noutput
@@ -369,13 +370,16 @@ class torchModel(nn.Module):
             else:
 
                 layerT = self.nodes[self.parent.structure[block]["name"]]
+
                 print("preso blocco " + str(self.parent.structure[block]["name"]) + " ossia: " + str(layerT))
                 outputBlock = layerT(outputNode)
+                print("dimensione layer: " + str(outputBlock.size()))
                 # print("nodo dopo passaggio dati " + str(outputBlock))
                 nodes[self.parent.structure[block]["name"]] = outputBlock
 
     def chooseNode(self, layerType, **kwargs):
         if layerType == "DENSE" or layerType == "OUTPUT":
+            x = torch.nn.Linear(1,2)
             return torch.nn.Linear(int(kwargs["inputDim"]), int(kwargs["outputDim"]))
         elif layerType == "SUM":
             # return self.sumNode(inputNode=kwargs["inputNode"], outputNode=kwargs["outputNode"])
@@ -398,15 +402,32 @@ class torchModel(nn.Module):
         else:
             return None
 
+    def dimensionalityChangeforMultiply(self, node, done=False):
+        if done is False:
+            return node.view(list(node.size())[1], 1)
+        else:
+            return node.reshape(1, list(node.size())[0] * list(node.size())[1])
+
     def sumNode(self, inputNode1, inputNode2):
+        if inputNode1.size() != inputNode2.size():
+            print("dimensionality error with " + str(inputNode1) + " and " + str(inputNode2) + " in pytorch")
+            quit()
+        print("nodo 1 " + str(inputNode1) + " e nodo 2 " + str(inputNode2) + " sommati in pytorch")
+        print("dimensioni nodi: " + str(inputNode1.size()) + ", " + str(inputNode2.size()))
+        print("nodo finale: "+ str(inputNode1 + inputNode2))
+        print("dimensione nodo finale: " + str((inputNode1 + inputNode2).size()))
         return inputNode1 + inputNode2
 
     def subNode(self, inputNode1, inputNode2):
+        if inputNode1.size() != inputNode2.size():
+            print("dimensionality error with " + str(inputNode1) + " and " + str(inputNode2) + " in pytorch")
+            quit()
         return inputNode1 - inputNode2
 
     # TODO mult
     def multNode(self, inputNode1, inputNode2):
-        return inputNode1 * inputNode2
+
+        return self.dimensionalityChangeforMultiply(self.dimensionalityChangeforMultiply(inputNode1) * inputNode2, True)
 
     def chooseActivation(self, activ):
         if activ == "Hyperbolic Tangent (Tanh)":

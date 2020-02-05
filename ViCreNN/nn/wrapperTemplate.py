@@ -52,6 +52,9 @@ class WrapperTemplate:
         """ Override it"""
         pass
 
+    def dimensionalityChangeforMultiply(self, node1, node2):
+        pass
+
     #
     def setInputOutput(self, inputData, outputData, test):
         """ Gets input and output data. Don't touch it"""
@@ -246,7 +249,7 @@ class WrapperTemplate:
 
         if self.structure[specBlockIndex]["type"] == "SUM" or self.structure[specBlockIndex]["type"] == "SUB" or \
                 self.structure[specBlockIndex]["type"] == "MULT":
-
+            print("nome blocco speciale: " + str(self.structure[specBlockIndex]["name"]))
             archName1 = [elem for elem in self.structure[specBlockIndex]["PrevArch"]][0]
             archIndex1 = next(elem for elem in self.structure if self.structure[elem]["name"] == archName1)
             blockIndex1 = next(
@@ -254,6 +257,7 @@ class WrapperTemplate:
                 self.structure[elem]["name"] == self.structure[archIndex1]["initBlock"])
 
             if self.structure[specBlockIndex]["type"] == "SUM" or self.structure[specBlockIndex]["type"] == "SUB":
+                print("blocco trovato: "+ self.structure[blockIndex1]["name"])
                 return self.computeSpecBlockDim(blockIndex1)
 
             elif self.structure[specBlockIndex]["type"] == "MULT":
@@ -267,10 +271,10 @@ class WrapperTemplate:
         else:
 
             if self.structure[specBlockIndex]["type"] == "DENSE":
+                print("numero neuroni blocco precedente: " + str(self.structure[specBlockIndex]["neurons"]))
+                print("nome blocco precedente: " + str(self.structure[specBlockIndex]["name"]))
                 return int(self.structure[specBlockIndex]["neurons"])
 
             else:
+                print("numero neuroni blocco precedente (che è anche neurone di input): " + str(self.ninput))
                 return self.ninput
-
-
-
