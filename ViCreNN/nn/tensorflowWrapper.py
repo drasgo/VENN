@@ -1,6 +1,8 @@
 from tensorflow.keras import utils, losses, optimizers, metrics
 from tensorflow import GradientTape
 from tensorflow import nn
+from tensorflow import reshape
+from tensorflow import shape
 from tensorflow.keras import layers
 import ViCreNN.costants as costants
 from ViCreNN.nn.kerasWrapper import FrameStructure as kerasWrapper
@@ -46,11 +48,11 @@ class FrameStructure(kerasWrapper):
         if layerType == "DENSE" or layerType == "OUTPUT":
             return layers.Dense
         elif layerType == "SUM":
-            return layers.Add
+            return self.sumNode(inputNode1=kwargs["inputNode1"], inputNode2=kwargs["inputNode2"], name=kwargs["name"])
         elif layerType == "SUB":
-            return layers.Subtract
+            return self.subNode(inputNode1=kwargs["inputNode1"], inputNode2=kwargs["inputNode2"], name=kwargs["name"])
         elif layerType == "MULT":
-            return layers.Multiply
+            return self.multNode(inputNode1=kwargs["inputNode1"], inputNode2=kwargs["inputNode2"], name=kwargs["name"])
         elif layerType == "DROPOUT":
             return layers.Dropout
         elif layerType == "POOLING":
@@ -59,6 +61,34 @@ class FrameStructure(kerasWrapper):
             return None
         else:
             return None
+
+    def dimensionalityChangeforMultiply(self, node, done=False):
+        """It changes the shape of the given node. If it is called before the multiplication, it just inverts the two
+                dimensions ([1]x[m] -> [m]x[1]). If it is called after the multiplication, the tensor will be reshaped from
+                [m]x[n] -> [1]x[m*n]
+                """
+        if done is False:
+            return reshape(node, [shape(node)[0], shape(node)[2], 1])
+        else:
+            return reshape(node, [shape(node)[0], 1, shape(node)[1] * shape(node)[2]])
+
+    def multNode(self, inputNode1, inputNode2, name=""):
+        return self.dimensionalityChangeforMultiply(layers.multiply([self.dimensionalityChangeforMultiply(inputNode1),
+                                                                     inputNode2], name=name), True)
+
+    def sumNode(self, inputNode1, inputNode2, name=""):
+        if inputNode1.shape() != inputNode2.shape():
+            # TODO add gui control
+            print("dimensionality error with " + str(inputNode1) + " and " + str(inputNode2) + " in pytorch")
+            quit()
+        return layers.add([inputNode1, inputNode2], name=name)
+
+    def subNode(self, inputNode1, inputNode2, name=""):
+        if inputNode1.shape() != inputNode2.shape():
+            # TODO add gui control
+            print("dimensionality error with " + str(inputNode1) + " and " + str(inputNode2) + " in pytorch")
+            quit()
+        return layers.subtract([inputNode1, inputNode2], name=name)
 
     def chooseActivation(self, activ):
         tempActiv = kerasWrapper.chooseActivation(self, activ)

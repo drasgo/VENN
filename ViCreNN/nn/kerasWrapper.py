@@ -1,7 +1,8 @@
 import keras
-import ViCreNN.costants as costants
-from ViCreNN.nn.wrapperTemplate import WrapperTemplate
+from keras import backend
 import sys
+from ViCreNN.nn.wrapperTemplate import WrapperTemplate
+import ViCreNN.costants as costants
 
 
 class FrameStructure(WrapperTemplate):
@@ -23,7 +24,7 @@ class FrameStructure(WrapperTemplate):
         # Input Block
         initBlockIndex = self.returnFirstCompleteDiagram(self.structure)
 
-        inputNode = keras.Input(shape=(self.ninput,), name="input")
+        inputNode = keras.Input(shape=(1, self.ninput), name="input")
         outputNode = None
 
         # nodes dictionary keeps track of every block as keras node
@@ -44,9 +45,9 @@ class FrameStructure(WrapperTemplate):
 
                 else:
                     specIndex = next(ind for ind in self.structure if self.structure[ind]["name"] == specBlock)
-                    layerT = self.chooseNode(self.structure[specIndex]["type"])
                     tempNode = nodes[self.structure[block]["name"]]
-                    outputNode = layerT(name=specBlock)([tempNode, merge[specBlock]])
+                    outputNode = self.chooseNode(self.structure[specIndex]["type"], inputNode1=merge[specBlock],
+                                                 inputNode2=tempNode, name=specBlock)
                     merge.pop(specBlock)
                     nodes[specBlock] = outputNode
                     continue
@@ -75,6 +76,7 @@ class FrameStructure(WrapperTemplate):
             else:
                 outputNode = layerT(int(self.structure[block]["neurons"]), activation=activationFunc,
                                     name=str(self.structure[block]["name"]))(tempOut)
+                print(str(outputNode))
 
             nodes[self.structure[block]["name"]] = outputNode
 
@@ -106,11 +108,11 @@ class FrameStructure(WrapperTemplate):
         if layerType == "DENSE" or layerType == "OUTPUT":
             return keras.layers.Dense
         elif layerType == "SUM":
-            return keras.layers.Add
+            return self.sumNode(inputNode1=kwargs["inputNode1"], inputNode2=kwargs["inputNode2"], name=kwargs["name"])
         elif layerType == "SUB":
-            return keras.layers.Subtract
+            return self.subNode(inputNode1=kwargs["inputNode1"], inputNode2=kwargs["inputNode2"], name=kwargs["name"])
         elif layerType == "MULT":
-            return keras.layers.Multiply
+            return self.multNode(inputNode1=kwargs["inputNode1"], inputNode2=kwargs["inputNode2"], name=kwargs["name"])
         elif layerType == "DROPOUT":
             return keras.layers.Dropout
         elif layerType == "POOLING":
@@ -119,6 +121,34 @@ class FrameStructure(WrapperTemplate):
             return None
         else:
             return None
+
+    def dimensionalityChangeforMultiply(self, node, done=False):
+        """It changes the shape of the given node. If it is called before the multiplication, it just inverts the two
+                dimensions ([1]x[m] -> [m]x[1]). If it is called after the multiplication, the tensor will be reshaped from
+                [m]x[n] -> [1]x[m*n]
+                """
+        if done is False:
+            return backend.reshape(node, [backend.shape(node)[0], backend.shape(node)[2], 1])
+        else:
+            return backend.reshape(node, [backend.shape(node)[0], 1, backend.shape(node)[1] * backend.shape(node)[2]])
+
+    def multNode(self, inputNode1, inputNode2, name=""):
+        return self.dimensionalityChangeforMultiply(
+            keras.layers.multiply([self.dimensionalityChangeforMultiply(inputNode1), inputNode2], name=name), True)
+
+    def sumNode(self, inputNode1, inputNode2, name=""):
+        if inputNode1.shape() != inputNode2.shape():
+            # TODO add gui control
+            print("dimensionality error with " + str(inputNode1) + " and " + str(inputNode2) + " in pytorch")
+            quit()
+        return keras.layers.add([inputNode1, inputNode2], name=name)
+
+    def subNode(self, inputNode1, inputNode2, name=""):
+        if inputNode1.shape() != inputNode2.shape():
+            # TODO add gui control
+            print("dimensionality error with " + str(inputNode1) + " and " + str(inputNode2) + " in pytorch")
+            quit()
+        return keras.layers.subtract([inputNode1, inputNode2], name=name)
 
     def chooseActivation(self, activ):
         if activ.lower() in "Linear".lower():

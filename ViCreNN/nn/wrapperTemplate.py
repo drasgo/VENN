@@ -21,49 +21,70 @@ class WrapperTemplate:
         self.prepareStructure()
 
     def chooseNode(self, layerType, **kwargs):
-        """ Override it"""
+        """ Overriden for choosing the current layer in the wrappers."""
         pass
 
     def chooseActivation(self, activ):
-        """ Override it"""
+        """ Overriden for choosing the current activation function in the wrappers."""
         pass
 
     def chooseCost(self):
-        """ Override it"""
+        """ Overriden for choosing the cost function in the wrappers."""
         pass
 
     def chooseOptimizer(self):
-        """ Override it"""
+        """ Overriden for choosing the optimizer function in the wrappers."""
         pass
 
     def prepareModel(self):
-        """ Override it"""
+        """ Overriden for preparing the sctructure of the model in the wrappers. This actually creates the model of the
+        specified framework which later can be saved or used for run/test.
+        """
         pass
 
     def saveModel(self):
-        """ Override it"""
+        """ Overriden for saving in file the prepared model."""
         pass
 
     def run(self):
-        """ Override it"""
+        """ Overriden for running the prepared model."""
         pass
 
     def test(self):
-        """ Override it"""
+        """ Overriden for testing the prepared and trained model"""
         pass
 
-    def dimensionalityChangeforMultiply(self, node1, node2):
+    def dimensionalityChangeforMultiply(self, node, done):
+        """ Overriden for commute the previous nodes which go into a mult special block [1]x[m] and [1]x[n] into [m]x[1]
+        and [1]x[n], and reshape the resulting matrix [m]x[n] into a row vector 1x[m*n].
+        """
+        pass
+
+    def multNode(self, inputNode1, inputNode2, name=""):
+        """Overriden for implementing the multiplication operation support into the wrappers."""
+        pass
+
+    def sumNode(self, inputNode1, inputNode2, name=""):
+        """Overriden for implementing the sum operation support into the wrappers."""
+        pass
+
+    def subNode(self, inputNode1, inputNode2, name=""):
+        """Overriden for implementing the subtraction operation support into the wrappers."""
         pass
 
     def nodeSupport(self, node):
+        """Overriden for guaranteeing the support of the current layer in the specified framework"""
         pass
 
     def functionSupport(self, activ):
+        """Overriden for guaranteeing the support of the current activation function in the specified framework"""
         pass
 
     #
     def setInputOutput(self, inputData, outputData, test):
-        """ Gets input and output data. Don't touch it"""
+        """ Gets input and output data and divides it, if also testing is performed, into training and testing data.
+        Don't touch it
+        """
         if test is False:
             self.inputTrain = inputData
             self.outputTrain = outputData
@@ -106,11 +127,11 @@ class WrapperTemplate:
         self.optimizer = optim
 
     def setEpochs(self, epochs):
-        """ Sets number of epochs for training"""
+        """ Sets number of epochs for training. Don't touch it."""
         self.epoch = epochs
 
     def checkNumBranches(self, structure):
-        """ Checks how many branches has the structure. Don't touch it"""
+        """ Checks how many branches the structure has. Don't touch it. (NOTE: now it's useless, to be deleted)"""
         # Check the numebr of aggregation blocks (aka sum, mult, div, sub blocks). Every aggregation block is a branch unified
         return len([block for block in structure if structure[block]["block"] is True and
                     (structure[block]["type"] == "SUM" or structure[block]["type"] == "SUB" or
@@ -119,7 +140,7 @@ class WrapperTemplate:
     # da modificare per il supporto dei multi branches
     # TODO refactor function
     def returnFirstCompleteDiagram(self, structure):
-        """ Return one complete diagram: from input to output. Don't touch it"""
+        """ Return first complete diagram input->output. Don't touch it"""
         index = None
         # self.logger("in check sequential")
         while True:
@@ -168,7 +189,9 @@ class WrapperTemplate:
         return index
 
     def getPair(self, index):
-        """ Returns next pair of arch-block. Don't touch it"""
+        """ Returns next pair of arch-block. It checks if the pass is sequential or if two branches are coming out from
+        one block, which means that a special block will come up later on. Don't touch it
+        """
         # It keeps going until either it gets to the last block or, just in case it is the recursive instance, the next
         # block it finds is a special block (aka mult/sum/sub), in which case stops itself, returning next arch = None,
         # next block = index (which is prev block) and special block = next block. Either way, the wrapper will always
@@ -246,13 +269,18 @@ class WrapperTemplate:
             yield nextArchIndex, nextBlockIndex, None
 
     def getArchBlock(self, archName):
+        """Given an archName, it returns its index and its final block index. Don't touch it."""
         nextArchIndex = next(key for key in self.structure if self.structure[key]["name"] == archName)
         nextBlockName = self.structure[nextArchIndex]["finalBlock"]
         nextBlockIndex = next(key for key in self.structure if self.structure[key]["name"] == nextBlockName)
         return nextArchIndex, nextBlockIndex
 
     def computeSpecBlockDim(self, specBlockIndex):
-
+        """Looks for the output dimensionality of the given special block: if it is a SUM/SUB block then the dimension
+        is the same as either one of the two input blocks. If it is a MULT block the dimension is the multiplication
+        of the dimension of two input blocks. It also checks if one (or both) of the previous blocks is a
+         special block itself and continues recurrently. Don't touch it.
+        """
         if self.structure[specBlockIndex]["type"] == "SUM" or self.structure[specBlockIndex]["type"] == "SUB" or \
                 self.structure[specBlockIndex]["type"] == "MULT":
             print("nome blocco speciale: " + str(self.structure[specBlockIndex]["name"]))

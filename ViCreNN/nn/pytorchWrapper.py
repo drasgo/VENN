@@ -63,26 +63,30 @@ class FrameStructure(WrapperTemplate):
             return None
 
     def dimensionalityChangeforMultiply(self, node, done=False):
+        """It changes the shape of the given node. If it is called before the multiplication, it just inverts the two
+        dimensions ([1]x[m] -> [m]x[1]). If it is called after the multiplication, the tensor will be reshaped from
+        [m]x[n] -> [1]x[m*n]
+        """
         if done is False:
             return node.view(list(node.size())[0], list(node.size())[2], 1)
         else:
             return node.reshape(list(node.size())[0], 1, list(node.size())[1] * list(node.size())[2])
 
-    def sumNode(self, inputNode1, inputNode2):
+    def sumNode(self, inputNode1, inputNode2, name=""):
         if inputNode1.size() != inputNode2.size():
             # TODO add gui control
             print("dimensionality error with " + str(inputNode1) + " and " + str(inputNode2) + " in pytorch")
             quit()
         return inputNode1 + inputNode2
 
-    def subNode(self, inputNode1, inputNode2):
+    def subNode(self, inputNode1, inputNode2, name=""):
         if inputNode1.size() != inputNode2.size():
             # TODO: add gui control
             print("dimensionality error with " + str(inputNode1) + " and " + str(inputNode2) + " in pytorch")
             quit()
         return inputNode1 - inputNode2
 
-    def multNode(self, inputNode1, inputNode2):
+    def multNode(self, inputNode1, inputNode2, name=""):
         return self.dimensionalityChangeforMultiply(self.dimensionalityChangeforMultiply(inputNode1) * inputNode2, True)
 
     def chooseActivation(self, activ):
