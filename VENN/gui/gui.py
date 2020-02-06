@@ -3,11 +3,11 @@ from PyQt5.QtCore import Qt, QMimeData
 from PyQt5.QtGui import QDrag
 from PyQt5 import QtGui
 from PyQt5 import QtCore
-import ViCreNN.costants as costants
-from ViCreNN.gui.mainwindow import Ui_MainWindow
-import ViCreNN.nn.mainNN as mainNN
 import os
 import importlib
+import VENN.costants as costants
+from VENN.gui.mainwindow import Ui_MainWindow
+import VENN.nn.mainNN as mainNN
 
 
 def CheckMultipleSelection(self):
@@ -122,8 +122,8 @@ def dragMoveMainStruct(event):
     """ Function for Drag Move Event, mainly used by MainStruct (orange area)
      It updates the position of the block moved inside the widget (again mainly MainStruct)"""
     global tempBlock
-    position = event.pos()
-    tempBlock.move(position)
+    tempPos = event.pos() - QtCore.QPoint(int(tempBlock.width() / 2), int(tempBlock.height() / 2))
+    tempBlock.move(tempPos)
     event.setDropAction(Qt.MoveAction)
     event.accept()
 
@@ -140,8 +140,9 @@ def dropMainStruct(self, event, parent):
     if tempBlock.objectName() == "Blocks":
         global posit
         position = event.pos()
-        newBlock = StructBlock(self, MainBlock=tempBlock)
-        newBlock.move(position - QtCore.QPoint(int(newBlock.width() / 2), int(newBlock.height() / 2)))
+        if isinstance(tempBlock, StructBlock) or isinstance(tempBlock, QtWidgets.QFrame):
+            newBlock = StructBlock(self, MainBlock=tempBlock)
+            newBlock.move(position - QtCore.QPoint(int(newBlock.width() / 2), int(newBlock.height() / 2)))
         UnselectBlock()
 
     else:
@@ -448,16 +449,17 @@ class Arrow(QtWidgets.QFrame):
         self.activationFunc.setText(self.name)
         self.activationFunc.setEnabled(False)
         self.activationFunc.setAlignment(Qt.AlignTop | Qt.AlignCenter)
-        self.activationFunc.setStyleSheet("border-color: " + self.color + ";")
+        self.activationFunc.setAttribute(QtCore.Qt.WA_TranslucentBackground)
+        self.activationFunc.setStyleSheet("background:transparent;")
 
-        self.layout = QtWidgets.QVBoxLayout(self)
-        self.layout.addWidget(self.activationFunc, alignment=Qt.AlignTop)
+        self.layout = QtWidgets.QStackedLayout(self)
+        self.layout.addWidget(self.activationFunc)
         self.layout.setContentsMargins(0, self.lineWidth / 10, 0, self.lineWidth / 10)
-
-        # self.xIn = 0
-        # self.yIn = 0
+        self.layout.setStackingMode(QtWidgets.QStackedLayout.StackAll)
 
         archs.append(self)
+
+        self.repaint()
         self.show()
 
     def __del__(self):
@@ -493,21 +495,35 @@ class Arrow(QtWidgets.QFrame):
         self.name = name
         self.color = str(costants.ACTIVATION_FUNCTIONS[name])
         self.activationFunc.setText(self.name)
-        self.stylesheet = "border-color: " + self.color + "; background-color: " + self.color + ";"
+        self.stylesheet = "border-color: black; background-color: " + self.color + ";"
         self.setStyleSheet(self.stylesheet)
+        self.repaint()
 
     def unselect(self):
         self.setStyleSheet(self.stylesheet)
         self.selected = False
 
-    # TODO paint arrow orientation
-    # def paintEvent(self, e):
-    #     # if self.xIn != 0 and self.yIn != 0:
-    #     init = QtGui.QPainter()
-    #     init.begin(self)
-    #     init.setPen(QtGui.QPen(Qt.black, 5, Qt.SolidLine))
-    #     init.drawEllipse(QtCore.QPoint(0, 0), 5, 5)
-    #     init.end()
+    def paintEvent(self, e):
+        init = QtGui.QPainter()
+        init.begin(self)
+        init.setPen(QtGui.QPen(Qt.black, 10, Qt.SolidLine))
+        # If the arrow is horizontal
+        if self.horizontalLayout is True:
+            # If the arrow is pointing towards right
+            if self.upRightLayout is False:
+                init.drawEllipse(QtCore.QPoint(0, int(self.height() / 2)), int(self.height() / 2), 15)
+            # If the arrow is pointing towards left
+            else:
+                init.drawEllipse(QtCore.QPoint(self.width(), int(self.height() / 2)), int(self.height() / 2), 15)
+        # If the arrow is vertical
+        else:
+            # If the arrow is pointing towards down
+            if self.upRightLayout is False:
+                init.drawEllipse(QtCore.QPoint(int(self.width() / 2), 0), 15, int(self.width() / 2))
+            # If the arrow is pointing towards down
+            else:
+                init.drawEllipse(QtCore.QPoint(int(self.width() / 2), self.height()), 15, int(self.width() / 2))
+        init.end()
 
     def drawArrow(self, All=True, split=False):
         """ It checks the position of the initial and final blocks and it will be drawn relatively  to those two"""
@@ -548,11 +564,6 @@ class Arrow(QtWidgets.QFrame):
                 self.endPoint = QtCore.QPoint(xIn + costants.LINE_WIDTH / 2, self.finalBlock.y())
 
         self.startPoint = QtCore.QPoint(xIn, yIn)
-        # per paint orientation arrow
-        # self.xIn = xIn
-        # self.yIn = yIn
-        #
-        # self.update()
 
         self.setGeometry(xIn, yIn, xFin, self.lineWidth)
 

@@ -4,8 +4,8 @@ from tensorflow import nn
 from tensorflow import reshape
 from tensorflow import shape
 from tensorflow.keras import layers
-import ViCreNN.costants as costants
-from ViCreNN.nn.kerasWrapper import FrameStructure as kerasWrapper
+import VENN.costants as costants
+from VENN.nn.kerasWrapper import FrameStructure as kerasWrapper
 
 
 class FrameStructure(kerasWrapper):

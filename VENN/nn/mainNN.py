@@ -1,6 +1,6 @@
 import json
 import os
-import ViCreNN.costants as costants
+import VENN.costants as costants
 
 
 class NNStructure:

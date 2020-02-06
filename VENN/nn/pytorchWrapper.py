@@ -1,7 +1,7 @@
 import torch
 import torch.nn as nn
 from torchsummary import summary
-from ViCreNN.nn.wrapperTemplate import WrapperTemplate
+from VENN.nn.wrapperTemplate import WrapperTemplate
 
 
 class FrameStructure(WrapperTemplate):

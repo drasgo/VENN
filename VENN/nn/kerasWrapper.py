@@ -1,8 +1,8 @@
 import keras
 from keras import backend
 import sys
-from ViCreNN.nn.wrapperTemplate import WrapperTemplate
-import ViCreNN.costants as costants
+from VENN.nn.wrapperTemplate import WrapperTemplate
+import VENN.costants as costants
 
 
 class FrameStructure(WrapperTemplate):
