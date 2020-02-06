@@ -272,7 +272,14 @@ class torchModel(nn.Module):
         merge = {}
 
         getP = self.parent.getPair(initBlockIndex)
-
+        # TODO
+        # TODO
+        # For implementing multiple inputs support here needs to be
+        # for initBlockIndex in self.returnFirstCompleteDiagram(self.structure): ...
+        # which is a generator function which yields for every connected input. Then a control needs to be
+        # inserted for checking if a specific block is already in the dictionary nodes, in which case it exits the
+        # loop because it means that it is the second (or anyway not the first) cycle  and this branch just reconnected
+        # to the other already prepared branch.
         # starts getting the next arch-block pair
         for arch, block, specBlock in getP:
 
@@ -313,3 +320,10 @@ class torchModel(nn.Module):
                 layerT = self.nodes[self.structure[block]["name"]]
                 outputBlock = layerT(outputNode)
                 nodes[self.structure[block]["name"]] = outputBlock
+
+
+# TODO
+# TODO
+# TODO
+# Aggiungere in mainNN i controlli per i blocchi sub e sum: i due blocchi precedenti devono avere lo stesso numero di
+# neuroni! Rimuovere l'impossibilità di utilizzo degli archi blank. Riguardare tutti i controlli

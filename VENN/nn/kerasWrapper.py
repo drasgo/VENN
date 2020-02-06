@@ -11,7 +11,6 @@ class FrameStructure(WrapperTemplate):
         super(FrameStructure, self).__init__(numberInput, numberOutput, structure, structureName, logger)
         self.frame = "Keras"
 
-    # TODO: risolvere problema aritmetico riguardo dimensioni matrici per somma/sottrazione e moltiplicazione
     def prepareModel(self, called=False):
         # Check if this function is called from keras wrapper or from tensorflow wrapper
         if called is True:
@@ -34,6 +33,14 @@ class FrameStructure(WrapperTemplate):
 
         getP = self.getPair(initBlockIndex)
 
+        # TODO
+        # TODO
+        # For implementing multiple inputs support here needs to be
+        # for initBlockIndex in self.returnFirstCompleteDiagram(self.structure): ...
+        # which is a generator function which yields for every connected input. Then a control needs to be
+        # inserted for checking if a specific block is already in the dictionary nodes, in which case it exits the
+        # loop because it means that it is the second (or anyway not the first) cycle  and this branch just reconnected
+        # to the other already prepared branch.
         # starts getting the next arch-block pair
         for arch, block, specBlock in getP:
 
