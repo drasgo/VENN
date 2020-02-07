@@ -339,12 +339,49 @@ def logger(text="", color="black"):
 
 
 # TODO Resize: if main window resizes then every component has to resize accordingly
-# def resizeEvent(elem, e):
-#     pass
-#
-#
-#  def resize():
-#      return (((OldValue) * (NewMax)) / (OldMax)
+# Quasi fatto! bisogna guardare in qt creator che forse il bug dello sfarfallio è causato dalla tab bar (le due tab in alto)
+# Provare a rimuoverle, mettendo tutti gli elementi nella finestra normale e al piu aggiungendo un link a github in fondo per info
+def resizeEvent(main, e):
+    newVal = main.geometry()
+    resizeElement(main.tabWidget, main.oldMax, newVal)
+    resizeElement(main.OutputFi, main.oldMax, newVal)
+    resizeElement(main.LoadStr, main.oldMax, newVal)
+    resizeElement(main.RunNN, main.oldMax, newVal)
+    resizeElement(main.InputFi, main.oldMax, newVal)
+    resizeElement(main.Input, main.oldMax, newVal)
+    resizeElement(main.InputText, main.oldMax, newVal)
+    resizeElement(main.horizontalLayoutWidget, main.oldMax, newVal)
+    resizeElement(main.CommSave, main.oldMax, newVal)
+    resizeElement(main.Output, main.oldMax, newVal)
+    resizeElement(main.OutputText, main.oldMax, newVal)
+    resizeElement(main.MainStruct, main.oldMax, newVal)
+    resizeElement(main.Blocks, main.oldMax, newVal)
+    resizeElement(main.ChooseArrow, main.oldMax, newVal)
+    resizeElement(main.Delete, main.oldMax, newVal)
+    resizeElement(main.InsertFirstBlock, main.oldMax, newVal)
+    resizeElement(main.LossFunction, main.oldMax, newVal)
+    resizeElement(main.label_4, main.oldMax, newVal)
+    resizeElement(main.Log, main.oldMax, newVal)
+    resizeElement(main.LogWindow, main.oldMax, newVal)
+    resizeElement(main.Framework, main.oldMax, newVal)
+    resizeElement(main.StructureFilename, main.oldMax, newVal)
+    resizeElement(main.label, main.oldMax, newVal)
+    resizeElement(main.FrameworkCommit, main.oldMax, newVal)
+    resizeElement(main.label_2, main.oldMax, newVal)
+    resizeElement(main.numberInputs, main.oldMax, newVal)
+    resizeElement(main.label_3, main.oldMax, newVal)
+    resizeElement(main.numberOutputs, main.oldMax, newVal)
+    resizeElement(main.textBrowser, main.oldMax, newVal)
+    main.oldMax = newVal
+
+
+def resizeElement(elem, oldMax, newMax):
+    newWidth = int((((elem.width()) * newMax.width()) / oldMax.width()))
+    newHeight = int((((elem.height()) * newMax.height()) / oldMax.height()))
+    newX = int((elem.x() * newMax.width()) / oldMax.width())
+    newY = int((elem.y() * newMax.height()) / oldMax.height())
+
+    elem.setGeometry(newWidth, newHeight, newX, newY)
 
 
 class BlockProperties(QtWidgets.QComboBox):
@@ -771,11 +808,14 @@ class MainW(QtWidgets.QMainWindow, Ui_MainWindow):
         super(MainW, self).__init__()
         self.setupUi(self)
 
+        # for wid in self.():
+
         global loggerWindow
         global MultipleSelect
         global comboBox
 
-        # self.resizeEvent = lambda event: resizeEvent(self, event)
+        self.oldMax = self.geometry()
+        self.resizeEvent = lambda event: resizeEvent(self, event)
 
         MultipleSelect[0] = QtWidgets.QRubberBand(QtWidgets.QRubberBand.Rectangle, self.MainStruct)
         MultipleSelect[1] = QtCore.QPoint()

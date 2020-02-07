@@ -195,17 +195,17 @@ class NNStructure:
             self.commitTopology()
 
         if self.framework.lower() == "tensorflow":
-            import ViCreNN.nn.tensorflowWrapper as frameChosen
+            import VENN.nn.tensorflowWrapper as frameChosen
             nomeFile = self.framework.lower() + "-" + self.file.replace(costants.STRUCTURE_EXTENSION,
                                                                         costants.TENSORFLOW_EXTENSION)
 
         elif self.framework.lower() == "pytorch":
-            import ViCreNN.nn.pytorchWrapper as frameChosen
+            import VENN.nn.pytorchWrapper as frameChosen
             nomeFile = self.framework.lower() + "-" + self.file.replace(costants.STRUCTURE_EXTENSION,
                                                                         costants.PYTORCH_EXTENSION)
 
         elif self.framework.lower() == "keras":
-            import ViCreNN.nn.kerasWrapper as frameChosen
+            import VENN.nn.kerasWrapper as frameChosen
             nomeFile = self.framework.lower() + "-" + self.file.replace(costants.STRUCTURE_EXTENSION,
                                                                         costants.KERAS_EXTENSION)
 
@@ -298,7 +298,6 @@ class NNStructure:
 
         # TODO
         # This flattens the data. This mustn't be performed if input data is for convo nets or recurrent nets
-
         # if self.type == "mlp":
         for x in temp:
             x = x.replace(counterpar, "")
