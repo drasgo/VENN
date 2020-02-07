@@ -338,12 +338,13 @@ def logger(text="", color="black"):
     loggerWindow.append(text)
 
 
-# TODO Resize: if main window resizes then every component has to resize accordingly
-# Quasi fatto! bisogna guardare in qt creator che forse il bug dello sfarfallio è causato dalla tab bar (le due tab in alto)
-# Provare a rimuoverle, mettendo tutti gli elementi nella finestra normale e al piu aggiungendo un link a github in fondo per info
 def resizeEvent(main, e):
+    """For every element in the gui check the old and new dimensions of the window and scale accordingly width, height,
+    x starting position and y starting position. This operation is also performed on the new blocks and arch created.
+    """
+    global layers
+    global archs
     newVal = main.geometry()
-    resizeElement(main.tabWidget, main.oldMax, newVal)
     resizeElement(main.OutputFi, main.oldMax, newVal)
     resizeElement(main.LoadStr, main.oldMax, newVal)
     resizeElement(main.RunNN, main.oldMax, newVal)
@@ -371,17 +372,21 @@ def resizeEvent(main, e):
     resizeElement(main.numberInputs, main.oldMax, newVal)
     resizeElement(main.label_3, main.oldMax, newVal)
     resizeElement(main.numberOutputs, main.oldMax, newVal)
-    resizeElement(main.textBrowser, main.oldMax, newVal)
+    for elem in layers:
+        resizeElement(elem, main.oldMax, newVal)
+    for elem in archs:
+        resizeElement(elem, main.oldMax, newVal)
     main.oldMax = newVal
 
 
 def resizeElement(elem, oldMax, newMax):
-    newWidth = int((((elem.width()) * newMax.width()) / oldMax.width()))
-    newHeight = int((((elem.height()) * newMax.height()) / oldMax.height()))
+    """Here is performed the actual rescale operation of a generic element, which is called for every element."""
+    newWidth = int(((elem.width()) * newMax.width()) / oldMax.width())
+    newHeight = int(((elem.height()) * newMax.height()) / oldMax.height())
     newX = int((elem.x() * newMax.width()) / oldMax.width())
     newY = int((elem.y() * newMax.height()) / oldMax.height())
-
-    elem.setGeometry(newWidth, newHeight, newX, newY)
+    elem.resize(newWidth, newHeight)
+    elem.move(newX, newY)
 
 
 class BlockProperties(QtWidgets.QComboBox):
@@ -624,8 +629,7 @@ class StructBlock(QtWidgets.QFrame):
 
         self.setStyleSheet(MainBlock.styleSheet())
         self.layout = QtWidgets.QVBoxLayout(self)
-        self.setFixedWidth(MainBlock.width())
-        self.setFixedHeight(MainBlock.height())
+        self.resize(MainBlock.width(), MainBlock.height())
 
         self.block = True
         self.PrevArch = []
