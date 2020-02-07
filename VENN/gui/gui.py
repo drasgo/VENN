@@ -220,7 +220,7 @@ def structureCommit(parent, called=False):
     """ Commits the current structure into our json file, saving it"""
     global structure
 
-    structure = mainNN.NNStructure(blocks=layers, arrows=archs)
+    structure = mainNN.NNStructure()
     setupNNStructure(parent)
 
     if structure.checkTopology():
@@ -811,8 +811,6 @@ class MainW(QtWidgets.QMainWindow, Ui_MainWindow):
     def __init__(self):
         super(MainW, self).__init__()
         self.setupUi(self)
-
-        # for wid in self.():
 
         global loggerWindow
         global MultipleSelect

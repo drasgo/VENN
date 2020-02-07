@@ -23,9 +23,7 @@ How to.. : https://www.github.com/drasgo/ViCreNN/blob/master/howto.md
 
 # TODO
 
-- Colorare la freccia in maniera tale che si mostri l'orientamento
 - aggiungere scelte per optimizer ed epochs
-- resize della finestra
 - modificare il controllo pre salvataggio modello aggiungendo il fatto che i due nodi prima di un sub/sub devono avere la stessa dimensione + rimuovere controllo di arco none
 - togliere finestre in cui contenere i dati di input e output, lasciando solo la finestra con il nome del file
 - spostare le finestre per decidere epoch. ninput, noutput, cost, optimizer, percorso file input e percorso file output a destra

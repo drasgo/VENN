@@ -5,7 +5,7 @@ import VENN.costants as costants
 
 class NNStructure:
 
-    def __init__(self, blocks=None, arrows=None):
+    def __init__(self):
         self.logger = None
         self.topology = {}
         self.file = costants.NNSTRUCTURE_FILE
@@ -56,14 +56,47 @@ class NNStructure:
     def setLogger(self, logger):
         self.logger = logger
 
-    def checkTopology(self):
-        # self.logger([lay.objectName() for lay in self.blocks])
+    def restrictionSumSub(self, node):
+        if node.layer.currentText() == "SUM" or node.layer.currentText() == "SUB":
+            arch1 = node.PrevArch[0]
+            arch2 = node.PrevArch[1]
+            block1 = arch1.initBlock
+            block2 = arch2.initBlock
 
+            if self.restrictionSumSub(block1) == self.restrictionSumSub(block2):
+                return True
+            else:
+                return False
+
+        elif node.layer.currentText() == "MULT":
+            arch1 = node.PrevArch[0]
+            arch2 = node.PrevArch[1]
+            block1 = arch1.initBlock
+            block2 = arch2.initBlock
+
+            return self.restrictionSumSub(block1) * self.restrictionSumSub(block2)
+
+        elif node.layer.currentText() == "DENSE":
+            return [int(s) for s in node.neurons.text().split() if s.isdigit()][0]
+        elif node.layer.currentText() == "INPUT":
+            if self.numberInputs == 0:
+                self.prepareIOData()
+            return self.numberInputs
+        else:
+            self.logger("Error checking sum dimensionality: block " + node.objectName() + " not recognized - type " +
+                        node.layer.currentText(), "red")
+
+    def checkTopology(self):
         if len(self.blocks) < 2 or len(self.arrows) == 0:
             self.logger("non ci sono abbastanza blocchi o abbastanza frecce", "red")
             return 0
 
         for layer in self.blocks:
+
+            if layer.layer.currentText() == "SUM" or layer.layer.currentText() == "SUB":
+                if self.restrictionSumSub(layer) is False:
+                    self.logger("Dimension of input blocks into " + layer.objectName() + " -type " +
+                                layer.layer.currentText() + "- are not the same", "red")
 
             if layer.layer.currentText() == "LAYER" and not any(ch.isdigit() for ch in layer.neurons.text()):
                 self.logger("non ci sono numeri in blocco: " + layer.neurons.text(), "red")
@@ -98,9 +131,9 @@ class NNStructure:
 
         for arch in self.arrows:
 
-            if arch.name == "None":
-                self.logger("funzione di attivazione è None in " + arch.objectName(), "red")
-                return 0
+            # if arch.name == "None":
+            #     self.logger("funzione di attivazione è None in " + arch.objectName(), "red")
+            #     return 0
 
             if arch.initBlock is None or arch.finalBlock is None:
                 self.logger("blocco iniziale o finale è None in arco " + arch.objectName(), "red")
@@ -184,7 +217,7 @@ class NNStructure:
         self.logger("Model saved!")
 
     def exportAs(self, run=False):
-        if self.input != "" and self.output != "":
+        if len(self.finalInput) == 0 and len(self.finalOutput) == 0:
             self.prepareIOData()
 
         if self.numberInputs == 0 and self.numberOutputs == 0:
@@ -233,7 +266,7 @@ class NNStructure:
     def runAs(self, test=False):
         if self.frameStruct is None:
             self.exportAs(run=True)
-        elif self.input != "" and self.output != "":
+        elif len(self.finalInput) == 0 and len(self.finalOutput) == 0:
             self.prepareIOData()
 
         self.frameStruct.setCost(cost=self.cost)
