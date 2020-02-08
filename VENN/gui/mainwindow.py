@@ -5,7 +5,6 @@ class Ui_MainWindow(object):
 
     def __init__(self):
         self.centralwidget = None
-        self.tabWidget = None
         self.OutputFi = None
         self.LoadStr = None
         self.RunNN = None
@@ -38,6 +37,7 @@ class Ui_MainWindow(object):
         self.label_4 = None
         self.numberInputs = None
         self.numberOutputs = None
+        self.textBrowser = None
         self.StructureFilename = None
         self.statusbar = None
         self.menubar = None
@@ -46,6 +46,7 @@ class Ui_MainWindow(object):
     def setupUi(self, MainWindow):
         MainWindow.setObjectName("MainWindow")
         MainWindow.resize(1261, 654)
+        MainWindow.setStyleSheet("background-color: white;")
         self.centralwidget = QtWidgets.QWidget(MainWindow)
         self.centralwidget.setObjectName("centralwidget")
         self.FrameworkCommit = QtWidgets.QPushButton(self.centralwidget)
@@ -141,7 +142,8 @@ class Ui_MainWindow(object):
         self.Blocks.setObjectName("Blocks")
         self.ChooseArrow = QtWidgets.QComboBox(self.MainStruct)
         self.ChooseArrow.setGeometry(QtCore.QRect(160, 330, 321, 37))
-        self.ChooseArrow.setStyleSheet("border-radius: 3px;")
+        self.ChooseArrow.setStyleSheet("selection-color: black;\n"
+                                       "background-color: rgb(186, 189, 182);")
         self.ChooseArrow.setObjectName("ChooseArrow")
         self.Delete = QtWidgets.QPushButton(self.MainStruct)
         self.Delete.setGeometry(QtCore.QRect(510, 330, 41, 36))
@@ -157,6 +159,7 @@ class Ui_MainWindow(object):
         self.InsertFirstBlock.setObjectName("InsertFirstBlock")
         self.LossFunction = QtWidgets.QComboBox(self.MainStruct)
         self.LossFunction.setGeometry(QtCore.QRect(710, 340, 201, 37))
+        self.LossFunction.setStyleSheet("selection-color: rgb(136, 138, 133);")
         self.LossFunction.setObjectName("LossFunction")
         self.label_4 = QtWidgets.QLabel(self.MainStruct)
         self.label_4.setGeometry(QtCore.QRect(590, 350, 121, 20))

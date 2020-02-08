@@ -430,6 +430,10 @@ class BlockProperties(QtWidgets.QComboBox):
                 for arch in self.parent.PrevArch:
                     arch.__del__()
 
+            elif self.currentText() == "SUM" or self.currentText() == "SUB" or self.currentText() == "MULT":
+                for arch in self.parent.PrevArch:
+                    arch.changeColor()
+
 
 class TextInStructBox(QtWidgets.QLineEdit):
     """ Class for the two labels (layer number * and number of neurons) in each "DENSE" block"""
@@ -534,6 +538,9 @@ class Arrow(QtWidgets.QFrame):
 
     def changeColor(self, name):
         """ Changes the color of the arch depending the cactivation function combobox"""
+        if self.finalBlock.layer.currentText() == "SUM" or self.finalBlock.layer.currentText() == "SUB" or \
+            self.finalBlock.layer.currentText() == "MULT":
+            name = "white"
         self.name = name
         self.color = str(costants.ACTIVATION_FUNCTIONS[name])
         self.activationFunc.setText(self.name)
@@ -615,9 +622,6 @@ class Arrow(QtWidgets.QFrame):
             self.finalBlock.updatePosition(self, self.endPoint, split)
 
 
-# TODO blocco normale accetta 1 arco in ingresso. Blocchi speciali (mult/add/sub) accettano al massimo 2 blocchi in ingresso
-# TODO mettere controllo che 2 blocchi abbiano stessa dimensione per essere collegati a blocco add e sub
-# TODO tutti gli arch prev di add/mult/sub devono essere blank. nota: ricordarsi sia alla creazione di arch che al cambio tipo blocco
 class StructBlock(QtWidgets.QFrame):
     """ Class for generating new layer blocks. Inside it has two labels: one for layer number and one for number of neurons"""
 
