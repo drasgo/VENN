@@ -223,7 +223,7 @@ class torchModel(nn.Module):
                     self.structure[node]["type"] != "MULT":
 
                 # if it is not an input , which doesn't require proper block, create normal block
-                if self.structure[node]["type"] != "INPUT" and self.structure[node]["type"] != "OUTPUT":
+                if self.structure[node]["type"] != "INPUT":
                     # Looks for the previous block (through the previous arch) to find the input dimension
                     prevArchInd = next(elem for elem in self.structure if
                                        self.structure[elem]["name"] in self.structure[node]["PrevArch"])
@@ -246,8 +246,13 @@ class torchModel(nn.Module):
                         else:
                             inputDim = self.parent.computeSpecBlockDim(specBlockIndex=prevBlockInd)
 
-                    layerType = self.structure[node]["type"]
-                    outputDim = self.structure[node]["neurons"]
+                    if self.structure[node]["type"] == "OUTPUT":
+                        layerType = "DENSE"
+                        outputDim = self.parent.noutput
+
+                    else:
+                        layerType = self.structure[node]["type"]
+                        outputDim = self.structure[node]["neurons"]
 
                     layerT = self.parent.chooseNode(layerType=layerType, inputDim=inputDim, outputDim=outputDim)
                     self.nodes.add_module(self.structure[node]["name"], layerT)
@@ -255,8 +260,9 @@ class torchModel(nn.Module):
         for arch in list(elem for elem in self.structure if self.structure[elem]["block"] is False):
             # Check if Activation function is valid
             if self.parent.functionSupport(self.structure[arch]["activFunc"]) is False:
-                self.parent.logger("Activation function" + str(self.structure[arch][
-                                                                   "activFunc"]) + " not supported in " + self.parent.frame + ". Skipping layer")
+                if self.structure[arch]["activFunc"] != "None":
+                    self.parent.logger("Activation function " + str(self.structure[arch]["activFunc"]) +
+                                       " not supported in " + self.parent.frame + ". Skipping layer")
                 continue
 
             tempActiv = self.parent.chooseActivation(self.structure[arch]["activFunc"])()
@@ -314,16 +320,11 @@ class torchModel(nn.Module):
             # passed through the activatio function is passed through the next block and temporarly saved in the nodes
             # dictionary using its name as key
             if self.structure[block]["type"] == "OUTPUT":
-                return outputNode
+                layerT = self.nodes[self.structure[block]["name"]]
+                outputBlock = layerT(outputNode)
+                return outputBlock
             else:
 
                 layerT = self.nodes[self.structure[block]["name"]]
                 outputBlock = layerT(outputNode)
                 nodes[self.structure[block]["name"]] = outputBlock
-
-
-# TODO
-# TODO
-# TODO
-# Aggiungere in mainNN i controlli per i blocchi sub e sum: i due blocchi precedenti devono avere lo stesso numero di
-# neuroni! Rimuovere l'impossibilità di utilizzo degli archi blank. Riguardare tutti i controlli

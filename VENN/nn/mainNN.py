@@ -97,6 +97,7 @@ class NNStructure:
                 if self.restrictionSumSub(layer) is False:
                     self.logger("Dimension of input blocks into " + layer.objectName() + " -type " +
                                 layer.layer.currentText() + "- are not the same", "red")
+                    return 0
 
             if layer.layer.currentText() == "LAYER" and not any(ch.isdigit() for ch in layer.neurons.text()):
                 self.logger("non ci sono numeri in blocco: " + layer.neurons.text(), "red")
@@ -118,7 +119,9 @@ class NNStructure:
 
         if len([lay for lay in self.blocks if lay.layer.currentText() == "INPUT"]) > 1:
             self.logger("Only one input block supported so far", "red")
-            self.logger("Number of input blocks: " + str(len([lay for lay in self.blocks if lay.layer.currentText() == "INPUT"])), "red")
+            self.logger("Number of input blocks: " + str(
+                len([lay for lay in self.blocks if lay.layer.currentText() == "INPUT"])), "red")
+            return 0
 
         if not any(lay for lay in self.blocks if lay.layer.currentText() == "OUTPUT"):
             self.logger("Output block absent", "red")
@@ -127,7 +130,9 @@ class NNStructure:
 
         if len([lay for lay in self.blocks if lay.layer.currentText() == "OUTPUT"]) > 1:
             self.logger("Only one output block supported so far", "red")
-            self.logger("Number of output blocks: " + str(len([lay for lay in self.blocks if lay.layer.currentText() == "OUTPUT"])), "red")
+            self.logger("Number of output blocks: " + str(
+                len([lay for lay in self.blocks if lay.layer.currentText() == "OUTPUT"])), "red")
+            return 0
 
         for arch in self.arrows:
 
@@ -157,7 +162,8 @@ class NNStructure:
             temp["type"] = str(block.layer.currentText())
             if str(block.layer.currentText()) == "DENSE":
                 temp["neurons"] = str([int(s) for s in block.neurons.text().split() if s.isdigit()][0])
-            temp["position"] = [block.x(), block.y(), block.height(), block.width()]
+            temp["size"] = [block.width(), block.height()]
+            temp["pos"] = [block.x(), block.y()]
             return temp
 
         def getArrowProperties(arch):
@@ -217,7 +223,8 @@ class NNStructure:
         self.logger("Model saved!")
 
     def exportAs(self, run=False):
-        if len(self.finalInput) == 0 and len(self.finalOutput) == 0:
+        if len(self.finalInput) == 0 and len(
+                self.finalOutput) == 0 and self.numberInputs == 0 and self.numberOutputs == 0:
             self.prepareIOData()
 
         if self.numberInputs == 0 and self.numberOutputs == 0:
@@ -256,7 +263,8 @@ class NNStructure:
 
         if self.frameStruct.prepareModel() is False:
             self.logger(
-                "Error preparing the Neural Network model with " + self.framework.lower() + " framework. Aborted", "red")
+                "Error preparing the Neural Network model with " + self.framework.lower() + " framework. Aborted",
+                "red")
             return
 
         if run is False:
@@ -269,6 +277,10 @@ class NNStructure:
         elif len(self.finalInput) == 0 and len(self.finalOutput) == 0:
             self.prepareIOData()
 
+        if len(self.finalInput) == 0 and len(self.finalOutput) == 0:
+            self.logger("Error preparing input/output data")
+            return
+
         self.frameStruct.setCost(cost=self.cost)
         self.frameStruct.setOptimizer(optim=self.optimizer)
         self.frameStruct.setInputOutput(inputData=self.finalInput, outputData=self.finalOutput, test=test)
@@ -280,10 +292,17 @@ class NNStructure:
             return self.frameStruct.run() + "\n" + self.frameStruct.test()
 
     def prepareIOData(self):
-        self.finalInput = self.splitInputOuput(inp=True)
-        self.finalOutput = self.splitInputOuput(inp=False)
+        if len(self.input) > 0:
+            self.finalInput = self.splitInputOuput(inp=True)
+        else:
+            return
 
-        if self.checkInputOutput(len(self.finalOutput), len(self.finalOutput)) is False:
+        if len(self.output) > 0:
+            self.finalOutput = self.splitInputOuput(inp=False)
+        else:
+            return
+
+        if self.checkInputOutput(len(self.finalInput), len(self.finalOutput)) is False:
             self.logger("Number of input data is different of number of target data: Input:" +
                         str(len(self.finalInput)) + ", Output: " + str(len(self.finalOutput)), "red")
             return

@@ -526,6 +526,18 @@ class Arrow(QtWidgets.QFrame):
         self.finalBlock = next(fin for fin in layers if fin.objectName() == loaded["finalBlock"])
         self.setGeometry(loaded["position"][0], loaded["position"][1], loaded["position"][2], loaded["position"][3])
         self.stylesheet = costants.arrow_stylesheet(costants.ACTIVATION_FUNCTIONS[self.name])
+        self.checkOrientation()
+
+    def checkOrientation(self):
+        if self.initBlock.y() == self.finalBlock.y():
+            self.horizontalLayout = True
+        else:
+            self.horizontalLayout = False
+
+        if self.initBlock.x() < self.finalBlock.x() or self.finalBlock.y() < self.initBlock.y():
+            self.upRightLayout = True
+        else:
+            self.upRightLayout = False
 
     def isSelected(self):
         return self.selected
@@ -536,11 +548,11 @@ class Arrow(QtWidgets.QFrame):
             changeArchChangeComboBox(self.name)
             SelectBlock(self)
 
-    def changeColor(self, name):
+    def changeColor(self, name=""):
         """ Changes the color of the arch depending the cactivation function combobox"""
         if self.finalBlock.layer.currentText() == "SUM" or self.finalBlock.layer.currentText() == "SUB" or \
-            self.finalBlock.layer.currentText() == "MULT":
-            name = "white"
+                self.finalBlock.layer.currentText() == "MULT":
+            name = "None"
         self.name = name
         self.color = str(costants.ACTIVATION_FUNCTIONS[name])
         self.activationFunc.setText(self.name)
@@ -569,7 +581,7 @@ class Arrow(QtWidgets.QFrame):
             # If the arrow is pointing towards down
             if self.upRightLayout is False:
                 init.drawEllipse(QtCore.QPoint(int(self.width() / 2), 0), 15, int(self.width() / 2))
-            # If the arrow is pointing towards down
+            # If the arrow is pointing towards up
             else:
                 init.drawEllipse(QtCore.QPoint(int(self.width() / 2), self.height()), 15, int(self.width() / 2))
         init.end()
@@ -671,7 +683,8 @@ class StructBlock(QtWidgets.QFrame):
     def loaded(self, loaded):
         """ Loads everything from the saved structure, except its arches"""
         self.setObjectName(str(loaded["name"]))
-        self.setGeometry(loaded["position"][0], loaded["position"][1], loaded["position"][2], loaded["position"][3])
+        self.resize(loaded["size"][0], loaded["size"][1])
+        self.move(loaded["pos"][0], loaded["pos"][1])
         self.layer.setCurrentText(loaded["type"])
         if loaded["type"] == "DENSE":
             self.neurons.setText(loaded["neurons"] + self.neurons.text().replace("**", ""))

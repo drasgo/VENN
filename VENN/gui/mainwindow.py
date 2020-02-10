@@ -178,6 +178,7 @@ class Ui_MainWindow(object):
         self.Framework.setGeometry(QtCore.QRect(1030, 470, 201, 37))
         self.Framework.setObjectName("Framework")
         self.Framework.addItem("")
+        self.Framework.setStyleSheet("selection-color: black;")
         self.InputFi = QtWidgets.QPushButton(self.centralwidget)
         self.InputFi.setGeometry(QtCore.QRect(10, 160, 104, 36))
         self.InputFi.setObjectName("InputFi")

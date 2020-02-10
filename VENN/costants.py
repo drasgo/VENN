@@ -1,6 +1,6 @@
 LINE_WIDTH = 25
 
-ACTIVATION_FUNCTIONS = {"None": "black",
+ACTIVATION_FUNCTIONS = {"None": "white",
                         "Linear": "cyan",
                         "Rectified Linear (ReLu)": "blue",
                         "Hyperbolic Tangent (Tanh)": "green",

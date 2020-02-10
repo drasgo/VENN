@@ -66,8 +66,9 @@ class FrameStructure(WrapperTemplate):
                 continue
             # Check if Activation function is valid
             if self.functionSupport(self.structure[arch]["activFunc"]) is False:
-                self.logger("Activation function" + str(self.structure[arch]["activFunc"]) +
-                            " not supported in " + self.frame + ". Skipping layer")
+                if self.structure[arch]["activFunc"] != "None":
+                    self.logger("Activation function " + str(self.structure[arch]["activFunc"]) +
+                                " not supported in " + self.frame + ". Skipping layer")
                 continue
 
             # If it's not merging than it is a regular block and it needs regular activation function and block type
