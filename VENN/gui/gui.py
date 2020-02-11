@@ -345,58 +345,28 @@ def resizeEvent(main, e):
     global layers
     global archs
     newVal = main.geometry()
-    resizeElement(main.OutputFi, main.oldMax, newVal)
-    resizeElement(main.LoadStr, main.oldMax, newVal)
-    resizeElement(main.RunNN, main.oldMax, newVal)
-    resizeElement(main.TestNN, main.oldMax, newVal)
-    resizeElement(main.AdvancedOptions, main.oldMax, newVal)
-    resizeElement(main.InputFi, main.oldMax, newVal)
-    resizeElement(main.CommSave, main.oldMax, newVal)
-    resizeElement(main.MainStruct, main.oldMax, newVal)
-    resizeElement(main.Blocks, main.oldMax, newVal)
-    resizeElement(main.ChooseArrow, main.oldMax, newVal)
-    resizeElement(main.Delete, main.oldMax, newVal)
-    resizeElement(main.InsertFirstBlock, main.oldMax, newVal)
-    resizeElement(main.Loss, main.oldMax, newVal)
-    resizeElement(main.LossFunction, main.oldMax, newVal)
-    resizeElement(main.Log, main.oldMax, newVal)
-    resizeElement(main.LogWindow, main.oldMax, newVal)
-    resizeElement(main.Framework, main.oldMax, newVal)
-    resizeElement(main.StructureFilename, main.oldMax, newVal)
-    resizeElement(main.label, main.oldMax, newVal)
-    resizeElement(main.menubar, main.oldMax, newVal)
-    resizeElement(main.FrameworkCommit, main.oldMax, newVal)
-    resizeElement(main.NumberInputs, main.oldMax, newVal)
-    resizeElement(main.NumberOutputs, main.oldMax, newVal)
-    resizeElement(main.nInputs, main.oldMax, newVal)
-    resizeElement(main.nOutputs, main.oldMax, newVal)
-    resizeElement(main.StructureFilename, main.oldMax, newVal)
-    resizeElement(main.Epochs, main.oldMax, newVal)
-    resizeElement(main.numberEpochs, main.oldMax, newVal)
-    resizeElement(main.Optmizer, main.oldMax, newVal)
-    resizeElement(main.OptimizerFunction, main.oldMax, newVal)
-    resizeElement(main.InputFile, main.oldMax, newVal)
-    resizeElement(main.OutputFile, main.oldMax, newVal)
-    resizeElement(main.AdvancedOptions, main.oldMax, newVal)
-    resizeElement(main.line_2, main.oldMax, newVal)
-    resizeElement(main.line_3, main.oldMax, newVal)
-    resizeElement(main.line_4, main.oldMax, newVal)
-    resizeElement(main.line_5, main.oldMax, newVal)
-    for elem in layers:
-        resizeElement(elem, main.oldMax, newVal)
-    for elem in archs:
-        resizeElement(elem, main.oldMax, newVal)
+    # Resize every preexisting component created in qtcreator
+    resizeElement([main.OutputFi, main.LoadStr, main.RunNN, main.TestNN, main.AdvancedOptions, main.InputFi, main.CommSave,
+                   main.MainStruct, main.Blocks, main.ChooseArrow, main.Delete, main.InsertFirstBlock, main.Loss,
+                   main.LossFunction, main.Log, main.LogWindow, main.Framework, main.label, main.FrameworkCommit,
+                   main.NumberInputs, main.NumberOutputs, main.nInputs, main.nOutputs, main.StructureFilename,
+                   main.Epochs, main.numberEpochs, main.Optmizer, main.OptimizerFunction, main.InputFile, main.OutputFile,
+                   main.line_2, main.line_3, main.line_4, main.line_5], main.oldMax, newVal)
+    # Resize every procedurally created componenent (aka blocks and arrows)
+    resizeElement(layers + archs, main.oldMax, newVal)
+    # Reset the current window size
     main.oldMax = newVal
 
 
-def resizeElement(elem, oldMax, newMax):
+def resizeElement(listaElem, oldMax, newMax):
     """Here is performed the actual rescale operation of a generic element, which is called for every element."""
-    newWidth = int(((elem.width()) * newMax.width()) / oldMax.width())
-    newHeight = int(((elem.height()) * newMax.height()) / oldMax.height())
-    newX = int((elem.x() * newMax.width()) / oldMax.width())
-    newY = int((elem.y() * newMax.height()) / oldMax.height())
-    elem.resize(newWidth, newHeight)
-    elem.move(newX, newY)
+    for elem in listaElem:
+        newWidth = int(((elem.width()) * newMax.width()) / oldMax.width())
+        newHeight = int(((elem.height()) * newMax.height()) / oldMax.height())
+        newX = int((elem.x() * newMax.width()) / oldMax.width())
+        newY = int((elem.y() * newMax.height()) / oldMax.height())
+        elem.resize(newWidth, newHeight)
+        elem.move(newX, newY)
 
 
 class BlockProperties(QtWidgets.QComboBox):

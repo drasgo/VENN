@@ -24,9 +24,6 @@ class Ui_MainWindow(object):
         self.numberInputs = None
         self.numberOutputs = None
         self.StructureFilename = None
-        self.statusbar = None
-        self.menubar = None
-        self.toolBar = None
         self.nOutputs = None
         self.nInputs = None
         self.Loss = None
@@ -47,7 +44,7 @@ class Ui_MainWindow(object):
 
     def setupUi(self, MainWindow):
         MainWindow.setObjectName("MainWindow")
-        MainWindow.resize(1261, 658)
+        MainWindow.resize(1261, 626)
         MainWindow.setStyleSheet("background-color: white;")
         self.centralwidget = QtWidgets.QWidget(MainWindow)
         self.centralwidget.setObjectName("centralwidget")
@@ -100,7 +97,7 @@ class Ui_MainWindow(object):
                                     "border-radius: 10px;")
         self.CommSave.setObjectName("CommSave")
         self.OutputFi = QtWidgets.QPushButton(self.centralwidget)
-        self.OutputFi.setGeometry(QtCore.QRect(11, 147, 78, 21))
+        self.OutputFi.setGeometry(QtCore.QRect(11, 147, 111, 21))
         self.OutputFi.setCursor(QtGui.QCursor(QtCore.Qt.PointingHandCursor))
         self.OutputFi.setStyleSheet("border: 1px solid black; \n"
                                     "border-radius: 10px;")
@@ -159,7 +156,7 @@ class Ui_MainWindow(object):
         self.Framework.setObjectName("Framework")
         self.Framework.addItem("")
         self.InputFi = QtWidgets.QPushButton(self.centralwidget)
-        self.InputFi.setGeometry(QtCore.QRect(11, 18, 65, 21))
+        self.InputFi.setGeometry(QtCore.QRect(11, 18, 111, 21))
         self.InputFi.setCursor(QtGui.QCursor(QtCore.Qt.PointingHandCursor))
         self.InputFi.setMouseTracking(True)
         self.InputFi.setFocusPolicy(QtCore.Qt.WheelFocus)
@@ -167,9 +164,10 @@ class Ui_MainWindow(object):
                                    "border-radius: 10px;")
         self.InputFi.setObjectName("InputFi")
         self.LossFunction = QtWidgets.QComboBox(self.centralwidget)
-        self.LossFunction.setGeometry(QtCore.QRect(150, 350, 141, 23))
+        self.LossFunction.setGeometry(QtCore.QRect(120, 350, 171, 23))
         self.LossFunction.setStyleSheet("border: 1px solid black; \n"
-                                        "border-radius: 6px;")
+                                        "border-radius: 6px;\n"
+                                        "selection-color: rgb(136, 138, 133);")
         self.LossFunction.setObjectName("LossFunction")
         self.Loss = QtWidgets.QLabel(self.centralwidget)
         self.Loss.setGeometry(QtCore.QRect(10, 350, 98, 19))
@@ -211,14 +209,14 @@ class Ui_MainWindow(object):
                                              "selection-color: rgb(136, 138, 133);")
         self.OptimizerFunction.setObjectName("OptimizerFunction")
         self.InputFile = QtWidgets.QLineEdit(self.centralwidget)
-        self.InputFile.setGeometry(QtCore.QRect(157, 15, 131, 27))
+        self.InputFile.setGeometry(QtCore.QRect(127, 15, 161, 27))
         self.InputFile.setStyleSheet("border: 1px solid black; \n"
                                      "border-radius: 10px;\n"
                                      "")
         self.InputFile.setText("")
         self.InputFile.setObjectName("InputFile")
         self.OutputFile = QtWidgets.QLineEdit(self.centralwidget)
-        self.OutputFile.setGeometry(QtCore.QRect(157, 144, 131, 27))
+        self.OutputFile.setGeometry(QtCore.QRect(127, 144, 161, 27))
         self.OutputFile.setStyleSheet("border: 1px solid black; \n"
                                       "border-radius: 10px;\n"
                                       "")
@@ -267,16 +265,6 @@ class Ui_MainWindow(object):
         self.NumberInputs.setText("")
         self.NumberInputs.setObjectName("NumberInputs")
         MainWindow.setCentralWidget(self.centralwidget)
-        self.statusbar = QtWidgets.QStatusBar(MainWindow)
-        self.statusbar.setObjectName("statusbar")
-        MainWindow.setStatusBar(self.statusbar)
-        self.menubar = QtWidgets.QMenuBar(MainWindow)
-        self.menubar.setGeometry(QtCore.QRect(0, 0, 1261, 29))
-        self.menubar.setObjectName("menubar")
-        MainWindow.setMenuBar(self.menubar)
-        self.toolBar = QtWidgets.QToolBar(MainWindow)
-        self.toolBar.setObjectName("toolBar")
-        MainWindow.addToolBar(QtCore.Qt.LeftToolBarArea, self.toolBar)
 
         self.retranslateUi(MainWindow)
         QtCore.QMetaObject.connectSlotsByName(MainWindow)
@@ -304,4 +292,3 @@ class Ui_MainWindow(object):
         self.numberEpochs.setText(_translate("MainWindow", "1"))
         self.Optmizer.setText(_translate("MainWindow", "<b>Optimizer Function:</b>"))
         self.AdvancedOptions.setText(_translate("MainWindow", "Advanced Options"))
-        self.toolBar.setWindowTitle(_translate("MainWindow", "toolBar"))
