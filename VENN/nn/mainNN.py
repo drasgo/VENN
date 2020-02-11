@@ -281,12 +281,10 @@ class NNStructure:
     def runAs(self, test=False):
         if self.frameStruct is None:
             self.exportAs(run=True)
-        elif len(self.finalInput) == 0 and len(self.finalOutput) == 0:
-            self.prepareIOData()
 
-        if len(self.finalInput) == 0 and len(self.finalOutput) == 0:
-            self.logger("Error preparing input/output data")
-            return
+        elif len(self.finalInput) == 0 and len(self.finalOutput) == 0:
+            if self.prepareIOData() == 0:
+                return "Error preparing input/output data", "red"
 
         self.frameStruct.setLoss(cost=self.loss)
         self.frameStruct.setOptimizer(optim=self.optimizer)
@@ -312,31 +310,37 @@ class NNStructure:
         if len(self.input) > 0:
             self.finalInput = self.splitInputOuput(inp=True)
         else:
-            return
+            return 0
 
         if len(self.output) > 0:
             self.finalOutput = self.splitInputOuput(inp=False)
         else:
-            return
+            return 0
 
         if self.checkInputOutput(len(self.finalInput), len(self.finalOutput)) is False:
             self.logger("Number of input data is different of number of target data: Input:" +
                         str(len(self.finalInput)) + ", Output: " + str(len(self.finalOutput)), "red")
-            return
+            return 0
 
         elif self.finalInput.count("[") != self.finalInput.count("]"):
             self.logger("Inconsistency with paretheses in input data. Numebr of [: " + str(self.finalInput.count("[")) +
                         "; number of ]:" + str(self.finalInput.count("]")), "red")
-            return
+            return 0
 
         elif self.finalOutput.count("[") != self.finalOutput.count("]"):
             self.logger(
                 "Inconsistency with paretheses in output data. Numebr of [: " + str(self.finalOutput.count("[")) +
                 "; number of ]:" + str(self.finalOutput.count("]")), "red")
-            return
+            return 0
+
+        elif len(self.finalInput) == 0 or len(self.finalOutput) == 0:
+            self.logger("Input and/or output data not available.", "red")
+            return 0
 
         self.numberInputs = len(self.finalInput[0])
         self.numberOutputs = len(self.finalOutput[0])
+
+        return 1
 
     # Split and flattens input and output data
     def splitInputOuput(self, inp):

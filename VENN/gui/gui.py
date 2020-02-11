@@ -10,14 +10,6 @@ from VENN.gui.mainwindow import Ui_MainWindow
 import VENN.nn.mainNN as mainNN
 
 
-# TODO
-# TODO
-# TODO
-# connetti nuovi optimizer ed epoch grafici con mainNN.
-# Risolvere bug di file input/output scelto vuoto.
-# Improve gestione dei valori di input e output da file sia in gui che in mainNN
-
-
 def CheckMultipleSelection(self):
     """ Selects every block/arch in the rubber multiple selection. Everything else is unselected"""
     for widget in self.findChildren(QtWidgets.QFrame):
@@ -195,19 +187,20 @@ def Cancel():
     selectedMultipleLayer.clear()
 
 
-def frameworkRun(parent):
-    """ TODO: Add tick box for testing: Run or Run + Test"""
+def frameworkRunTest(button, parent):
     global structure
 
-    if structure is None or structure.frameStruct is None or structure.framework != parent.Framework.currentText():
+    if structure is None:
         frameworkCommit(parent)
+    else:
+        setupNNStructure(parent)
 
-    setupNNStructure(parent)
-
-    result = structure.runAs()
-    # resultTrain, resultTest = structure.runAs(parent.Test.getOption() ?
-
-    logger(result)
+    if button is parent.RunNN:
+        result = structure.runAs()
+        logger(result)
+    else:
+        resultTrain, resultTest = structure.runAs(parent.Test.getOption())
+        logger(resultTrain, resultTest)
 
 
 def frameworkCommit(parent):
@@ -857,13 +850,15 @@ class MainW(QtWidgets.QMainWindow, Ui_MainWindow):
         self.ChooseArrow.currentIndexChanged.connect(
             lambda: changeComboBox(self.ChooseArrow, self.ChooseArrow.currentIndex()))
 
-        self.CommSave.clicked.connect(lambda: structureCommit(self))
-        self.LoadStr.clicked.connect(lambda: structureLoad(self))
+        self.CommSave.clicked.connect(lambda: structureCommit(parent=self))
+        self.LoadStr.clicked.connect(lambda: structureLoad(parent=self))
 
-        self.InputFi.clicked.connect(lambda: inputData(self, self.InputFi))
-        self.OutputFi.clicked.connect(lambda: inputData(self, self.OutputFi))
+        self.InputFi.clicked.connect(lambda: inputData(parent=self, button=self.InputFi))
+        self.OutputFi.clicked.connect(lambda: inputData(parent=self, button=self.OutputFi))
 
-        self.FrameworkCommit.clicked.connect(lambda: frameworkCommit(self))
+        self.FrameworkCommit.clicked.connect(lambda: frameworkCommit(parent=self))
+        self.RunNN.clicked.connect(lambda: frameworkRunTest(button=self.RunNN, parent=self))
+        self.TestNN.clicked.connect(lambda: frameworkRunTest(button=self.TestNN, parent=self))
 
         # Setting up combo boxes (frameworks, activation functions, loss functions and optimizer functions) with
         # elements from costants.py
