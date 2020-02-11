@@ -23,14 +23,7 @@ How to.. : https://www.github.com/drasgo/ViCreNN/blob/master/howto.md
 
 # TODO
 
-- aggiungere scelte per optimizer ed epochs
-- togliere finestre in cui contenere i dati di input e output, lasciando solo la finestra con il nome del file
-- spostare le finestre per decidere epoch. ninput, noutput, cost, optimizer, percorso file input e percorso file output a destra
-- rimuovere scelta del tipo di dati, spostando e aumentando la finestra del logger verso sinistra
 - aggiungere possibilità di inserire più nodi di input (quindi recuperando l'input da più file esterni)
-- add test/run option
-- add epoch label
-- graphical refactor
 - add more advanced settings
 - add recursive full support
 - add convolution support

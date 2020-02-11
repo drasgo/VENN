@@ -11,7 +11,7 @@ class WrapperTemplate:
         self.inputTest = None
         self.outputTest = None
         self.isSequential = None
-        self.cost = ""
+        self.loss = ""
         self.optimizer = ""
         self.loss_object = None
         self.optimizer_object = None
@@ -28,7 +28,7 @@ class WrapperTemplate:
         """ Overriden for choosing the current activation function in the wrappers."""
         pass
 
-    def chooseCost(self):
+    def chooseLoss(self):
         """ Overriden for choosing the cost function in the wrappers."""
         pass
 
@@ -118,9 +118,9 @@ class WrapperTemplate:
         for elem in toBeDeleted:
             self.structure.pop(elem)
 
-    def setCost(self, cost):
+    def setLoss(self, loss):
         """ Sets which cost to use. Don't touch it"""
-        self.cost = cost
+        self.loss = loss
 
     def setOptimizer(self, optim):
         """ Sets which optimizer to use. Don't touch it"""

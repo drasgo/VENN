@@ -178,32 +178,32 @@ class FrameStructure(WrapperTemplate):
         elif activ.lower() in "Other".lower():
             return None
 
-    def chooseCost(self):
-        if self.cost == "Mean Absolute Error (MAE)":
+    def chooseLoss(self):
+        if self.loss == "Mean Absolute Error (MAE)":
             self.loss_object = "mean_absolute_error"
-        if self.cost == "Mean Absolute Percentage Error (MAPE)":
+        if self.loss == "Mean Absolute Percentage Error (MAPE)":
             self.loss_object = "mean_absolute_percentage_error"
-        elif self.cost == "Mean Squared Error (MSE)":
+        elif self.loss == "Mean Squared Error (MSE)":
             self.loss_object = "mean_squared_error"
-        elif self.cost == "Mean Squared Logarithmic Error (MSLE)":
+        elif self.loss == "Mean Squared Logarithmic Error (MSLE)":
             self.loss_object = "mean_squared_logarithmic_error"
-        elif self.cost == "Hinge":
+        elif self.loss == "Hinge":
             self.loss_object = "categorical_hinge"
-        elif self.cost == "Huber":
+        elif self.loss == "Huber":
             self.loss_object = "huber_loss"
-        elif self.cost == "Logaritmic Cosine (LogCosh)":
+        elif self.loss == "Logaritmic Cosine (LogCosh)":
             self.loss_object = "logcosh"
-        elif self.cost == "Poisson":
+        elif self.loss == "Poisson":
             self.loss_object = "poisson"
-        elif self.cost == "Binary Cross Entropy (BCE)":
+        elif self.loss == "Binary Cross Entropy (BCE)":
             self.loss_object = "binary_crossentropy"
-        elif self.cost == "Categorical Cross Entropy":
+        elif self.loss == "Categorical Cross Entropy":
             self.loss_object = "categorical_crossentropy"
-        elif self.cost == "Kullback-Leibler (KLDivergence)":
+        elif self.loss == "Kullback-Leibler (KLDivergence)":
             self.loss_object = "kullback_leibler_divergence"
-        elif self.cost == "Sparse Categorical Cross Entropy":
+        elif self.loss == "Sparse Categorical Cross Entropy":
             self.loss_object = "sparse_categorical_crossentropy"
-        elif self.cost == "Cosine Similarity":
+        elif self.loss == "Cosine Similarity":
             self.loss_object = "cosine_proximity"
         else:
             self.loss_object = None
@@ -227,11 +227,11 @@ class FrameStructure(WrapperTemplate):
             self.optimizer_object = None
 
     def run(self):
-        self.chooseCost()
+        self.chooseLoss()
         self.chooseOptimizer()
 
         if self.loss_object is None:
-            return "Error choosing cost function in Keras: " + self.cost + " not available in Keras"
+            return "Error choosing cost function in Keras: " + self.loss + " not available in Keras"
         if self.optimizer_object is None:
             return "Error choosing optimizer in Keras: " + self.optimizer + " not available in Keras"
 

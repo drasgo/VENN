@@ -166,8 +166,7 @@ class Ui_MainWindow(object):
         self.LossFunction = QtWidgets.QComboBox(self.centralwidget)
         self.LossFunction.setGeometry(QtCore.QRect(120, 350, 171, 23))
         self.LossFunction.setStyleSheet("border: 1px solid black; \n"
-                                        "border-radius: 6px;\n"
-                                        "selection-color: rgb(136, 138, 133);")
+                                        "border-radius: 6px;")
         self.LossFunction.setObjectName("LossFunction")
         self.Loss = QtWidgets.QLabel(self.centralwidget)
         self.Loss.setGeometry(QtCore.QRect(10, 350, 98, 19))
@@ -205,8 +204,7 @@ class Ui_MainWindow(object):
         self.OptimizerFunction = QtWidgets.QComboBox(self.centralwidget)
         self.OptimizerFunction.setGeometry(QtCore.QRect(153, 409, 141, 23))
         self.OptimizerFunction.setStyleSheet("border: 1px solid black; \n"
-                                             "border-radius: 6px;\n"
-                                             "selection-color: rgb(136, 138, 133);")
+                                             "border-radius: 6px;")
         self.OptimizerFunction.setObjectName("OptimizerFunction")
         self.InputFile = QtWidgets.QLineEdit(self.centralwidget)
         self.InputFile.setGeometry(QtCore.QRect(127, 15, 161, 27))
@@ -240,7 +238,7 @@ class Ui_MainWindow(object):
         self.NumberOutputs.setStyleSheet("border: 1px solid black; \n"
                                          "border-radius: 10px;\n"
                                          "")
-        self.NumberOutputs.setText("")
+        self.NumberOutputs.setText("10")
         self.NumberOutputs.setObjectName("NumberOutputs")
         self.line_2 = QtWidgets.QFrame(self.centralwidget)
         self.line_2.setGeometry(QtCore.QRect(11, 121, 281, 16))
@@ -262,7 +260,7 @@ class Ui_MainWindow(object):
         self.NumberInputs.setStyleSheet("border: 1px solid black; \n"
                                         "border-radius: 10px;\n"
                                         "")
-        self.NumberInputs.setText("")
+        self.NumberInputs.setText("10")
         self.NumberInputs.setObjectName("NumberInputs")
         MainWindow.setCentralWidget(self.centralwidget)
 

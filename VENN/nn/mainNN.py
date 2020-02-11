@@ -16,12 +16,15 @@ class NNStructure:
         self.finalOutput = []
         self.numberInputs = 0
         self.numberOutputs = 0
-        self.cost = ""
+        self.loss = ""
         self.optimizer = costants.OPTIMIZERS[0]
         self.frameStruct = None
         self.inputType = costants.INPUT_TYPE[0]
         self.blocks = None
         self.arrows = None
+        self.inputFile = ""
+        self.outputFile = ""
+        self.epochs=1
 
     def setBlocksArrows(self, blocks, arrows):
         self.blocks = blocks[:]
@@ -36,18 +39,22 @@ class NNStructure:
     def setFramework(self, frame):
         self.framework = frame
 
-    def setCostFunction(self, cost):
-        self.cost = cost
+    def setLossFunction(self, loss):
+        print("loss: " + str(loss))
+        self.loss = loss
 
     def setOptimizer(self, optim):
+        print("optim: " + str(optim))
         self.optimizer = optim
 
-    def setInputType(self, inputType):
-        self.inputType = inputType
+    def setEpochs(self, epochs):
+        print("epochs: " + str(epochs))
+        self.epochs = epochs
 
-    def setInputOutput(self, inputData, outputData):
-        self.input = inputData
-        self.output = outputData
+    def setInputOutput(self, inputFile, outputFile):
+        self.inputFile = inputFile
+        self.outputFile = outputFile
+        self.getIO()
 
     def setInputOutputNumber(self, inputCount, outputCount):
         self.numberInputs = inputCount
@@ -281,8 +288,9 @@ class NNStructure:
             self.logger("Error preparing input/output data")
             return
 
-        self.frameStruct.setCost(cost=self.cost)
+        self.frameStruct.setLoss(cost=self.loss)
         self.frameStruct.setOptimizer(optim=self.optimizer)
+        self.frameStruct.setEpochs(epochs=self.epochs)
         self.frameStruct.setInputOutput(inputData=self.finalInput, outputData=self.finalOutput, test=test)
 
         if test is False:
@@ -290,6 +298,15 @@ class NNStructure:
 
         else:
             return self.frameStruct.run() + "\n" + self.frameStruct.test()
+
+    def getIO(self):
+        with open(self.inputFile, "r") as f:
+            for line in f.readlines():
+                self.input = self.input + line
+
+        with open(self.outputFile, "r") as f:
+            for line in f.readlines():
+                self.output = self.output + line
 
     def prepareIOData(self):
         if len(self.input) > 0:

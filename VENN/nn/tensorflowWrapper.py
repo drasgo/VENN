@@ -100,34 +100,34 @@ class FrameStructure(kerasWrapper):
             else:
                 return None
 
-    def chooseCost(self):
-        if self.cost == "Mean Absolute Error (MAE)":
+    def chooseLoss(self):
+        if self.loss == "Mean Absolute Error (MAE)":
             self.loss_object = losses.MeanAbsoluteError
-        if self.cost == "Mean Absolute Percentage Error (MAPE)":
+        if self.loss == "Mean Absolute Percentage Error (MAPE)":
             self.loss_object = losses.MeanAbsolutePercentageError
-        elif self.cost == "Mean Squared Error (MSE)":
+        elif self.loss == "Mean Squared Error (MSE)":
             self.loss_object = losses.MeanSquaredError
-        elif self.cost == "Mean Squared Logarithmic Error (MSLE)":
+        elif self.loss == "Mean Squared Logarithmic Error (MSLE)":
             self.loss_object = losses.MeanSquaredLogarithmicError
-        elif self.cost == "Hinge":
+        elif self.loss == "Hinge":
             self.loss_object = losses.Hinge
-        elif self.cost == "Huber":
+        elif self.loss == "Huber":
             self.loss_object = losses.Huber
-        elif self.cost == "Logaritmic Cosine (LogCosh)":
+        elif self.loss == "Logaritmic Cosine (LogCosh)":
             self.loss_object = losses.LogCosh
-        elif self.cost == "Poisson":
+        elif self.loss == "Poisson":
             self.loss_object = losses.Poisson
-        elif self.cost == "Binary Cross Entropy (BCE)":
+        elif self.loss == "Binary Cross Entropy (BCE)":
             self.loss_object = losses.BinaryCrossentropy
-        elif self.cost == "Categorical Cross Entropy":
+        elif self.loss == "Categorical Cross Entropy":
             self.loss_object = losses.CategoricalCrossentropy
-        elif self.cost == "Kullback-Leibler (KLDivergence)":
+        elif self.loss == "Kullback-Leibler (KLDivergence)":
             self.loss_object = losses.KLDivergence
-        elif self.cost == "Sparse Categorical Cross Entropy":
+        elif self.loss == "Sparse Categorical Cross Entropy":
             self.loss_object = losses.SparseCategoricalCrossentropy
-        elif self.cost == "Cosine Similarity":
+        elif self.loss == "Cosine Similarity":
             self.loss_object = losses.CosineSimilarity
-        elif self.cost == "Log-Likelihood":
+        elif self.loss == "Log-Likelihood":
             self.loss_object = nn.log_poisson_loss
         else:
             self.loss_object = None
@@ -156,11 +156,11 @@ class FrameStructure(kerasWrapper):
         train_loss = metrics.Mean(name='train_loss')
         train_accuracy = metrics.SparseCategoricalAccuracy(name='train_accuracy')
 
-        self.chooseCost()
+        self.chooseLoss()
         self.chooseOptimizer()
 
         if self.loss_object is None:
-            return "Error choosing cost function in " + self.frame + ": " + self.cost + " not available in TensorFlow"
+            return "Error choosing cost function in " + self.frame + ": " + self.loss + " not available in TensorFlow"
         if self.optimizer_object is None:
             return "Error choosing optimizer in " + self.frame + ": " + self.optimizer + " not available in TensorFlow"
 

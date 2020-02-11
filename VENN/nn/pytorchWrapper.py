@@ -111,26 +111,26 @@ class FrameStructure(WrapperTemplate):
         else:
             return None
 
-    def chooseCost(self):
-        if self.cost == "Mean Square Error (MSE)":
+    def chooseLoss(self):
+        if self.loss == "Mean Square Error (MSE)":
             self.loss_object = torch.nn.MSELoss
-        elif self.cost == "Mean Absolute Error (MAE)":
+        elif self.loss == "Mean Absolute Error (MAE)":
             self.loss_object = torch.nn.L1Loss
-        elif self.cost == "Categorical Cross Entropy":
+        elif self.loss == "Categorical Cross Entropy":
             self.loss_object = torch.nn.CrossEntropyLoss
-        elif self.cost == "Kullback-Leibler (KLDivergence)":
+        elif self.loss == "Kullback-Leibler (KLDivergence)":
             self.loss_object = torch.nn.KLDivLoss
-        elif self.cost == "Hinge":
+        elif self.loss == "Hinge":
             self.loss_object = torch.nn.HingeEmbeddingLoss
-        elif self.cost == "Cosine Similarity":
+        elif self.loss == "Cosine Similarity":
             self.loss_object = torch.nn.CosineSimilarity
-        elif self.cost == "Binary Cross Entropy (BCE)":
+        elif self.loss == "Binary Cross Entropy (BCE)":
             self.loss_object = torch.nn.BCELoss
-        elif self.cost == "Soft Margin Loss (SML)":
+        elif self.loss == "Soft Margin Loss (SML)":
             self.loss_object = torch.nn.SoftMarginLoss
-        elif self.cost == "Poisson Negative Log-Likelihood":
+        elif self.loss == "Poisson Negative Log-Likelihood":
             self.loss_object = torch.nn.PoissonNLLLoss
-        elif self.cost == "Negative Log-Likelihood":
+        elif self.loss == "Negative Log-Likelihood":
             self.loss_object = torch.nn.NLLLoss
         else:
             self.loss_object = None
@@ -152,18 +152,18 @@ class FrameStructure(WrapperTemplate):
             self.optimizer_object = None
 
     def run(self):
-        self.chooseCost()
+        self.chooseLoss()
         self.chooseOptimizer()
 
         if self.loss_object is None:
-            return "Error choosing cost function in PyTorch: " + self.cost + " not available in Pytorch"
+            return "Error choosing cost function in PyTorch: " + self.loss + " not available in Pytorch"
         if self.optimizer_object is None:
             return "Error choosing optimizer in Pytorch: " + self.optimizer + " not available in Pytorch"
 
         optimizer = self.optimizer_object(self.model.parameters(), lr=0.01)
         self.model.train()
 
-        loss = None
+        modelLoss = None
         correct = 0
 
         for epoch in range(self.epoch):
@@ -176,7 +176,7 @@ class FrameStructure(WrapperTemplate):
                 if pred == train:
                     correct = correct + 1
 
-        return "Train --> Loss: " + str(loss.item()) + ", Accuracy: " + str((correct / len(self.outputTrain)) * 100)
+        return "Train --> Loss: " + str(modelLoss.item()) + ", Accuracy: " + str((correct / len(self.outputTrain)) * 100)
 
     def test(self):
         self.model.eval()

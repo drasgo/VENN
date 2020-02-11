@@ -12,10 +12,10 @@ ACTIVATION_FUNCTIONS = {"None": "white",
                         "Softplus": "darkRed",
                         "Log Softmax": "purple"}
 
-FRAMEWORKS = ["TensorFlow",
-              "PyTorch",
-              "Keras"]
-# , "FastAI"]
+FRAMEWORKS = {"TensorFlow": "tensorflow",
+              "PyTorch": "torch",
+              "Keras": "keras"}
+# , "FastAI": "fastai"}
 
 BOX_PROPERTIES = ["DENSE",
                   "CNN",
@@ -64,7 +64,7 @@ ARROW_DEFAULT_FUNC = "None"
 blockSelected = "background-color: dimgray;"
 blockUnSelected = "background-color: rgb(114, 159, 207);"
 
-INPUT_OUTPUT_DATA_FILE_EXTENSION = "Text Files (*.txt, *.json, *.dat)"
+INPUT_OUTPUT_DATA_FILE_EXTENSION = "Text Files (*.txt *.json *.dat)"
 
 NNSTRUCTURE_FILE = "NNStructure.dr"
 

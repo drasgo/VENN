@@ -10,6 +10,14 @@ from VENN.gui.mainwindow import Ui_MainWindow
 import VENN.nn.mainNN as mainNN
 
 
+# TODO
+# TODO
+# TODO
+# connetti nuovi optimizer ed epoch grafici con mainNN.
+# Risolvere bug di file input/output scelto vuoto.
+# Improve gestione dei valori di input e output da file sia in gui che in mainNN
+
+
 def CheckMultipleSelection(self):
     """ Selects every block/arch in the rubber multiple selection. Everything else is unselected"""
     for widget in self.findChildren(QtWidgets.QFrame):
@@ -284,51 +292,57 @@ def setupNNStructure(parent):
 
     structure.setBlocksArrows(layers, archs)
 
+    # Set the name of the current structure (the name of how it is going to be saved)
     if parent.StructureFilename.text() != "":
         structure.setStructureFilename(parent.StructureFilename.text())
 
+    # Set the loss function for the run/test options (if available)
     if parent.LossFunction.currentText() != "":
-        structure.setCostFunction(parent.LossFunction.currentText())
+        structure.setLossFunction(parent.LossFunction.currentText())
 
-    # Checks input output data
-    if parent.InputText.toPlainText() != "" and parent.OutputText.toPlainText() != "":
-        structure.setInputOutput(parent.InputText.toPlainText(), parent.OutputText.toPlainText())
+    # Set input output files
+    if parent.InputFile.text() != "" and parent.OutputFile.text() != "":
+        structure.setInputOutput(parent.InputFile.toPlainText(), parent.OutputFile.toPlainText())
 
-    #  Checks input output data quantity
-    elif (parent.numberInputs.text() != "" and parent.numberInputs.text().isdigit()) and \
-            (parent.numberOutputs.text() != "" and parent.numberOutputs.text().isdigit()):
-        temp = parent.numberInputs.text()
-        temp1 = parent.numberOutputs.text()
-        structure.setInputOutputNumber(int(temp), int(temp1))
+    # Set input output data quantity (Note: if input/output files are available, the dimension in those file will rule)
+    elif (parent.NumberInputs.text() != "" and parent.NumberInputs.text().isdigit()) and \
+            (parent.NumberOutputs.text() != "" and parent.NumberOutputs.text().isdigit()):
+        structure.setInputOutputNumber(int(parent.NumberInputs.text()), int(parent.NumberOutputs.text()))
 
+    # Set which frameworks needs to be used for commit with/run/test
     if parent.Framework.currentText() != "":
         structure.setFramework(parent.Framework.currentText())
 
+    # Set the logger reference
     structure.setLogger(logger)
 
-    # TODO: Add in the GUI the optimizer option and the epoch option
-    # if parent.Optimizer.currentText() != "":
-    #       structure.setOptimizer(parent.Optimizer.currentText())
-    # if parent.Epoch.currentText() != "" and isinstance(parent.Epoch.currentText(), int):
-    #     structure.setEpoch(parent.Epoch.currentText())
-    # Also implement choice of input data: normal (aka matrix data for mlp and such), images for CNN, time series for RNN..
+    # Set the optimizer function for the run/test options (if available)
+    if parent.OptimizerFunction.currentText() != "":
+        structure.setOptimizer(parent.Optimizer.currentText())
+
+    # Set the number of epochs for the run/test options (if available)
+    if parent.numberEpochs.text() != "" and isinstance(parent.numberEpochs.text(), int):
+        structure.setEpoch(int(parent.numberEpochs.currentText()))
 
 
 def inputData(parent, button):
     """ Open the input/output file specified and loads the data into the input/output textbox"""
-    fileDial = QtWidgets.QFileDialog.getOpenFileName(button, "Input File", os.path.curdir,
+    name = "Input File" if button is parent.InputFi else "Output File"
+    fileDial = QtWidgets.QFileDialog.getOpenFileName(button, name, os.path.curdir,
                                                      costants.INPUT_OUTPUT_DATA_FILE_EXTENSION)
-    fileData = ""
+    if fileDial[0] == "":
+        if button is parent.InputFi:
+            logger("No input file chosen")
+        else:
+            logger("No output file chosen")
+        return
 
-    with open(fileDial[0], 'r') as fp:
-        for line in fp.readline():
-            fileData = fileData + line
-    fileData.replace("\n", "")
+    if os.path.exists(fileDial[0]):
 
-    if button is parent.InputFi:
-        parent.InputText.appendPlainText(fileData)
-    else:
-        parent.OutputText.appendPlainText(fileData)
+        if button is parent.InputFi:
+            parent.InputFile.setText(fileDial[0])
+        else:
+            parent.OutputFile.setText(fileDial[0])
 
 
 def logger(text="", color="black"):
@@ -346,12 +360,13 @@ def resizeEvent(main, e):
     global archs
     newVal = main.geometry()
     # Resize every preexisting component created in qtcreator
-    resizeElement([main.OutputFi, main.LoadStr, main.RunNN, main.TestNN, main.AdvancedOptions, main.InputFi, main.CommSave,
-                   main.MainStruct, main.Blocks, main.ChooseArrow, main.Delete, main.InsertFirstBlock, main.Loss,
-                   main.LossFunction, main.Log, main.LogWindow, main.Framework, main.label, main.FrameworkCommit,
-                   main.NumberInputs, main.NumberOutputs, main.nInputs, main.nOutputs, main.StructureFilename,
-                   main.Epochs, main.numberEpochs, main.Optmizer, main.OptimizerFunction, main.InputFile, main.OutputFile,
-                   main.line_2, main.line_3, main.line_4, main.line_5], main.oldMax, newVal)
+    resizeElement(
+        [main.OutputFi, main.LoadStr, main.RunNN, main.TestNN, main.AdvancedOptions, main.InputFi, main.CommSave,
+         main.MainStruct, main.Blocks, main.ChooseArrow, main.Delete, main.InsertFirstBlock, main.Loss,
+         main.LossFunction, main.Log, main.LogWindow, main.Framework, main.label, main.FrameworkCommit,
+         main.NumberInputs, main.NumberOutputs, main.nInputs, main.nOutputs, main.StructureFilename,
+         main.Epochs, main.numberEpochs, main.Optmizer, main.OptimizerFunction, main.InputFile, main.OutputFile,
+         main.line_2, main.line_3, main.line_4, main.line_5], main.oldMax, newVal)
     # Resize every procedurally created componenent (aka blocks and arrows)
     resizeElement(layers + archs, main.oldMax, newVal)
     # Reset the current window size
@@ -514,10 +529,10 @@ class Arrow(QtWidgets.QFrame):
         else:
             self.horizontalLayout = False
 
-        if self.initBlock.x() < self.finalBlock.x() or self.finalBlock.y() < self.initBlock.y():
-            self.upRightLayout = True
-        else:
+        if self.initBlock.x() < self.finalBlock.x() or self.finalBlock.y() > self.initBlock.y():
             self.upRightLayout = False
+        else:
+            self.upRightLayout = True
 
     def isSelected(self):
         return self.selected
@@ -842,35 +857,20 @@ class MainW(QtWidgets.QMainWindow, Ui_MainWindow):
         self.ChooseArrow.currentIndexChanged.connect(
             lambda: changeComboBox(self.ChooseArrow, self.ChooseArrow.currentIndex()))
 
-        for transFunc in costants.ACTIVATION_FUNCTIONS:
-            item = QtGui.QStandardItem(str(transFunc))
-            item.setForeground(QtGui.QColor(str(costants.ACTIVATION_FUNCTIONS[transFunc])))
-            mod = self.ChooseArrow.model()
-            mod.appendRow(item)
-
         self.CommSave.clicked.connect(lambda: structureCommit(self))
         self.LoadStr.clicked.connect(lambda: structureLoad(self))
 
         self.InputFi.clicked.connect(lambda: inputData(self, self.InputFi))
         self.OutputFi.clicked.connect(lambda: inputData(self, self.OutputFi))
 
+        self.FrameworkCommit.clicked.connect(lambda: frameworkCommit(self))
+
+        # Setting up combo boxes (frameworks, activation functions, loss functions and optimizer functions) with
+        # elements from costants.py
         for frame in costants.FRAMEWORKS:
 
-            if frame == "TensorFlow":
-                if importlib.util.find_spec("tensorflow") is None:
-                    continue
-
-            elif frame == "PyTorch":
-                if importlib.util.find_spec("torch") is None:
-                    continue
-
-            elif frame == "Keras":
-                if importlib.util.find_spec("keras") is None:
-                    continue
-
-            # elif frame == "FastAI":
-            #     if importlib.util.find_spec("fastai") is None:
-            #         continue
+            if importlib.util.find_spec(costants.FRAMEWORKS[frame]) is None:
+                continue
 
             if self.Framework.currentText() == "No Framework Found":
                 self.Framework.removeItem(0)
@@ -879,12 +879,21 @@ class MainW(QtWidgets.QMainWindow, Ui_MainWindow):
             mod = self.Framework.model()
             mod.appendRow(item)
 
+        for transFunc in costants.ACTIVATION_FUNCTIONS:
+            item = QtGui.QStandardItem(str(transFunc))
+            item.setForeground(QtGui.QColor(str(costants.ACTIVATION_FUNCTIONS[transFunc])))
+            mod = self.ChooseArrow.model()
+            mod.appendRow(item)
+
         for cost in costants.COST_FUNCTION:
             item = QtGui.QStandardItem(str(cost))
             mod = self.LossFunction.model()
             mod.appendRow(item)
 
-        self.FrameworkCommit.clicked.connect(lambda: frameworkCommit(self))
+        for optim in costants.OPTIMIZERS:
+            item = QtGui.QStandardItem(str(optim))
+            mod = self.OptimizerFunction.model()
+            mod.appendRow(item)
 
         loggerWindow = self.LogWindow
         comboBox = self.ChooseArrow
