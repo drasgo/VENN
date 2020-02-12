@@ -181,7 +181,8 @@ class NNStructure:
             temp["initBlock"] = arch.initBlock.objectName()
             temp["finalBlock"] = arch.finalBlock.objectName()
             temp["activFunc"] = arch.name
-            temp["position"] = [arch.x(), arch.y(), arch.width(), arch.height()]
+            temp["size"] = [arch.width(), arch.height()]
+            temp["pos"] = [arch.x(), arch.y()]
             return temp
 
         def getNextArrow(block):

@@ -22,7 +22,7 @@ How to.. : https://www.github.com/drasgo/ViCreNN/blob/master/howto.md
 
 
 # TODO
-
+- aggiungere whatstis tip per tutti i label/bottoni sensibili in gui
 - aggiungere possibilità di inserire più nodi di input (quindi recuperando l'input da più file esterni)
 - add more advanced settings
 - add recursive full support

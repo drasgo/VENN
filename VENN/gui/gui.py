@@ -355,13 +355,13 @@ def resizeEvent(main, e):
     # Resize every preexisting component created in qtcreator
     resizeElement(
         [main.OutputFi, main.LoadStr, main.RunNN, main.TestNN, main.AdvancedOptions, main.InputFi, main.CommSave,
-         main.MainStruct, main.Blocks, main.ChooseArrow, main.Delete, main.InsertFirstBlock, main.Loss,
+         main.MainStruct, main.ChooseArrow, main.Delete, main.InsertFirstBlock, main.Loss,
          main.LossFunction, main.Log, main.LogWindow, main.Framework, main.label, main.FrameworkCommit,
          main.NumberInputs, main.NumberOutputs, main.nInputs, main.nOutputs, main.StructureFilename,
          main.Epochs, main.numberEpochs, main.Optmizer, main.OptimizerFunction, main.InputFile, main.OutputFile,
-         main.line_2, main.line_3, main.line_4, main.line_5], main.oldMax, newVal)
+         main.line_2, main.line_3, main.line_4, main.line_5, main.line_6], main.oldMax, newVal)
     # Resize every procedurally created componenent (aka blocks and arrows)
-    resizeElement(layers + archs, main.oldMax, newVal)
+    resizeElement(layers + archs + [main.Blocks], main.oldMax, newVal)
     # Reset the current window size
     main.oldMax = newVal
 
@@ -373,8 +373,14 @@ def resizeElement(listaElem, oldMax, newMax):
         newHeight = int(((elem.height()) * newMax.height()) / oldMax.height())
         newX = int((elem.x() * newMax.width()) / oldMax.width())
         newY = int((elem.y() * newMax.height()) / oldMax.height())
-        elem.resize(newWidth, newHeight)
-        elem.move(newX, newY)
+
+        if elem in archs:
+            elem.drawArrow()
+
+        else:
+            if "block" not in elem.objectName().lower():
+                elem.resize(newWidth, newHeight)
+            elem.move(newX, newY)
 
 
 class BlockProperties(QtWidgets.QComboBox):
@@ -512,7 +518,8 @@ class Arrow(QtWidgets.QFrame):
         self.name = loaded["activFunc"]
         self.initBlock = next(init for init in layers if init.objectName() == loaded["initBlock"])
         self.finalBlock = next(fin for fin in layers if fin.objectName() == loaded["finalBlock"])
-        self.setGeometry(loaded["position"][0], loaded["position"][1], loaded["position"][2], loaded["position"][3])
+        self.resize(loaded["size"][0], loaded["size"][1])
+        self.move(loaded["pos"][0], loaded["pos"][1])
         self.stylesheet = costants.arrow_stylesheet(costants.ACTIVATION_FUNCTIONS[self.name])
         self.checkOrientation()
 
@@ -823,10 +830,9 @@ class MainW(QtWidgets.QMainWindow, Ui_MainWindow):
 
         self.oldMax = self.geometry()
         self.resizeEvent = lambda event: resizeEvent(self, event)
-        self.setStyleSheet("""QPushButton:hover {
-                                background-color: grey;
-                                color: #fff;
-                                }""")
+        self.setStyleSheet("""QPushButton:hover {background-color: grey;
+                                color: #fff;}
+                                QMainWindow {background-color:white;}""")
 
         MultipleSelect[0] = QtWidgets.QRubberBand(QtWidgets.QRubberBand.Rectangle, self.MainStruct)
         MultipleSelect[1] = QtCore.QPoint()
@@ -837,6 +843,7 @@ class MainW(QtWidgets.QMainWindow, Ui_MainWindow):
         self.Blocks.mousePressEvent = lambda event: mousePress(self.Blocks)
         self.Blocks.setObjectName("Blocks")
 
+        self.MainStruct.keyPressEvent = lambda event: keyPress(event=event)
         self.MainStruct.setAcceptDrops(True)
         self.MainStruct.dragEnterEvent = lambda event: dragEnterMainStruct(event)
         self.MainStruct.dragMoveEvent = lambda event: dragMoveMainStruct(event)
