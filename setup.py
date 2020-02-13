@@ -5,21 +5,21 @@ except ImportError:
 
 setup(
     name="VENN",
-    version="0.5.0",
+    version="1.0.0",
     author="Drasgo",
     author_email="tommasocastiglione@gmail.com",
     license=open('LICENSE').read(),
-    description="Visual Creator of Neural Networks",
+    description="Visual Editor of Neural Networks",
     long_description=open('README.md').read(),
     long_description_content_type="text/markdown",
-    url="https://github.com/drasgo/ViCreNN",
-    packages=["ViCreNN", "ViCreNN/gui", "ViCreNN/nn", ],
+    url="https://github.com/drasgo/VENN",
+    packages=["VENN", "VENN/gui", "VENN/nn", ],
     install_requires=['PyQt5'],
     extras_require={
         'TensorFlow': ['tensorflow'],
         'PyTorch': ['torch', "torchsummary"],
         'Keras': ['keras'],
-        'FastAI': ['fastai'],
+#       'FastAI': ['fastai'],
 	'Documentation': ['pdoc'] 
     },
     classifiers=[
