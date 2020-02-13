@@ -137,8 +137,6 @@ class WrapperTemplate:
                     (structure[block]["type"] == "SUM" or structure[block]["type"] == "SUB" or
                      structure[block]["type"] == "MULT")])
 
-    # da modificare per il supporto dei multi branches
-    # TODO refactor function
     def returnFirstCompleteDiagram(self, structure):
         """ Return first complete diagram input->output. Don't touch it"""
         index = None

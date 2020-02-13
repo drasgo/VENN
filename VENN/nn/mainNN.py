@@ -24,7 +24,7 @@ class NNStructure:
         self.arrows = None
         self.inputFile = ""
         self.outputFile = ""
-        self.epochs=1
+        self.epochs = 1
 
     def setBlocksArrows(self, blocks, arrows):
         self.blocks = blocks[:]
@@ -372,14 +372,14 @@ class NNStructure:
 
         # TODO
         # This flattens the data. This mustn't be performed if input data is for convo nets or recurrent nets
-        # if self.type == "mlp":
+        # if not CNN or RNN:
         for x in temp:
             x = x.replace(counterpar, "")
             x = x.replace(par, "")
             lista.append(x.split(","))
-        # elif self.type == "cnn":
+        # elif not any(self.topology[elem]["type"] == "CNN" for elem in self.topology if self.topology[elem]["block"] is True)::
         # ...
-        # elif self.type == "rnn":
+        # elif is RNN:
         # ...
         return lista
 

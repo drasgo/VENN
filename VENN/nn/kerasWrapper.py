@@ -146,14 +146,12 @@ class FrameStructure(WrapperTemplate):
 
     def sumNode(self, inputNode1, inputNode2, name=""):
         if inputNode1.shape() != inputNode2.shape():
-            # TODO add gui control
             print("dimensionality error with " + str(inputNode1) + " and " + str(inputNode2) + " in pytorch")
             quit()
         return keras.layers.add([inputNode1, inputNode2], name=name)
 
     def subNode(self, inputNode1, inputNode2, name=""):
         if inputNode1.shape() != inputNode2.shape():
-            # TODO add gui control
             print("dimensionality error with " + str(inputNode1) + " and " + str(inputNode2) + " in pytorch")
             quit()
         return keras.layers.subtract([inputNode1, inputNode2], name=name)

@@ -1,6 +1,6 @@
 LINE_WIDTH = 25
 
-ACTIVATION_FUNCTIONS = {"None": "white",
+ACTIVATION_FUNCTIONS = {"": "white",
                         "Linear": "cyan",
                         "Rectified Linear (ReLu)": "blue",
                         "Hyperbolic Tangent (Tanh)": "green",
@@ -59,7 +59,7 @@ OPTIMIZERS = ["",
 
 INPUT_TYPE = ["normal", "cnn", "rnn"]
 
-ARROW_DEFAULT_FUNC = "None"
+ARROW_DEFAULT_FUNC = ""
 
 blockSelected = "background-color: dimgray;"
 blockUnSelected = "background-color: rgb(114, 159, 207);"

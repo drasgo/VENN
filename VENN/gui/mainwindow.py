@@ -1,6 +1,10 @@
 from PyQt5 import QtCore, QtGui, QtWidgets
 
 
+# TODO
+# Add whatsthis tooltip to every sensible label/combobox
+
+
 class Ui_MainWindow(object):
 
     def __init__(self):
@@ -244,7 +248,7 @@ class Ui_MainWindow(object):
         self.NumberOutputs.setStyleSheet("border: 1px solid black; \n"
                                          "border-radius: 10px;\n"
                                          "")
-        self.NumberOutputs.setText("")
+        self.NumberOutputs.setText("10")
         self.NumberOutputs.setObjectName("NumberOutputs")
         self.line_2 = QtWidgets.QFrame(self.centralwidget)
         self.line_2.setGeometry(QtCore.QRect(11, 121, 281, 16))
@@ -266,7 +270,7 @@ class Ui_MainWindow(object):
         self.NumberInputs.setStyleSheet("border: 1px solid black; \n"
                                         "border-radius: 10px;\n"
                                         "")
-        self.NumberInputs.setText("")
+        self.NumberInputs.setText("10")
         self.NumberInputs.setObjectName("NumberInputs")
         self.line_6 = QtWidgets.QFrame(self.centralwidget)
         self.line_6.setGeometry(QtCore.QRect(10, 440, 271, 16))
@@ -280,7 +284,7 @@ class Ui_MainWindow(object):
 
     def retranslateUi(self, MainWindow):
         _translate = QtCore.QCoreApplication.translate
-        MainWindow.setWindowTitle(_translate("MainWindow", "VENN- Visual Editor of Neural Networks"))
+        MainWindow.setWindowTitle(_translate("MainWindow", "VENN - Visual Editor of Neural Networks"))
         self.FrameworkCommit.setText(_translate("MainWindow", "Commit Model with"))
         self.Log.setText(_translate("MainWindow", "Logger:"))
         self.nOutputs.setText(_translate("MainWindow", "<b>or insert number of outputs</b>"))

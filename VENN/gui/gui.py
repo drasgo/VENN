@@ -5,9 +5,16 @@ from PyQt5 import QtGui
 from PyQt5 import QtCore
 import os
 import importlib
+import re
 import VENN.costants as costants
 from VENN.gui.mainwindow import Ui_MainWindow
 import VENN.nn.mainNN as mainNN
+
+
+# TODO
+# TODO
+# TODO
+# Implement Pooling, Dropout, CNN, RNN and multiple inputs
 
 
 def CheckMultipleSelection(self):
@@ -168,10 +175,13 @@ def changeComboBox(self, pos):
 
 
 def changeArchChangeComboBox(name):
-    """ When selected an arch which is different from what is selected in the activation function combobox, the selected item
-     in the combobox changes to what the arch is"""
+    """ When selected an arch which is different from what is selected in the activation function combobox, the selected
+     item in the combobox changes to what the arch is"""
     global comboBox
-    comboBox.setCurrentText(name)
+    for activ in costants.ACTIVATION_FUNCTIONS:
+        if name in activ:
+            comboBox.setCurrentText(activ)
+            break
 
 
 def Cancel():
@@ -547,9 +557,12 @@ class Arrow(QtWidgets.QFrame):
         """ Changes the color of the arch depending the cactivation function combobox"""
         if self.finalBlock.layer.currentText() == "SUM" or self.finalBlock.layer.currentText() == "SUB" or \
                 self.finalBlock.layer.currentText() == "MULT":
-            name = "None"
-        self.name = name
+            name = ""
+
         self.color = str(costants.ACTIVATION_FUNCTIONS[name])
+        if "(" in name or ")" in name:
+            name = re.search('\(([^)]+)', name).group(1)
+        self.name = name
         self.activationFunc.setText(self.name)
         self.stylesheet = "border-color: black; background-color: " + self.color + ";"
         self.setStyleSheet(self.stylesheet)

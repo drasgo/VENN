@@ -27,6 +27,8 @@ How to.. : https://www.github.com/drasgo/ViCreNN/blob/master/howto.md
 - add more advanced settings
 - add recursive full support
 - add convolution support
+- add dropout support
+- add pooling support
 - general bugfix
 - comments
 - Double check for cost/loss/activation/optimization functions for all frameworks
