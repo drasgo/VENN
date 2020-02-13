@@ -15,7 +15,7 @@ import VENN.nn.mainNN as mainNN
 # TODO
 # TODO
 # Implement Pooling, Dropout, CNN, RNN and multiple inputs
-
+# Implement saving the framework structure when it is done training
 
 def CheckMultipleSelection(self):
     """ Selects every block/arch in the rubber multiple selection. Everything else is unselected"""
