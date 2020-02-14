@@ -174,20 +174,24 @@ class FrameStructure(WrapperTemplate):
                 if pred == train:
                     correct = correct + 1
 
-        return "Train --> Loss: " + str(modelLoss.item()) + ", Accuracy: " + str((correct / len(self.outputTrain)) * 100)
+        self.logger("Train --> Loss: " + str(modelLoss.item()) + ", Accuracy: " + str((correct / len(self.outputTrain)) * 100))
 
-    def test(self):
-        self.model.eval()
-        y_pred = self.model(self.inputTest)
-        after_train = self.loss_object(y_pred.squeeze(), self.outputTest)
+        if self.test is True:
+            self.model.eval()
+            y_pred = self.model(self.inputTest)
+            after_train = self.loss_object(y_pred.squeeze(), self.outputTest)
 
-        correct = 0
-        for pred, test in (y_pred, self.outputTest):
-            if pred == test:
-                correct = correct + 1
+            correct = 0
+            for pred, test in (y_pred, self.outputTest):
+                if pred == test:
+                    correct = correct + 1
 
-        return "Test --> Loss: " + str(after_train.item()) + ", Accuracy: " + str(
-            (correct / len(self.outputTest)) * 100)
+            self.logger("Test --> Loss: " + str(after_train.item()) + ", Accuracy: " + str(
+                (correct / len(self.outputTest)) * 100))
+
+        self.saveModel()
+
+        self.logger("Trained " + self.frame + " model saved correctly!")
 
 
 class torchModel(nn.Module):

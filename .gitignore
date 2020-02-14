@@ -120,5 +120,13 @@ venv.bak/
 # Ignore every test file
 test.*
 
+# File pdf
+
+*.pdf
+
+#File progetti futuri
+
+progettifuturi.txt
+
 # Ignore Documentation folder
 html/

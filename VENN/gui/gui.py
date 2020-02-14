@@ -15,7 +15,6 @@ import VENN.nn.mainNN as mainNN
 # TODO
 # TODO
 # Implement Pooling, Dropout, CNN, RNN and multiple inputs
-# Implement saving the framework structure when it is done training
 
 def CheckMultipleSelection(self):
     """ Selects every block/arch in the rubber multiple selection. Everything else is unselected"""
@@ -355,7 +354,7 @@ def logger(text="", color="black"):
     loggerWindow.append(text)
 
 
-def resizeEvent(main, e):
+def resizeEvent(main):
     """For every element in the gui check the old and new dimensions of the window and scale accordingly width, height,
     x starting position and y starting position. This operation is also performed on the new blocks and arch created.
     """
@@ -561,7 +560,7 @@ class Arrow(QtWidgets.QFrame):
 
         self.color = str(costants.ACTIVATION_FUNCTIONS[name])
         if "(" in name or ")" in name:
-            name = re.search('\(([^)]+)', name).group(1)
+            name = re.search("\(([^)]+)", name).group(1)
         self.name = name
         self.activationFunc.setText(self.name)
         self.stylesheet = "border-color: black; background-color: " + self.color + ";"
@@ -842,7 +841,7 @@ class MainW(QtWidgets.QMainWindow, Ui_MainWindow):
         global comboBox
 
         self.oldMax = self.geometry()
-        self.resizeEvent = lambda event: resizeEvent(self, event)
+        self.resizeEvent = lambda e: resizeEvent(self)
         self.setStyleSheet("""QPushButton:hover {background-color: grey;
                                 color: #fff;}
                                 QMainWindow {background-color:white;}""")

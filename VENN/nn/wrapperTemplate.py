@@ -17,6 +17,7 @@ class WrapperTemplate:
         self.optimizer_object = None
         self.epoch = 0
         self.logger = logger
+        self.test = False
 
         self.prepareStructure()
 
@@ -50,10 +51,6 @@ class WrapperTemplate:
         """ Overriden for running the prepared model."""
         pass
 
-    def test(self):
-        """ Overriden for testing the prepared and trained model"""
-        pass
-
     def dimensionalityChangeforMultiply(self, node, done):
         """ Overriden for commute the previous nodes which go into a mult special block [1]x[m] and [1]x[n] into [m]x[1]
         and [1]x[n], and reshape the resulting matrix [m]x[n] into a row vector 1x[m*n].
@@ -85,7 +82,8 @@ class WrapperTemplate:
         """ Gets input and output data and divides it, if also testing is performed, into training and testing data.
         Don't touch it
         """
-        if test is False:
+        self.test = test
+        if self.test is False:
             self.inputTrain = inputData
             self.outputTrain = outputData
         else:

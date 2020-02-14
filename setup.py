@@ -13,7 +13,7 @@ setup(
     long_description=open('README.md').read(),
     long_description_content_type="text/markdown",
     url="https://github.com/drasgo/VENN",
-    packages=["VENN", "VENN/gui", "VENN/nn", ],
+    packages=["VENN", "VENN/gui", "VENN/nn"],
     install_requires=['PyQt5'],
     extras_require={
         'TensorFlow': ['tensorflow'],

@@ -172,16 +172,20 @@ class FrameStructure(kerasWrapper):
         train_loss(loss)
         train_accuracy(self.outputTrain, predictions)
 
-        return "Train --> Loss: " + str(train_loss.result()) + ", Accuracy: " + str(train_accuracy.result() * 100)
+        self.logger("Train --> Loss: " + str(train_loss.result()) + ", Accuracy: " + str(train_accuracy.result() * 100))
 
-    def test(self):
-        test_loss = metrics.Mean(name='test_loss')
-        test_accuracy = metrics.SparseCategoricalAccuracy(name='test_accuracy')
+        if self.test is True:
+            test_loss = metrics.Mean(name='test_loss')
+            test_accuracy = metrics.SparseCategoricalAccuracy(name='test_accuracy')
 
-        predictions = self.model(self.inputTest)
-        t_loss = self.loss_object(self.outputTest, predictions)
+            predictions = self.model(self.inputTest)
+            t_loss = self.loss_object(self.outputTest, predictions)
 
-        test_loss(t_loss)
-        test_accuracy(self.outputTest, predictions)
+            test_loss(t_loss)
+            test_accuracy(self.outputTest, predictions)
 
-        return "Test --> Loss: " + str(test_loss.result()) + ", Accuracy: " + str(test_accuracy.result() * 100)
+            self.logger("Test --> Loss: " + str(test_loss.result()) + ", Accuracy: " + str(test_accuracy.result() * 100))
+
+        self.saveModel()
+
+        self.logger("Trained " + self.frame + " model saved correctly!")

@@ -90,13 +90,6 @@ class FrameStructure(WrapperTemplate):
 
         self.model = keras.Model(inputs=inputNode, outputs=outputNode)
 
-    def saveModel(self):
-        if self.model is None:
-            self.prepareModel()
-
-        self.model.save(self.name)
-        keras.utils.plot_model(self.model, to_file=self.name + costants.IMAGE_EXTENSION)
-
     def nodeSupport(self, node):
         if node == "DENSE" or node == "SUM" or node == "SUB" or node == "MULT" or \
                 node == "DROPOUT" or node == "POOLING" or node == "CNN" or node == "INPUT" or node == "OUTPUT":
@@ -224,6 +217,13 @@ class FrameStructure(WrapperTemplate):
         else:
             self.optimizer_object = None
 
+    def saveModel(self):
+        if self.model is None:
+            self.prepareModel()
+
+        self.model.save(self.name)
+        keras.utils.plot_model(self.model, to_file=self.name + costants.IMAGE_EXTENSION)
+
     def run(self):
         self.chooseLoss()
         self.chooseOptimizer()
@@ -236,8 +236,14 @@ class FrameStructure(WrapperTemplate):
         self.model.compile(loss=self.loss_object, optimizer=self.optimizer_object, metrics=['accuracy'])
         history = self.model.fit(self.inputTrain, self.outputTrain, epochs=self.epoch)
 
-        return "Train --> Loss: " + str(history.history["loss"]) + ", Accuracy: " + str(history.history["acc"])
+        # Save trained
 
-    def test(self):
-        score = self.model.evaluate(self.inputTest, self.outputTest, verbose=0)
-        return "Test --> Loss: " + str(score[0]) + ", Accuracy: " + str(score[1])
+        self.logger("Train --> Loss: " + str(history.history["loss"]) + ", Accuracy: " + str(history.history["acc"]))
+
+        if self.test is True:
+            score = self.model.evaluate(self.inputTest, self.outputTest, verbose=0)
+            return "Test --> Loss: " + str(score[0]) + ", Accuracy: " + str(score[1])
+
+        self.saveModel()
+
+        self.logger("Trained " + self.frame + " model saved correctly!")

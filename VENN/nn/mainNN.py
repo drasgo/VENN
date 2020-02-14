@@ -292,11 +292,7 @@ class NNStructure:
         self.frameStruct.setEpochs(epochs=self.epochs)
         self.frameStruct.setInputOutput(inputData=self.finalInput, outputData=self.finalOutput, test=test)
 
-        if test is False:
-            return self.frameStruct.run()
-
-        else:
-            return self.frameStruct.run() + "\n" + self.frameStruct.test()
+        self.frameStruct.run()
 
     def getIO(self):
         with open(self.inputFile, "r") as f:

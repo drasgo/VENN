@@ -1,53 +1,3 @@
-# VENN How-To and Usage
-
-This program is a Visual Editor of Neural Network.
-
-
-## Sections
-
-* ### [VENN](#VENN)
-    * #### [Functionalities](#funcs)
-    * #### [How to use](#howto)
-* ### [What is a Neural Network?](#whatis)
-    * #### [Feed Forward](#feedfor)
-    * #### [Back Propagation](#backprop)
-
-
-## <a name="VENN"></a> VENN
-
-
- If interested go check it out a quick and oversimplified explanation of what a neural network is. Let's dive right into this tool.
-
- This tool is designed and built to offer a graphical editor for the construction and manipulation of neural networks.
-
-So far, neural networks had to be built by software specialists through more-or-less complex programs. Even if various frameworks greatly helped the task of building these models, someone new to this area should have initially started learning how to code, before even starting the actual process of creating a neural network.
-
-Another somehow annoying problem was that every framework has its own standard file structure were a neural network model is temporarily saved making it impossible to directly convert a network's model from one framework to another.
-
-
-### <a name="funcs"></a> Functionalities
-
-
-This tool let's you to build a blocks-arrows scheme of the neural network you want to design, giving you infinite possible combinations, which makes space for your creativity to think and create everything it wants.
-
-This project removes a layer of complexity to the creation of a neural network: to only thing you have to do is just decide how the network has to be and just drag n' drop the blocks in place.
-
-Every graphical model can be saved in a json structure which can be then moved and sent everywhere. After being saved, the structure can be easily loaded into the system just by pressing a button.
-
-
-Furthermore, the designed model can be exported in various frameworks. So far the following frameworks are supported: Keras, Tensorflow, Pytorch and FastAI (still in implementation phase *** ). However many more frameworks can be easily supported, thanks to the wrapperTemplate class, which automatically performs bothersome tasks and gives you the prototype of functions which need to be implemented for the conversion of the graphical model into your framwork's. Once implemented these few functions, the system is ready to go, and you can start to graphically design your network and export it right away.
-
-Another essential feature is that yo are able to design, create and export the system into your framework of choice and sequentially train and test it with input and output data saved on a file which you can freely add select from inside the program. Once the model is trained you can save it once again. A usable trained model ready for deployment.
-
-Finally a great deal of importance was given to the freedom of choice of the user. A vast number of activation functions, loss functions, optimization functions and layer types are offered, allowing you to use functions which may be available in a framework but not in another. This grants you the possibility to create every type of neural network, from simple to complex one, without having to go through the same annoying and difficult process of coding the structure, modify it, understanding of to use it, etc., again and again and again.
-
-
-### <a name="howto"></a> How to use
-
-...
-
-
-
 ## <a name="whatis"></a>What is a Neural Network?
 
 A neural network is a statistical model which, given a specific input, returns an output which can correspond to:
@@ -105,7 +55,7 @@ Now we just have to give the neural network the power of learning the correct va
 
 This technique is one of the available methods for granting the power of "learning" to the neural network. This is actually what makes the neural network such a powerful tool.
 
-Without getting too mathematical, this kind of techniques can be summed as the problem of finding the optimal minimum point of the function which is the mathematical representation of the model. In fact a neural network can be imagined as a function of a diagram which divides it's domain into groups which each one represents one of the output classes. This means that, as a function, this model receives an input and its output is contained in one of the subgroups identified by this function - meaning that that input is one of the four classes with a percentage of 100%. The more pairs input-ideal output are given to the model, the more this function is refined and defines subgroups more precisely divided.
+Without getting too mathematical, this kind of techniques can be summed as the problem of finding the optimal minimum point of the function which is the mathematical representation of the model. In fact a neural network can be imagined as a function of a diagram which divides it's domain into groups which each one represents one of the output classes. This means that, as a function, this model receives an input and its output is contained in one of the subgroups identified by this function - meaning that that input is one of the four classes with a percentage of 100%. Obviously it is extremely hard to get to 100% accuracy, so usually the class with the higher percentage among all is chosen as the output of the model. The more pairs input-ideal output are given to the model, the more this function is refined and defines subgroups more precisely divided.
 
 The main mathematical tool this technique uses is the derivative of each layer's component with respect to the next layer's output. This means that, from calculating the derivative of the output layer with respect to the loss between the output of the model and the ideal output, then it goes backward.
 
