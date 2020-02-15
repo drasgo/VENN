@@ -1,7 +1,3 @@
-
-
-# VENN How-To and Usage
-
 This program is a Visual Editor of Neural Network.
 
 
@@ -10,11 +6,16 @@ This program is a Visual Editor of Neural Network.
 * ### [VENN](#VENN)
     * #### [Functionalities](#funcs)
     * #### [How to Install](#install)
-    * #### <a href="https://www.github.com/drasgo/VENN/blob/master/Manua/howto.md#documentation">Documentation</a>
-    * #### <a href="https://www.github.com/drasgo/VENN/blob/master//Manua/howto.md#howto">How to use</a>
-* ### <a href="https://www.github.com/drasgo/VENN/blob/master//Manua/neuralnetwork.md#whatis">What is a Neural Network?</a>
-    * #### <a href="https://www.github.com/drasgo/VENN/blob/master//Manua/neuralnetwork.md#feedfor">Feed Forward</a>
-    * #### <a href="https://www.github.com/drasgo/VENN/blob/master//Manua/neuralnetwork.md#backprop">Back Propagation</a>
+    * #### [Documentation](documentation)
+    * #### <a href="Manual/howto.md#howto">How to use</a>
+    * ##### <a href="Manual/howto.md#dragdrop">Drag n' Drop</a>
+* ### <a href="Manual/howto.md#frames">Frameworks supported</a>
+    * #### <a href="Manual/howto.md#tensor">TensorFlow</a>
+    * #### <a href="Manual/howto.md#keras">Keras</a>
+    * #### <a href="Manual/howto.md#pytorch">Pytorch</a>
+* ### <a href="Manual/neuralnetwork.md#whatis">What is a Neural Network?</a>
+    * #### <a href="Manual/neuralnetwork.md#feedfor">Feed Forward</a>
+    * #### <a href="Manual/neuralnetwork.md#backprop">Back Propagation</a>
 
 
 ## <a name="VENN"></a> VENN
@@ -46,21 +47,50 @@ Finally a great deal of importance was given to the freedom of choice of the use
 
 ### <a name="install"></a>How to Install
 
+
 Visual Editor tool for Neural Network development training and deployment
 
 To use this project you have to install:
 
-- PyQt5: <b>pip3 install PyQt5 --user</b>
-- (Optional) Tensorflow: <b>pip3 install tensorflow --user</b>
-- (Optional) Pytorch: <b>pip3 install torch torchvision --user</b>
-- (Optional) Keras: <b>pip3 install keras --user</b>
-- (Optional) Documentation: <b>pip3 install pdoc --user</b>
+- (Mandatory) PyQt5:
 
+<b>pip3 install PyQt5 --user</b>
+<br /><br />
+- (Optional) Tensorflow:
+
+<b>pip3 install tensorflow --user</b>
+<br /><br />
+- (Optional) Pytorch:
+
+<b>pip3 install torch torchvision --user</b>
+<br /><br />
+- (Optional) Keras:
+
+<b>pip3 install keras --user</b>
+<br /><br />
+- (Optional) Documentation:
+
+<b>pip3 install pdoc --user</b>
+<br /><br /><br />
 Or:
 
 - <b>git clone https://www.github.com/drasgo/VENN</b>
 - <b>sudo python3 setup.py install</b>
 
+
+To execute the tool you have to run the file main.py using python3:
+
+<b>python3 main.py</b>
+
+
+### <a name="documentation"></a> Documentation
+
+
+To automatically generate the documentation run on the terminal the following command:
+
+<b>pdoc --html path/to/project/directory</b>
+
+This will generate a folder called html with the documentation. Note: this can be done only if you already installed the pdoc package through pip3.
 
 
 # TODO
