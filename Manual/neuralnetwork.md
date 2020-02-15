@@ -1,3 +1,13 @@
+#Other Sections
+
+* ### <a href="../HOWTO.md#install">How to Install</a>
+* ### <a href="../README.md#ossupport">Supported Operating Systems</a>
+* ### <a href="../README.md#documentation">Documentation</a>
+* ### <a href="../README.md#funcs">Functionalities</a>
+* ### <a href="HOWTO.md#howto">How to Use</a>
+* ### <a href="rules.md#rules">Rules and Usage</a>
+* ### <a href="frameworks.md#frames">Frameworks Supported</a>
+
 ## <a name="whatis"></a>What is a Neural Network?
 
 A neural network is a statistical model which, given a specific input, returns an output which can correspond to:

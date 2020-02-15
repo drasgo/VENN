@@ -1,3 +1,14 @@
+#Other Sections
+
+* ### <a href="../README.md#install">">How to Install</a>
+* ### <a href="../README.md#ossupport">Supported Operating Systems</a>
+* ### <a href="../README.md#documentation">Documentation</a>
+* ### <a href="../README.md#funcs">Functionalities</a>
+* ### <a href="rules.md#rules">Rules and Usage</a>
+* ### <a href="frameworks.md#frames">Frameworks Supported</a>
+* ### <a href="neuralnetwork.md#whatis">What is a Neural Network?</a>
+
+
 ### <a name="howto"></a> How to use
 <br />
 <img src="Images/VENN.jpg" />
@@ -24,19 +35,7 @@ Finally we can find in the upper right corner the main window where we are actua
 <img src="Images/dragndrop.gif" />
 <br /><br />
 
-As you can see from the gif above, in the upper right corner we have an empty space where we can easily drag and drop blocks. We right-click and drag the empty template block in the lower left corner of this space, dropping it wherever we feel like. After dropping it, a new block is created, which let's us choose its behavior. It can be:
-
-* Input
-* Output
-* Dense - or fully connected -
-* Pooling
-* Convolution
-* Sum
-* Multiplication
-* Subtraction
-* Dropout
-* Blank
-
+As you can see from the gif above, in the upper right corner we have an empty space where we can easily drag and drop blocks. We right-click and drag the empty template block in the lower left corner of this space, dropping it wherever we feel like. After dropping it, a new block is created, which let's us choose its behavior. In the next section we will define the supported block types.
 
 Later on we are going to discuss this differentiation.
 
@@ -50,7 +49,31 @@ Left-clicking the block it allows us to select it. One a block is selected it ch
 
 <br /><br />
 
-We can decide which activation function the selected arrow has to have among the following currently available:
+We can decide which activation function the selected arrow has to have among the  currently available, which are going to be listed later on.
+
+
+#### <a name="blocks"></a>Blocks
+
+
+As anticipated earlier, a variety of block types are supported:
+
+* Input
+* Output
+* Dense - or fully connected -
+* Pooling
+* Convolution
+* Sum
+* Multiplication
+* Subtraction
+* Dropout
+* Blank
+
+Moreover, other types of functionalities are supported, such as ***
+
+
+#### <a name="archs"></a>Archs
+
+The following activation functions are generally available, even if some of them are available in one framework and some in another one. In the "Frameworks Supported" section the specific division will be offered.
 
 *  : no activation function
 * Linear
@@ -63,27 +86,3 @@ We can decide which activation function the selected arrow has to have among the
 * Softmax
 * Softplus
 * Log Softmax
-
-
-
-### <a name="frames"></a>Frameworks supported
-
-....
-
-
-#### <a name="tensor"></a>TensorFlow
-
-
-...
-
-
-#### <a name="keras"></a>Keras
-
-
-....
-
-
-#### <a name="pytorch"></a>Pytorch
-
-
-....
