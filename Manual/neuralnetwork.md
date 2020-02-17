@@ -1,6 +1,6 @@
-#Other Sections
+# Other Sections
 
-* ### <a href="../HOWTO.md#install">How to Install</a>
+* ### <a href="../README.md#install">How to Install</a>
 * ### <a href="../README.md#ossupport">Supported Operating Systems</a>
 * ### <a href="../README.md#documentation">Documentation</a>
 * ### <a href="../README.md#funcs">Functionalities</a>

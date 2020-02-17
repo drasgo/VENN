@@ -8,16 +8,19 @@ This program is a Visual Editor of Neural Network.
     * #### [Supported Operating Systems](#ossupport)
     * #### [Documentation](#documentation)
     * #### [Functionalities](#funcs)
-    * #### <a href="Manual/howto.md#howto">How to use</a>
+    * #### <a href="Manual/HOWTO.md#howto">How to use</a>
       * ##### <a href="Manual/HOWTO.md#dragdrop">Drag n' Drop</a>
       * ##### <a href="Manual/HOWTO.md#blocks">Blocks</a>
-      * ##### <a href="Manual/HOWTO.md#archs">Archs</a>
+      * ##### <a href="Manual/HOWTO.md#archs">Activation Functions</a>
+      * ##### <a href="Manual/HOWTO.md#loss">Loss Functions</a>
+      * ##### <a href="Manual/HOWTO.md#optim">Optimization Functions</a>
     * #### <a href="Manual/rules.md#rules">Rules and Usage</a>
     * #### [TODO](#todo)
 * ### <a href="Manual/frameworks.md#frames">Frameworks Supported</a>
     * #### <a href="Manual/frameworks.md#tensor">TensorFlow</a>
     * #### <a href="Manual/frameworks.md#keras">Keras</a>
     * #### <a href="Manual/frameworks.md#pytorch">Pytorch</a>
+    * #### <a href="Manual/frameworks.md#otherframes">Adding new Frameworks</a>
 * ### <a href="Manual/neuralnetwork.md#whatis">What is a Neural Network?</a>
     * #### <a href="Manual/neuralnetwork.md#feedfor">Feed Forward</a>
     * #### <a href="Manual/neuralnetwork.md#backprop">Back Propagation</a>

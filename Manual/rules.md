@@ -1,4 +1,4 @@
-#Other Sections
+# Other Sections
 
 * ### <a href="../README.md#install">How to Install</a>
 * ### <a href="../README.md#ossupport">Supported Operating Systems</a>
@@ -10,5 +10,4 @@
 
 ### <a name="rules">Rules and Usage</a>
 
-
-....
+Here we discuss the rules and restriction for the design of the model 

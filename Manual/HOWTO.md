@@ -1,6 +1,6 @@
-#Other Sections
+# Other Sections
 
-* ### <a href="../README.md#install">">How to Install</a>
+* ### <a href="../README.md#install">How to Install</a>
 * ### <a href="../README.md#ossupport">Supported Operating Systems</a>
 * ### <a href="../README.md#documentation">Documentation</a>
 * ### <a href="../README.md#funcs">Functionalities</a>
@@ -51,6 +51,13 @@ Left-clicking the block it allows us to select it. One a block is selected it ch
 
 We can decide which activation function the selected arrow has to have among the  currently available, which are going to be listed later on.
 
+Holding right-click and moving the mouse across this space allows us to select multiple objects which can be deleted pressing the delete button.
+
+Once you complete your model, being careful to follow the <a href="rules.md">design rules</a>, we can than commit our structure, which will be saved in a file with extension .dr. This structure can be later on loaded graphically and used normally.
+
+After saving and loading the structure, we are interested in exporting this model with one of the available frameworks: TensorFlow, Keras or Pytorch. It is extremely easy to do so: if you are sure that the design rules are followed, then you can choose the framework you want via the combobox (Note: the frameworks supported need to be installed on your system for actually being available). Once you chose the framework, you just push the "commit model with" button for creating the empty structure and, if the input and output data files are provided, you can also perform the training and even the testing by pushing "train model" or "train + test model".
+<br/>Remember: to train and test the model with any framework, you have to provide a loss function and an optimizer function. In the following sections, the available functions will be presented..
+
 
 #### <a name="blocks"></a>Blocks
 
@@ -71,7 +78,7 @@ As anticipated earlier, a variety of block types are supported:
 Moreover, other types of functionalities are supported, such as ***
 
 
-#### <a name="archs"></a>Archs
+#### <a name="archs"></a>Activation Functions
 
 The following activation functions are generally available, even if some of them are available in one framework and some in another one. In the "Frameworks Supported" section the specific division will be offered.
 
@@ -86,3 +93,40 @@ The following activation functions are generally available, even if some of them
 * Softmax
 * Softplus
 * Log Softmax
+
+
+#### <a name="loss"></a>Loss Functions
+
+The following loss functions are generally available, even if some of them are available in one framework and some in another one. In the "Frameworks Supported" section the specific division will be offered.
+
+* Mean Absolute Error - or MAE -
+* Mean Absolute Percentage Error -or MAPE -
+* Mean Squared Error - or MSE -
+* Mean Squared Logarithmic Error - or MSLE -
+* Binary Cross Entropy - or BCE -
+* Soft Margin Loss - or SML -
+* Log-Likelihood
+* Negative Log-Likelihood
+* Hinge
+* Huber
+* Logaritmic Cosine - or LogCosh -
+* Poisson
+* Poisson Negative Log-Likelihood
+* Categorical Cross Entropy
+* Sparse Categorical Cross Entropy
+* Kullback-Leibler - or KLDivergence -
+* Cosine Similarity
+
+
+#### <a name="optim"></a>Optimization Functions
+
+The following optimization functions are generally available, even if some of them are available in one framework and some in another one. In the "Frameworks Supported" section the specific division will be offered.
+
+* Adam
+* Adadelta
+* Adagrad
+* Adamax
+* Nadam
+* RMSprop
+* Ftrl
+* SDG
