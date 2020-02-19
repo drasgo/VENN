@@ -5,7 +5,7 @@
 * ### <a href="../README.md#documentation">Documentation</a>
 * ### <a href="../README.md#funcs">Functionalities</a>
 * ### <a href="rules.md#rules">Rules and Usage</a>
-* ### <a href="frameworks.md#frames">Frameworks Supported</a>
+* ### <a href="frameworks.md#frames">Exporting Structures</a>
 * ### <a href="neuralnetwork.md#whatis">What is a Neural Network?</a>
 
 

@@ -680,7 +680,10 @@ class StructBlock(QtWidgets.QFrame):
         self.show()
 
     def __del__(self):
-        self.hide()
+        try:
+            self.hide()
+        except RuntimeError:
+            pass
         self.setParent(None)
 
         for arch in self.PrevArch + self.SuccArch:

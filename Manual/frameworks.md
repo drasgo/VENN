@@ -8,10 +8,22 @@
 * ### <a href="rules.md#rules">Rules and Usage</a>
 * ### <a href="neuralnetwork.md#whatis">What is a Neural Network
 
-## <a name="frames"></a>Frameworks supported
+## <a name="frames"></a>Exporting Structures
+
+### <a name="framehowto"></a>How does it work?
+
+...
+
+###<a name="otherframes"></a>Adding new Frameworks
+
+Let's conclude this section by discussing how can be added the support for exporting, training and testing a model with a new framework.
+
+...
 
 
-### <a name="tensor"></a><b>TensorFlow</b>
+### <a name="framesupp"></a>Frameworks supported
+
+#### <a name="tensor"></a><b>TensorFlow</b>
 
 ##### Activation Functions
 
@@ -53,7 +65,7 @@
 * Ftrl
 * SDG
 
-### <a name="keras"></a><b>Keras</b>
+#### <a name="keras"></a><b>Keras</b>
 
 
 ##### Activation Functions
@@ -95,7 +107,7 @@
 * Ftrl
 * SDG
 
-### <a name="pytorch"></a><b>Pytorch</b>
+#### <a name="pytorch"></a><b>Pytorch</b>
 
 
 ##### Activation Functions
@@ -132,9 +144,3 @@
 * RMSprop (* )
 * Ftrl
 * SDG
-
-###<a name="otherframes"></a>Adding new Frameworks
-
-Let's conclude this section by discussing how can be added the support for exporting, training and testing a model with a new framework.
-
-...

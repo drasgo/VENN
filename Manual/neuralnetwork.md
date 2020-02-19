@@ -6,7 +6,7 @@
 * ### <a href="../README.md#funcs">Functionalities</a>
 * ### <a href="HOWTO.md#howto">How to Use</a>
 * ### <a href="rules.md#rules">Rules and Usage</a>
-* ### <a href="frameworks.md#frames">Frameworks Supported</a>
+* ### <a href="frameworks.md#frames">Exporting Structures</a>
 
 ## <a name="whatis"></a>What is a Neural Network?
 
@@ -86,3 +86,7 @@ This whole process is called training process and can be improved with the help 
 We could call the operation of a neural network as a "statistically educated series of guesses".
 <br /><br /><br /><br />
 For more information regarding this subject I would suggest to read a specialized book, or read the <a href="https://en.wikipedia.org/wiki/Artificial_neural_network">wikipedia page</a>
+
+### <a name="cnn"></a> Convolution Neural Network
+
+...

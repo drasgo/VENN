@@ -15,15 +15,19 @@ This program is a Visual Editor of Neural Network.
       * ##### <a href="Manual/HOWTO.md#loss">Loss Functions</a>
       * ##### <a href="Manual/HOWTO.md#optim">Optimization Functions</a>
     * #### <a href="Manual/rules.md#rules">Rules and Usage</a>
+      * ##### <a href="Manual/rules.md/structRules">Structure Rules</a>
     * #### [TODO](#todo)
-* ### <a href="Manual/frameworks.md#frames">Frameworks Supported</a>
-    * #### <a href="Manual/frameworks.md#tensor">TensorFlow</a>
-    * #### <a href="Manual/frameworks.md#keras">Keras</a>
-    * #### <a href="Manual/frameworks.md#pytorch">Pytorch</a>
+* ### <a href="Manual/frameworks.md#frames">Exporting Structures</a>
+    * #### <a href="Manual/frameworks.md#framehowto">How does it work?</a>
     * #### <a href="Manual/frameworks.md#otherframes">Adding new Frameworks</a>
+    * #### <a href="Manual/framework.md#framesupp">Frameworks Supported</a>
+      * ##### <a href="Manual/frameworks.md#tensor">TensorFlow</a>
+      * ##### <a href="Manual/frameworks.md#keras">Keras</a>
+      * ##### <a href="Manual/frameworks.md#pytorch">Pytorch</a>
 * ### <a href="Manual/neuralnetwork.md#whatis">What is a Neural Network?</a>
     * #### <a href="Manual/neuralnetwork.md#feedfor">Feed Forward</a>
     * #### <a href="Manual/neuralnetwork.md#backprop">Back Propagation</a>
+    * #### <a href="Manual/neuralnetwork.md#cnn">Convolution Neural Network</a>
 
 
 ## <a name="VENN"></a> VENN
@@ -86,7 +90,7 @@ To execute the tool you have to run the file main.py using python3:
 ### <a name="ossupport"></a>Supported Operating Systems
 
 
-Currently the - known - supported Operating Systems are Ubuntu and Fedora for lack of testers. However everyone is welcome to download and try to use this tool on your OS, so we can add the support of that OS in case it doesn't work.
+Currently the - known - supported Operating Systems are Ubuntu and Fedora for lack of testers. However everyone is welcome to download and try to use this tool on your OS, so we can work on supporting yours OS in case it doesn't work.
 
 However it should potentially work on every machine that supports at least Python3 and PyQt5.
 
