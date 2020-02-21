@@ -132,7 +132,8 @@ def dragMoveMainStruct(self, event):
 
     tempPos = event.pos() - QtCore.QPoint(int(tempBlock.width() / 2), int(tempBlock.height() / 2))
     tempPos2 = event.pos() + QtCore.QPoint(int(tempBlock.width() / 2), int(tempBlock.height() / 2))
-    if tempBlock.objectName() == "Blocks" and (self.rect().contains(tempPos) is False or self.rect().contains(tempPos2) is False):
+    if tempBlock.objectName() == "Blocks" and (
+            self.rect().contains(tempPos) is False or self.rect().contains(tempPos2) is False):
 
         global posit
         tempBlock.move(posit)
@@ -268,7 +269,19 @@ def structureLoad(parent):
     if structure is None:
         structure = mainNN.NNStructure()
 
-    setupNNStructure(parent)
+    fileDial = QtWidgets.QFileDialog.getOpenFileName(parent, "Load Structure", os.path.curdir,
+                                                     costants.STRUCTURE_DATA_FILE_EXTENSION)
+    if fileDial[0] == "":
+        logger("No structure file chosen")
+        return
+
+    if os.path.exists(fileDial[0]):
+        loadingFilename = fileDial[0]
+    else:
+        logger("Error opening structure file: it doesn't exist!")
+        return
+
+    setupNNStructure(parent, loadingFilename)
 
     loadedData = structure.loadTopology()
 
@@ -300,7 +313,7 @@ def structureLoad(parent):
         logger("Model loaded!")
 
 
-def setupNNStructure(parent):
+def setupNNStructure(parent, name=""):
     global structure
 
     structure.setBlocksArrows(layers, archs)
@@ -308,6 +321,9 @@ def setupNNStructure(parent):
     # Set the name of the current structure (the name of how it is going to be saved)
     if parent.StructureFilename.text() != "":
         structure.setStructureFilename(parent.StructureFilename.text())
+
+    if name != "":
+        structure.setLoadingStructureFilename(name)
 
     # Set the loss function for the run/test options (if available)
     if parent.LossFunction.currentText() != "":
@@ -503,7 +519,8 @@ class Arrow(QtWidgets.QFrame):
 
             self.setObjectName(temp)
 
-        self.color = costants.ACTIVATION_FUNCTIONS[self.name]
+            self.color = costants.ACTIVATION_FUNCTIONS[self.name]
+
         self.setStyleSheet(self.stylesheet)
 
         self.activationFunc.setText(self.name)
@@ -540,7 +557,15 @@ class Arrow(QtWidgets.QFrame):
         self.finalBlock = next(fin for fin in layers if fin.objectName() == loaded["finalBlock"])
         self.resize(loaded["size"][0], loaded["size"][1])
         self.move(loaded["pos"][0], loaded["pos"][1])
-        self.stylesheet = costants.arrow_stylesheet(costants.ACTIVATION_FUNCTIONS[self.name])
+
+        tempName = ""
+        for activ in costants.ACTIVATION_FUNCTIONS:
+            if self.name in activ:
+                tempName = activ
+                break
+
+        self.color = costants.ACTIVATION_FUNCTIONS[tempName]
+        self.stylesheet = costants.arrow_stylesheet(self.color)
         self.checkOrientation()
 
     def checkOrientation(self):

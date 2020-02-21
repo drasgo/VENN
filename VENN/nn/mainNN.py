@@ -9,6 +9,7 @@ class NNStructure:
         self.logger = None
         self.topology = {}
         self.file = costants.NNSTRUCTURE_FILE
+        self.loadingFile = costants.NNSTRUCTURE_FILE
         self.input = ""
         self.output = ""
         self.framework = None
@@ -35,6 +36,10 @@ class NNStructure:
         if "." not in name:
             name = name + costants.STRUCTURE_EXTENSION
         self.file = name
+
+    def setLoadingStructureFilename(self, name):
+        if name != "":
+            self.loadingFile = name
 
     def setFramework(self, frame):
         self.framework = frame
@@ -383,8 +388,8 @@ class NNStructure:
         return True if inputLen == outputLen else False
 
     def loadTopology(self):
-        if os.path.exists(self.file):
-            with open(self.file, "r") as data:
+        if os.path.exists(self.loadingFile):
+            with open(self.loadingFile, "r") as data:
                 return json.load(data)
         else:
             self.logger("Previous structure not found", "red")
