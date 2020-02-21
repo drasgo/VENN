@@ -381,6 +381,11 @@ def logger(text="", color="black"):
     loggerWindow.append(text)
 
 
+def clearLogger():
+    global loggerWindow
+    loggerWindow.setText("")
+
+
 def resizeEvent(main):
     """For every element in the gui check the old and new dimensions of the window and scale accordingly width, height,
     x starting position and y starting position. This operation is also performed on the new blocks and arch created.
@@ -395,7 +400,7 @@ def resizeEvent(main):
          main.LossFunction, main.Log, main.LogWindow, main.Framework, main.label, main.FrameworkCommit,
          main.NumberInputs, main.NumberOutputs, main.nInputs, main.nOutputs, main.StructureFilename,
          main.Epochs, main.numberEpochs, main.Optmizer, main.OptimizerFunction, main.InputFile, main.OutputFile,
-         main.line_2, main.line_3, main.line_4, main.line_5, main.line_6], main.oldMax, newVal)
+         main.line_2, main.line_3, main.line_4, main.line_5, main.line_6, main.ClearLogger], main.oldMax, newVal)
     # Resize every procedurally created componenent (aka blocks and arrows)
     resizeElement(layers + archs + [main.Blocks], main.oldMax, newVal)
     # Reset the current window size
@@ -902,7 +907,6 @@ class MainW(QtWidgets.QMainWindow, Ui_MainWindow):
         self.MainStruct.mousePressEvent = lambda event: SelectionmousePressEvent(event)
         self.MainStruct.mouseMoveEvent = lambda event: SelectionmouseMoveEvent(self.MainStruct, event)
         self.MainStruct.mouseReleaseEvent = lambda event: SelectionmouseReleaseEvent(event)
-        # self.MainStruct.leaveEvent = lambda event: leaveMainStruct(event)
 
         self.Delete.clicked.connect(Cancel)
 
@@ -918,6 +922,8 @@ class MainW(QtWidgets.QMainWindow, Ui_MainWindow):
         self.FrameworkCommit.clicked.connect(lambda: frameworkCommit(parent=self))
         self.RunNN.clicked.connect(lambda: frameworkRunTest(button=self.RunNN, parent=self))
         self.TestNN.clicked.connect(lambda: frameworkRunTest(button=self.TestNN, parent=self))
+
+        self.ClearLogger.clicked.connect(clearLogger)
 
         # Setting up combo boxes (frameworks, activation functions, loss functions and optimizer functions) with
         # elements from costants.py

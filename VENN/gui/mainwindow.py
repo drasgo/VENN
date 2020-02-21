@@ -46,6 +46,7 @@ class Ui_MainWindow(object):
         self.line_4 = None
         self.line_5 = None
         self.line_6 = None
+        self.ClearLogger = None
 
     def setupUi(self, MainWindow):
         MainWindow.setObjectName("MainWindow")
@@ -83,6 +84,13 @@ class Ui_MainWindow(object):
         self.LoadStr.setObjectName("LoadStr")
         self.LogWindow = QtWidgets.QTextEdit(self.centralwidget)
         self.LogWindow.setGeometry(QtCore.QRect(10, 480, 651, 111))
+        self.LogWindow.setStyleSheet("border: 1px solid black; \n"
+                                     "border-radius: 10px;\n"
+                                     "")
+        self.LogWindow.setVerticalScrollBarPolicy(QtCore.Qt.ScrollBarAlwaysOn)
+        self.LogWindow.setHorizontalScrollBarPolicy(QtCore.Qt.ScrollBarAlwaysOn)
+        self.LogWindow.setSizeAdjustPolicy(QtWidgets.QAbstractScrollArea.AdjustToContents)
+        self.LogWindow.setReadOnly(True)
         self.LogWindow.setObjectName("LogWindow")
         self.nInputs = QtWidgets.QLabel(self.centralwidget)
         self.nInputs.setGeometry(QtCore.QRect(11, 50, 130, 71))
@@ -93,9 +101,9 @@ class Ui_MainWindow(object):
         self.nInputs.setWordWrap(True)
         self.nInputs.setObjectName("nInputs")
         self.label = QtWidgets.QLabel(self.centralwidget)
-        self.label.setGeometry(QtCore.QRect(880, 560, 121, 20))
+        self.label.setGeometry(QtCore.QRect(910, 560, 91, 20))
         font = QtGui.QFont()
-        font.setPointSize(11)
+        font.setPointSize(12)
         self.label.setFont(font)
         self.label.setObjectName("label")
         self.CommSave = QtWidgets.QPushButton(self.centralwidget)
@@ -290,6 +298,12 @@ class Ui_MainWindow(object):
         self.line_6.setFrameShape(QtWidgets.QFrame.HLine)
         self.line_6.setFrameShadow(QtWidgets.QFrame.Sunken)
         self.line_6.setObjectName("line_6")
+        self.ClearLogger = QtWidgets.QPushButton(self.centralwidget)
+        self.ClearLogger.setGeometry(QtCore.QRect(70, 460, 121, 21))
+        font = QtGui.QFont()
+        font.setPointSize(10)
+        self.ClearLogger.setFont(font)
+        self.ClearLogger.setObjectName("ClearLogger")
         MainWindow.setCentralWidget(self.centralwidget)
 
         self.retranslateUi(MainWindow)
@@ -303,7 +317,7 @@ class Ui_MainWindow(object):
         self.nOutputs.setText(_translate("MainWindow", "<b>or insert number of outputs</b>"))
         self.LoadStr.setText(_translate("MainWindow", "Load Structure"))
         self.nInputs.setText(_translate("MainWindow", "<b>or insert number of inputs:</b>"))
-        self.label.setText(_translate("MainWindow", "Structure Name"))
+        self.label.setText(_translate("MainWindow", "Save as"))
         self.CommSave.setText(_translate("MainWindow", "Commit n\' Save Structure"))
         self.OutputFi.setText(_translate("MainWindow", "Output File"))
         self.Delete.setText(_translate("MainWindow", "Delete"))
@@ -318,3 +332,4 @@ class Ui_MainWindow(object):
         self.numberEpochs.setText(_translate("MainWindow", "1"))
         self.Optmizer.setText(_translate("MainWindow", "<b>Optimizer Function:</b>"))
         self.AdvancedOptions.setText(_translate("MainWindow", "Advanced Options"))
+        self.ClearLogger.setText(_translate("MainWindow", "Clear Logger"))
