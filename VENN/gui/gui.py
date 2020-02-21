@@ -124,14 +124,25 @@ def dragEnterMainStruct(event):
     event.accept()
 
 
-def dragMoveMainStruct(event):
+def dragMoveMainStruct(self, event):
     """ Function for Drag Move Event, mainly used by MainStruct (orange area)
      It updates the position of the block moved inside the widget (again mainly MainStruct)"""
     global tempBlock
+    global insideMainStruct
+
     tempPos = event.pos() - QtCore.QPoint(int(tempBlock.width() / 2), int(tempBlock.height() / 2))
-    tempBlock.move(tempPos)
-    event.setDropAction(Qt.MoveAction)
-    event.accept()
+    tempPos2 = event.pos() + QtCore.QPoint(int(tempBlock.width() / 2), int(tempBlock.height() / 2))
+    if tempBlock.objectName() == "Blocks" and (self.rect().contains(tempPos) is False or self.rect().contains(tempPos2) is False):
+
+        global posit
+        tempBlock.move(posit)
+        insideMainStruct = False
+
+    else:
+        insideMainStruct = True
+        tempBlock.move(tempPos)
+        event.setDropAction(Qt.MoveAction)
+        event.accept()
 
 
 def dropMainStruct(self, event, parent):
@@ -146,10 +157,9 @@ def dropMainStruct(self, event, parent):
     if tempBlock.objectName() == "Blocks":
         global posit
         position = event.pos()
-        if isinstance(tempBlock, StructBlock) or isinstance(tempBlock, QtWidgets.QFrame):
+        if isinstance(tempBlock, StructBlock) or isinstance(tempBlock, QtWidgets.QFrame) and insideMainStruct is True:
             newBlock = StructBlock(self, MainBlock=tempBlock)
             newBlock.move(position - QtCore.QPoint(int(newBlock.width() / 2), int(newBlock.height() / 2)))
-        UnselectBlock()
 
     else:
         posit = event.pos() - QtCore.QPoint(int(tempBlock.width() / 2), int(tempBlock.height() / 2))
@@ -158,6 +168,7 @@ def dropMainStruct(self, event, parent):
     event.setDropAction(Qt.MoveAction)
     event.accept()
     tempBlock = None
+    UnselectBlock()
 
     CheckNumbOfLayers(parent)
 
@@ -682,13 +693,13 @@ class StructBlock(QtWidgets.QFrame):
     def __del__(self):
         try:
             self.hide()
+            self.setParent(None)
+
+            for arch in self.PrevArch + self.SuccArch:
+                arch.__del__()
+            del self
         except RuntimeError:
             pass
-        self.setParent(None)
-
-        for arch in self.PrevArch + self.SuccArch:
-            arch.__del__()
-        del self
 
     def loaded(self, loaded):
         """ Loads everything from the saved structure, except its arches"""
@@ -861,11 +872,12 @@ class MainW(QtWidgets.QMainWindow, Ui_MainWindow):
         self.MainStruct.keyPressEvent = lambda event: keyPress(event=event)
         self.MainStruct.setAcceptDrops(True)
         self.MainStruct.dragEnterEvent = lambda event: dragEnterMainStruct(event)
-        self.MainStruct.dragMoveEvent = lambda event: dragMoveMainStruct(event)
+        self.MainStruct.dragMoveEvent = lambda event: dragMoveMainStruct(self.MainStruct, event)
         self.MainStruct.dropEvent = lambda event: dropMainStruct(self.MainStruct, event, self)
         self.MainStruct.mousePressEvent = lambda event: SelectionmousePressEvent(event)
         self.MainStruct.mouseMoveEvent = lambda event: SelectionmouseMoveEvent(self.MainStruct, event)
         self.MainStruct.mouseReleaseEvent = lambda event: SelectionmouseReleaseEvent(event)
+        # self.MainStruct.leaveEvent = lambda event: leaveMainStruct(event)
 
         self.Delete.clicked.connect(Cancel)
 
@@ -922,6 +934,7 @@ tempBlock = None
 structure = None
 loggerWindow = None
 comboBox = None
+insideMainStruct = True
 MultipleSelect = {}
 archs = []
 layers = []
