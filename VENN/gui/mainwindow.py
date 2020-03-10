@@ -317,7 +317,7 @@ class Ui_MainWindow(object):
         self.nOutputs.setText(_translate("MainWindow", "<b>or insert number of outputs</b>"))
         self.LoadStr.setText(_translate("MainWindow", "Load Structure"))
         self.nInputs.setText(_translate("MainWindow", "<b>or insert number of inputs:</b>"))
-        self.label.setText(_translate("MainWindow", "Save as"))
+        self.label.setText(_translate("MainWindow", "Structure Name"))
         self.CommSave.setText(_translate("MainWindow", "Commit n\' Save Structure"))
         self.OutputFi.setText(_translate("MainWindow", "Output File"))
         self.Delete.setText(_translate("MainWindow", "Delete"))

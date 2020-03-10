@@ -211,16 +211,14 @@ def Cancel():
 def frameworkRunTest(button, parent):
     global structure
 
-    if structure is None:
-        frameworkCommit(parent)
-    else:
-        setupNNStructure(parent)
+    if frameworkCommit(parent) is False:
+        return
 
     if button is parent.RunNN:
         result = structure.runAs()
         logger(result)
     else:
-        resultTrain, resultTest = structure.runAs(parent.Test.getOption())
+        resultTrain, resultTest = structure.runAs(True)
         logger(resultTrain, resultTest)
 
 
@@ -228,12 +226,10 @@ def frameworkCommit(parent):
     """ Commits the structure to one of the frameworks"""
     global structure
 
-    if structure is None:
-        if structureCommit(parent, True) is False:
-            logger("Error producing scheme of neural network for exporting. Aborting")
-            return
-    else:
-        setupNNStructure(parent)
+    if structureCommit(parent, True) is False:
+        logger("Error exporting model with framework. Check the structure correctness.")
+        logger()
+        return False
 
     structure.exportAs()
 
@@ -254,8 +250,8 @@ def structureCommit(parent, called=False):
             return True
 
     else:
-        logger("qualcosa è andato starto")
-
+        logger("Structure error. Check that the structure follows the rules.", "red")
+        logger()
         if called is True:
             return False
 
@@ -273,12 +269,14 @@ def structureLoad(parent):
                                                      costants.STRUCTURE_DATA_FILE_EXTENSION)
     if fileDial[0] == "":
         logger("No structure file chosen")
+        logger()
         return
 
     if os.path.exists(fileDial[0]):
         loadingFilename = fileDial[0]
     else:
         logger("Error opening structure file: it doesn't exist!")
+        logger()
         return
 
     setupNNStructure(parent, loadingFilename)
@@ -287,6 +285,7 @@ def structureLoad(parent):
 
     if loadedData is None:
         logger("Error  opening previous structure")
+        logger()
     else:
         # Uncomment if previous blocks need to be deleted before loading other blocks
         for comp in layers:
@@ -311,6 +310,7 @@ def structureLoad(parent):
         CheckNumbOfLayers(parent)
 
         logger("Model loaded!")
+        logger()
 
 
 def setupNNStructure(parent, name=""):
@@ -325,13 +325,9 @@ def setupNNStructure(parent, name=""):
     if name != "":
         structure.setLoadingStructureFilename(name)
 
-    # Set the loss function for the run/test options (if available)
-    if parent.LossFunction.currentText() != "":
-        structure.setLossFunction(parent.LossFunction.currentText())
-
     # Set input output files
     if parent.InputFile.text() != "" and parent.OutputFile.text() != "":
-        structure.setInputOutput(parent.InputFile.toPlainText(), parent.OutputFile.toPlainText())
+        structure.setInputOutput(parent.InputFile.text(), parent.OutputFile.text())
 
     # Set input output data quantity (Note: if input/output files are available, the dimension in those file will rule)
     elif (parent.NumberInputs.text() != "" and parent.NumberInputs.text().isdigit()) and \
@@ -344,6 +340,10 @@ def setupNNStructure(parent, name=""):
 
     # Set the logger reference
     structure.setLogger(logger)
+
+    # Set the loss function for the run/test options (if available)
+    if parent.LossFunction.currentText() != "":
+        structure.setLossFunction(parent.LossFunction.currentText())
 
     # Set the optimizer function for the run/test options (if available)
     if parent.OptimizerFunction.currentText() != "":
@@ -362,8 +362,10 @@ def inputData(parent, button):
     if fileDial[0] == "":
         if button is parent.InputFi:
             logger("No input file chosen")
+            logger()
         else:
             logger("No output file chosen")
+            logger()
         return
 
     if os.path.exists(fileDial[0]):
@@ -377,12 +379,18 @@ def inputData(parent, button):
 def logger(text="", color="black"):
     """ Hook the Log window for all the log printing"""
     global loggerWindow
+    if text == "":
+        global loggerCounter
+        loggerCounter = loggerCounter + 1
+        text = str(loggerCounter) + ".  _____________________________________________"
     loggerWindow.setTextColor(QtGui.QColor(color))
     loggerWindow.append(text)
 
 
 def clearLogger():
     global loggerWindow
+    global loggerCounter
+    loggerCounter = 0
     loggerWindow.setText("")
 
 
@@ -440,8 +448,8 @@ class BlockProperties(QtWidgets.QComboBox):
     def textChanged(self):
         """ Defines what happens when block property changes"""
 
-        # if self.text != "LAYER" and self.text != "BLANK" and self.text != "INPUT"\
-        #         and (self.currentText() == "LAYER" or self.currentText() == "BLANK" or self.currentText() == "INPUT"):
+        # if self.text != "DENSE" and self.text != "BLANK" and self.text != "INPUT"\
+        #         and (self.currentText() == "DENSE" or self.currentText() == "BLANK" or self.currentText() == "INPUT"):
 
         if self.currentText() == "DENSE" or self.currentText() == "CNN" or self.currentText() == "POOLING" or \
                 self.currentText() == "DROPOUT" or self.currentText() == "BLANK":
@@ -970,3 +978,4 @@ MultipleSelect = {}
 archs = []
 layers = []
 selectedMultipleLayer = []
+loggerCounter = 0

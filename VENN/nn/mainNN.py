@@ -46,7 +46,8 @@ class NNStructure:
 
     def setLossFunction(self, loss):
         print("loss: " + str(loss))
-        self.loss = loss
+        if loss is not None and loss != "":
+            self.loss = loss
 
     def setOptimizer(self, optim):
         print("optim: " + str(optim))
@@ -89,21 +90,43 @@ class NNStructure:
             return self.restrictionSumSub(block1) * self.restrictionSumSub(block2)
 
         elif node.layer.currentText() == "DENSE":
-            return [int(s) for s in node.neurons.text().split() if s.isdigit()][0]
+            try:
+                return [int(s) for s in node.neurons.text().split() if s.isdigit()][0]
+            except IndexError:
+                pass
+
         elif node.layer.currentText() == "INPUT":
             if self.numberInputs == 0:
                 self.prepareIOData()
             return self.numberInputs
-        else:
-            self.logger("Error checking sum dimensionality: block " + node.objectName() + " not recognized - type " +
-                        node.layer.currentText(), "red")
+
+        elif node.layer.currentText() == "BLANK":
+            arch1 = node.PrevArch[0]
+            block1 = arch1.initBlock
+            return self.restrictionSumSub(block1)
+
+        self.logger("Error checking sum dimensionality: block " + node.objectName() + " not recognized - type " +
+                    node.layer.currentText(), "red")
 
     def checkTopology(self):
         if len(self.blocks) < 2 or len(self.arrows) == 0:
-            self.logger("non ci sono abbastanza blocchi o abbastanza frecce", "red")
+            self.logger("There aren't enough blocks or arrows.", "red")
             return 0
 
         for layer in self.blocks:
+
+            if layer.layer.currentText() == "DENSE" and not any(ch.isdigit() for ch in layer.neurons.text()):
+                self.logger("Dense layers needs number of neurons.: " + layer.neurons.text(), "red")
+                return 0
+
+            if len(layer.PrevArch) == 0 and len(layer.SuccArch) == 0:
+                self.logger("Block " + layer.objectName() + " has no incoming nor outcoming arrows", "red")
+                layer.__del__()
+                return 0
+
+            if len(layer.SuccArch) > 0 and layer.layer.currentText() == "OUTPUT":
+                self.logger("Output block can't have outcoming arrows", "red")
+                return 0
 
             if layer.layer.currentText() == "SUM" or layer.layer.currentText() == "SUB":
                 if self.restrictionSumSub(layer) is False:
@@ -111,22 +134,9 @@ class NNStructure:
                                 layer.layer.currentText() + "- are not the same", "red")
                     return 0
 
-            if layer.layer.currentText() == "LAYER" and not any(ch.isdigit() for ch in layer.neurons.text()):
-                self.logger("non ci sono numeri in blocco: " + layer.neurons.text(), "red")
-                return 0
-
-            if len(layer.PrevArch) == 0 and len(layer.SuccArch) == 0:
-                self.logger("non ci sono arco precedente o successivo in blocco " + layer.objectName(), "red")
-                layer.__del__()
-                return 0
-
-            if len(layer.SuccArch) > 0 and layer.layer.currentText() == "OUTPUT":
-                self.logger("blocco output ha archi successivi", "red")
-                return 0
-
         if not any(lay for lay in self.blocks if lay.layer.currentText() == "INPUT"):
             self.logger("Input block absent", "red")
-            self.logger("Number of prev arches: " + str([len(lay.PrevArch) for lay in self.blocks]), "red")
+            # self.logger("Number of prev arches: " + str([len(lay.PrevArch) for lay in self.blocks]), "red")
             return 0
 
         if len([lay for lay in self.blocks if lay.layer.currentText() == "INPUT"]) > 1:
@@ -137,11 +147,11 @@ class NNStructure:
 
         if not any(lay for lay in self.blocks if lay.layer.currentText() == "OUTPUT"):
             self.logger("Output block absent", "red")
-            self.logger("Number of succ arches: " + str([len(lay.SuccArch) for lay in self.blocks]), "red")
+            # self.logger("Number of succ arches: " + str([len(lay.SuccArch) for lay in self.blocks]), "red")
             return 0
 
         if len([lay for lay in self.blocks if lay.layer.currentText() == "OUTPUT"]) > 1:
-            self.logger("Only one output block supported so far", "red")
+            self.logger("Only one output block supported", "red")
             self.logger("Number of output blocks: " + str(
                 len([lay for lay in self.blocks if lay.layer.currentText() == "OUTPUT"])), "red")
             return 0
@@ -153,7 +163,7 @@ class NNStructure:
             #     return 0
 
             if arch.initBlock is None or arch.finalBlock is None:
-                self.logger("blocco iniziale o finale è None in arco " + arch.objectName(), "red")
+                self.logger("Error with " + arch.objectName() + ": it's without previous or next block", "red")
                 return 0
 
         return 1
@@ -292,9 +302,13 @@ class NNStructure:
             if self.prepareIOData() == 0:
                 return "Error preparing input/output data", "red"
 
-        self.frameStruct.setLoss(cost=self.loss)
-        self.frameStruct.setOptimizer(optim=self.optimizer)
-        self.frameStruct.setEpochs(epochs=self.epochs)
+        if self.loss != "" and self.optimizer != "" and isinstance(self.epochs, int) and self.epochs > 0:
+            self.frameStruct.setLoss(cost=self.loss)
+            self.frameStruct.setOptimizer(optim=self.optimizer)
+            self.frameStruct.setEpochs(epochs=self.epochs)
+        else:
+            return "Error setting parameters. Check loss function, optimizer function and/or number of epochs", "red"
+
         self.frameStruct.setInputOutput(inputData=self.finalInput, outputData=self.finalOutput, test=test)
 
         self.frameStruct.run()

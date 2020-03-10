@@ -15,6 +15,7 @@ This program is a Visual Editor of Neural Network.
       * ##### <a href="Manual/HOWTO.md#loss">Loss Functions</a>
       * ##### <a href="Manual/HOWTO.md#optim">Optimization Functions</a>
     * #### <a href="Manual/rules.md#rules">Rules and Usage</a>
+      * ##### <a href="Manual/rules.md/structClar">Some Clarifications</a>
       * ##### <a href="Manual/rules.md/structRules">Structure Rules</a>
     * #### [TODO](#todo)
 * ### <a href="Manual/frameworks.md#frames">Exporting Structures</a>
