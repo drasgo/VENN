@@ -102,9 +102,9 @@ class FrameStructure(WrapperTemplate):
             return False
 
     def functionSupport(self, activ):
-        if activ in "Hyperbolic Tangent (Tanh)" or activ in "Softmax" or activ in "Rectified Linear (ReLu)" or \
-                activ in "Exponential Linear (Elu)" or activ in "Sigmoid" or activ in "Softplus" \
-                or activ in "Linear" or activ in "Hard Sigmoid" or activ in "Softmax":
+        if activ == "Hyperbolic Tangent (Tanh)" or activ == "Softmax" or activ == "Rectified Linear (ReLu)" or \
+                activ == "Exponential Linear (Elu)" or activ == "Sigmoid" or activ == "Softplus" \
+                or activ == "Linear" or activ == "Hard Sigmoid" or activ == "Softmax":
             return True
         else:
             return False
@@ -163,23 +163,23 @@ class FrameStructure(WrapperTemplate):
         return layers.subtract([inputNode1, inputNode2], name=name)
 
     def chooseActivation(self, activ):
-        if activ.lower() in "Linear".lower():
+        if activ.lower() == "Linear".lower():
             return "linear"
-        elif activ.lower() in "Rectified Linear (ReLu)".lower():
+        elif activ.lower() == "Rectified Linear (ReLu)".lower():
             return "relu"
-        elif activ.lower() in "Hyperbolic Tangent (Tanh)".lower():
+        elif activ.lower() == "Hyperbolic Tangent (Tanh)".lower():
             return "tanh"
-        elif activ.lower() in "Exponential Linear (Elu)".lower():
+        elif activ.lower() == "Exponential Linear (Elu)".lower():
             return "elu"
-        elif activ.lower() in "Hard Sigmoid".lower():
+        elif activ.lower() == "Hard Sigmoid".lower():
             return "hard_sigmoid"
-        elif activ.lower() in "Sigmoid".lower():
+        elif activ.lower() == "Sigmoid".lower():
             return "sigmoid"
-        elif activ.lower() in "Softmax".lower():
+        elif activ.lower() == "Softmax".lower():
             return "softmax"
-        elif activ.lower() in "Softplus".lower():
+        elif activ.lower() == "Softplus".lower():
             return "softplus"
-        elif activ.lower() in "Other".lower():
+        elif activ.lower() == "Other".lower():
             return None
 
     def chooseLoss(self):

@@ -24,9 +24,9 @@ class FrameStructure(WrapperTemplate):
             return False
 
     def functionSupport(self, activ):
-        if activ in "Hyperbolic Tangent (Tanh)" or activ in "Softmax" or activ in "Rectified Linear (ReLu)" or \
-                activ in "Exponential Linear (Elu)" or activ in "Log Softmax" or activ in "Sigmoid" or activ in "Softplus" \
-                or activ in "Linear" or activ in "Hard Hyperbolic Tangent(HardTanh)":
+        if activ == "Hyperbolic Tangent (Tanh)" or activ == "Softmax" or activ == "Rectified Linear (ReLu)" or \
+                activ == "Exponential Linear (Elu)" or activ == "Log Softmax" or activ == "Sigmoid" or activ == "Softplus" \
+                or activ == "Linear" or activ == "Hard Hyperbolic Tangent(HardTanh)":
             return True
         else:
             return False
@@ -78,23 +78,23 @@ class FrameStructure(WrapperTemplate):
         return self.dimensionalityChangeforMultiply(self.dimensionalityChangeforMultiply(inputNode1) * inputNode2, True)
 
     def chooseActivation(self, activ):
-        if activ in "Hyperbolic Tangent (Tanh)":
+        if activ == "Hyperbolic Tangent (Tanh)":
             return nn.Tanh
-        elif activ in "Softmax":
+        elif activ == "Softmax":
             return nn.Softmax
-        elif activ in "Rectified Linear (ReLu)":
+        elif activ == "Rectified Linear (ReLu)":
             return torch.nn.ReLU
-        elif activ in "Exponential Linear (Elu)":
+        elif activ == "Exponential Linear (Elu)":
             return torch.nn.ELU
-        elif activ in "Log Softmax":
+        elif activ == "Log Softmax":
             return nn.LogSoftmax
-        elif activ in "Sigmoid":
+        elif activ == "Sigmoid":
             return nn.Sigmoid
-        elif activ in "Softplus":
+        elif activ == "Softplus":
             return nn.Softplus
-        elif activ in "Linear":
+        elif activ == "Linear":
             return nn.Linear
-        elif activ in "Hard Hyperbolic Tangent (HardTanh)":
+        elif activ == "Hard Hyperbolic Tangent (HardTanh)":
             return nn.Hardtanh
         else:
             return None
@@ -266,9 +266,8 @@ class torchModel(nn.Module):
         for arch in list(elem for elem in self.structure if self.structure[elem]["block"] is False):
             # Check if Activation function is valid
             if self.parent.functionSupport(self.structure[arch]["activFunc"]) is False:
-                if self.structure[arch]["activFunc"] != "None":
-                    self.parent.logger("Activation function " + str(self.structure[arch]["activFunc"]) +
-                                       " not supported in " + self.parent.frame + ".")
+                self.parent.logger("Activation function " + str(self.structure[arch]["activFunc"]) +
+                                   " not supported in " + self.parent.frame + ".")
                 return
 
             tempActiv = self.parent.chooseActivation(self.structure[arch]["activFunc"])()

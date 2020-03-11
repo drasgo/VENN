@@ -25,9 +25,9 @@ class FrameStructure(kerasWrapper):
             return False
 
     def functionSupport(self, activ):
-        if activ in "Hyperbolic Tangent (Tanh)" or activ in "Softmax" or activ in "Rectified Linear (ReLu)" or \
-                activ in "Exponential Linear (Elu)" or activ in "Sigmoid" or activ in "Softplus" \
-                or activ in "Linear" or activ in "Hard Sigmoid" or activ in "Softmax" or activ in "Log Softmax":
+        if activ == "Hyperbolic Tangent (Tanh)" or activ == "Softmax" or activ == "Rectified Linear (ReLu)" or \
+                activ == "Exponential Linear (Elu)" or activ == "Sigmoid" or activ == "Softplus" \
+                or activ == "Linear" or activ == "Hard Sigmoid" or activ == "Softmax" or activ == "Log Softmax":
             return True
         else:
             return False
@@ -81,7 +81,7 @@ class FrameStructure(kerasWrapper):
         if tempActiv is not None:
             return tempActiv
         else:
-            if activ.lower() in "Log Softmax".lower():
+            if activ.lower() == "Log Softmax".lower():
                 return "log_softmax"
             else:
                 return None
