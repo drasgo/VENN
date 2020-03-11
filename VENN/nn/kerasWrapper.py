@@ -1,5 +1,3 @@
-import keras
-from keras import backend
 import sys
 from VENN.nn.wrapperTemplate import WrapperTemplate
 import VENN.costants as costants
@@ -53,23 +51,30 @@ class FrameStructure(WrapperTemplate):
                 else:
                     specIndex = next(ind for ind in self.structure if self.structure[ind]["name"] == specBlock)
                     tempNode = nodes[self.structure[block]["name"]]
+
                     outputNode = self.chooseNode(self.structure[specIndex]["type"], inputNode1=merge[specBlock],
                                                  inputNode2=tempNode, name=specBlock)
+                    if outputNode is None:
+                        self.logger("Aborting creation of model with " + self.frame)
+                        self.model = None
+                        return False
                     merge.pop(specBlock)
                     nodes[specBlock] = outputNode
                     continue
 
             # Check if layer type is valid
             if self.nodeSupport(self.structure[block]["type"]) is False:
-                self.logger("Layer type " + self.structure[block]["name"] +
-                            " not supported in " + self.frame + ". Skipping layer")
-                continue
+                self.logger("Error. Layer type " + self.structure[block]["name"] +
+                            " not supported in " + self.frame + ".")
+                self.model = None
+                return False
             # Check if Activation function is valid
             if self.functionSupport(self.structure[arch]["activFunc"]) is False:
-                if self.structure[arch]["activFunc"] != "None":
-                    self.logger("Activation function " + str(self.structure[arch]["activFunc"]) +
-                                " not supported in " + self.frame + ". Skipping layer")
-                continue
+                # if self.structure[arch]["activFunc"] != "None":
+                self.logger("Error. Activation function " + str(self.structure[arch]["activFunc"]) +
+                            " not supported in " + self.frame + ".")
+                self.model = None
+                return False
 
             # If it's not merging than it is a regular block and it needs regular activation function and block type
             layerT = self.chooseNode(self.structure[block]["type"])
@@ -84,7 +89,6 @@ class FrameStructure(WrapperTemplate):
             else:
                 outputNode = layerT(int(self.structure[block]["neurons"]), activation=activationFunc,
                                     name=str(self.structure[block]["name"]))(tempOut)
-                print(str(outputNode))
 
             nodes[self.structure[block]["name"]] = outputNode
 
@@ -98,16 +102,17 @@ class FrameStructure(WrapperTemplate):
             return False
 
     def functionSupport(self, activ):
-        if activ == "Hyperbolic Tangent (Tanh)" or activ == "Softmax" or activ == "Rectified Linear (ReLu)" or \
-                activ == "Exponential Linear (Elu)" or activ == "Sigmoid" or activ == "Softplus" \
-                or activ == "Linear" or activ == "Hard Sigmoid" or activ == "Softmax":
+        if activ in "Hyperbolic Tangent (Tanh)" or activ in "Softmax" or activ in "Rectified Linear (ReLu)" or \
+                activ in "Exponential Linear (Elu)" or activ in "Sigmoid" or activ in "Softplus" \
+                or activ in "Linear" or activ in "Hard Sigmoid" or activ in "Softmax":
             return True
         else:
             return False
 
     def chooseNode(self, layerType, **kwargs):
+        from keras import layers
         if layerType == "DENSE" or layerType == "OUTPUT":
-            return keras.layers.Dense
+            return layers.Dense
         elif layerType == "SUM":
             return self.sumNode(inputNode1=kwargs["inputNode1"], inputNode2=kwargs["inputNode2"], name=kwargs["name"])
         elif layerType == "SUB":
@@ -115,7 +120,7 @@ class FrameStructure(WrapperTemplate):
         elif layerType == "MULT":
             return self.multNode(inputNode1=kwargs["inputNode1"], inputNode2=kwargs["inputNode2"], name=kwargs["name"])
         elif layerType == "DROPOUT":
-            return keras.layers.Dropout
+            return layers.Dropout
         elif layerType == "POOLING":
             return None
         elif layerType == "CNN":
@@ -128,26 +133,34 @@ class FrameStructure(WrapperTemplate):
                 dimensions ([1]x[m] -> [m]x[1]). If it is called after the multiplication, the tensor will be reshaped from
                 [m]x[n] -> [1]x[m*n]
                 """
+        from keras import backend
+
         if done is False:
             return backend.reshape(node, [backend.shape(node)[0], backend.shape(node)[2], 1])
         else:
             return backend.reshape(node, [backend.shape(node)[0], 1, backend.shape(node)[1] * backend.shape(node)[2]])
 
     def multNode(self, inputNode1, inputNode2, name=""):
+        from keras import layers
+
         return self.dimensionalityChangeforMultiply(
-            keras.layers.multiply([self.dimensionalityChangeforMultiply(inputNode1), inputNode2], name=name), True)
+            layers.multiply([self.dimensionalityChangeforMultiply(inputNode1), inputNode2], name=name), True)
 
     def sumNode(self, inputNode1, inputNode2, name=""):
+        from keras import layers
+
         if inputNode1.shape() != inputNode2.shape():
-            print("dimensionality error with " + str(inputNode1) + " and " + str(inputNode2) + " in pytorch")
-            quit()
-        return keras.layers.add([inputNode1, inputNode2], name=name)
+            self.logger("dimensionality error with " + str(inputNode1) + " and " + str(inputNode2) + " in pytorch")
+            return None
+        return layers.add([inputNode1, inputNode2], name=name)
 
     def subNode(self, inputNode1, inputNode2, name=""):
+        from keras import layers
+
         if inputNode1.shape() != inputNode2.shape():
-            print("dimensionality error with " + str(inputNode1) + " and " + str(inputNode2) + " in pytorch")
-            quit()
-        return keras.layers.subtract([inputNode1, inputNode2], name=name)
+            self.logger("dimensionality error with " + str(inputNode1) + " and " + str(inputNode2) + " in pytorch")
+            return None
+        return layers.subtract([inputNode1, inputNode2], name=name)
 
     def chooseActivation(self, activ):
         if activ.lower() in "Linear".lower():
@@ -200,29 +213,35 @@ class FrameStructure(WrapperTemplate):
             self.loss_object = None
 
     def chooseOptimizer(self):
+        from keras import optimizers
+
         if self.optimizer == "Adam":
-            self.optimizer_object = keras.optimizers.Adam
+            self.optimizer_object = optimizers.Adam
         elif self.optimizer == "SGD":
-            self.optimizer_object = keras.optimizers.SGD
+            self.optimizer_object = optimizers.SGD
         elif self.optimizer == "Adadelta":
-            self.optimizer_object = keras.optimizers.Adadelta
+            self.optimizer_object = optimizers.Adadelta
         elif self.optimizer == "Adagrad":
-            self.optimizer_object = keras.optimizers.Adagrad
+            self.optimizer_object = optimizers.Adagrad
         elif self.optimizer == "Adamax":
-            self.optimizer_object = keras.optimizers.Adamax
+            self.optimizer_object = optimizers.Adamax
         elif self.optimizer == "Nadam":
-            self.optimizer_object = keras.optimizers.Nadam
+            self.optimizer_object = optimizers.Nadam
         elif self.optimizer == "RMSprop":
-            self.optimizer_object = keras.optimizers.RMSprop
+            self.optimizer_object = optimizers.RMSprop
         else:
             self.optimizer_object = None
 
     def saveModel(self):
+        from keras import utils
+
         if self.model is None:
-            self.prepareModel()
+            self.logger("Error saving model with " + self.frame)
 
         self.model.save(self.name)
-        keras.utils.plot_model(self.model, to_file=self.name + costants.IMAGE_EXTENSION)
+        self.logger("Model saved with " + self.frame)
+        self.model.summary(print_fn=self.logger)
+        utils.plot_model(self.model, to_file=self.name + costants.IMAGE_EXTENSION)
 
     def run(self):
         self.chooseLoss()
@@ -238,12 +257,14 @@ class FrameStructure(WrapperTemplate):
 
         # Save trained
 
-        self.logger("Train --> Loss: " + str(history.history["loss"]) + ", Accuracy: " + str(history.history["acc"]))
+        result = "Train --> Loss: " + str(history.history["loss"]) + ", Accuracy: " + str(history.history["acc"])
 
         if self.test is True:
             score = self.model.evaluate(self.inputTest, self.outputTest, verbose=0)
-            return "Test --> Loss: " + str(score[0]) + ", Accuracy: " + str(score[1])
+            result = result + "Test --> Loss: " + str(score[0]) + ", Accuracy: " + str(score[1])
 
         self.saveModel()
 
         self.logger("Trained " + self.frame + " model saved correctly!")
+
+        return result

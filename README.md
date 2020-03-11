@@ -72,7 +72,10 @@ To use this project you have to install:
 - (Optional) Documentation:
 
 <b>pip3 install pdoc --user</b>
-<br /><br /><br />
+<br /><br />
+
+<b>pip3 install torchsummary --user</b>
+<br /><br /<br />
 Or:
 
 - <b>git clone https://www.github.com/drasgo/VENN</b>

@@ -252,7 +252,7 @@ class NNStructure:
 
         if self.numberInputs == 0 and self.numberOutputs == 0:
             self.logger("Error preparing input/output data")
-            return
+            return False
 
         if len(self.topology) == 0:
             self.commitTopology()
@@ -279,7 +279,7 @@ class NNStructure:
 
         else:
             self.logger("Error choosing framework: " + self.framework.lower(), "red")
-            return
+            return False
 
         self.frameStruct = frameChosen.FrameStructure(self.numberInputs, self.numberOutputs, structure=self.topology,
                                                       structureName=nomeFile, logger=self.logger)
@@ -288,15 +288,17 @@ class NNStructure:
             self.logger(
                 "Error preparing the Neural Network model with " + self.framework.lower() + " framework. Aborted",
                 "red")
-            return
+            return False
 
         if run is False:
             self.frameStruct.saveModel()
-            self.logger("Model saved using " + self.framework)
+
+        return True
 
     def runAs(self, test=False):
         if self.frameStruct is None:
-            self.exportAs(run=True)
+            if self.exportAs(run=True) is False:
+                return "Error preparing structure pre-run with " + self.framework, "red"
 
         elif len(self.finalInput) == 0 and len(self.finalOutput) == 0:
             if self.prepareIOData() == 0:
@@ -311,7 +313,7 @@ class NNStructure:
 
         self.frameStruct.setInputOutput(inputData=self.finalInput, outputData=self.finalOutput, test=test)
 
-        self.frameStruct.run()
+        return self.frameStruct.run(), ""
 
     def getIO(self):
         with open(self.inputFile, "r") as f:

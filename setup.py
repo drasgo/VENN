@@ -20,7 +20,8 @@ setup(
         'PyTorch': ['torch', "torchsummary"],
         'Keras': ['keras'],
 #       'FastAI': ['fastai'],
-	'Documentation': ['pdoc'] 
+	    'Documentation': ['pdoc'],
+        'Pytorch Visualization': ['torchsummary']
     },
     classifiers=[
         "Programming Language :: Python :: 3",

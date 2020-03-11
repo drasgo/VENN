@@ -12,19 +12,9 @@ class FrameStructure(WrapperTemplate):
 
     def prepareModel(self):
         self.model = torchModel(self)
-
-    def saveModel(self):
-        if self.model is None:
-            self.prepareModel()
-
-        print("Model's state_dict:")
-        for param_tensor in self.model.state_dict():
-            print(param_tensor, "\t", self.model.state_dict()[param_tensor].size())
-
-        torch.save(self.model, self.name)
-        print(self.model)
-        repr(self.model)
-        summary(self.model, (1, self.ninput))
+        if self.model.ready is False:
+            self.model = None
+            return False
 
     def nodeSupport(self, node):
         if node == "DENSE" or node == "SUM" or node == "SUB" or node == "MULT" or \
@@ -34,9 +24,9 @@ class FrameStructure(WrapperTemplate):
             return False
 
     def functionSupport(self, activ):
-        if activ == "Hyperbolic Tangent (Tanh)" or activ == "Softmax" or activ == "Rectified Linear (ReLu)" or \
-                activ == "Exponential Linear (Elu)" or activ == "Log Softmax" or activ == "Sigmoid" or activ == "Softplus" \
-                or activ == "Linear" or activ == "Hard Hyperbolic Tangent(HardTanh)":
+        if activ in "Hyperbolic Tangent (Tanh)" or activ in "Softmax" or activ in "Rectified Linear (ReLu)" or \
+                activ in "Exponential Linear (Elu)" or activ in "Log Softmax" or activ in "Sigmoid" or activ in "Softplus" \
+                or activ in "Linear" or activ in "Hard Hyperbolic Tangent(HardTanh)":
             return True
         else:
             return False
@@ -74,37 +64,37 @@ class FrameStructure(WrapperTemplate):
 
     def sumNode(self, inputNode1, inputNode2, name=""):
         if inputNode1.size() != inputNode2.size():
-            print("dimensionality error with " + str(inputNode1) + " and " + str(inputNode2) + " in pytorch")
-            quit()
+            self.logger("dimensionality error with " + str(inputNode1) + " and " + str(inputNode2) + " in pytorch")
+            return None
         return inputNode1 + inputNode2
 
     def subNode(self, inputNode1, inputNode2, name=""):
         if inputNode1.size() != inputNode2.size():
-            print("dimensionality error with " + str(inputNode1) + " and " + str(inputNode2) + " in pytorch")
-            quit()
+            self.logger("dimensionality error with " + str(inputNode1) + " and " + str(inputNode2) + " in pytorch")
+            return None
         return inputNode1 - inputNode2
 
     def multNode(self, inputNode1, inputNode2, name=""):
         return self.dimensionalityChangeforMultiply(self.dimensionalityChangeforMultiply(inputNode1) * inputNode2, True)
 
     def chooseActivation(self, activ):
-        if activ == "Hyperbolic Tangent (Tanh)":
+        if activ in "Hyperbolic Tangent (Tanh)":
             return nn.Tanh
-        elif activ == "Softmax":
+        elif activ in "Softmax":
             return nn.Softmax
-        elif activ == "Rectified Linear (ReLu)":
+        elif activ in "Rectified Linear (ReLu)":
             return torch.nn.ReLU
-        elif activ == "Exponential Linear (Elu)":
+        elif activ in "Exponential Linear (Elu)":
             return torch.nn.ELU
-        elif activ == "Log Softmax":
+        elif activ in "Log Softmax":
             return nn.LogSoftmax
-        elif activ == "Sigmoid":
+        elif activ in "Sigmoid":
             return nn.Sigmoid
-        elif activ == "Softplus":
+        elif activ in "Softplus":
             return nn.Softplus
-        elif activ == "Linear":
+        elif activ in "Linear":
             return nn.Linear
-        elif activ == "Hard Hyperbolic Tangent(HardTanh)":
+        elif activ in "Hard Hyperbolic Tangent (HardTanh)":
             return nn.Hardtanh
         else:
             return None
@@ -149,6 +139,17 @@ class FrameStructure(WrapperTemplate):
         else:
             self.optimizer_object = None
 
+    def saveModel(self):
+        if self.model is None:
+            self.logger("Error saving model with " + self.frame)
+            return
+
+        self.logger("Model saved with " + self.frame)
+
+        torch.save(self.model, self.name)
+        self.logger(self.model)
+        summary(self.model, (1, self.ninput))
+
     def run(self):
         self.chooseLoss()
         self.chooseOptimizer()
@@ -174,7 +175,7 @@ class FrameStructure(WrapperTemplate):
                 if pred == train:
                     correct = correct + 1
 
-        self.logger("Train --> Loss: " + str(modelLoss.item()) + ", Accuracy: " + str((correct / len(self.outputTrain)) * 100))
+        result = "Train --> Loss: " + str(modelLoss.item()) + ", Accuracy: " + str((correct / len(self.outputTrain)) * 100)
 
         if self.test is True:
             self.model.eval()
@@ -186,12 +187,14 @@ class FrameStructure(WrapperTemplate):
                 if pred == test:
                     correct = correct + 1
 
-            self.logger("Test --> Loss: " + str(after_train.item()) + ", Accuracy: " + str(
-                (correct / len(self.outputTest)) * 100))
+            result = result + "Test --> Loss: " + str(after_train.item()) + ", Accuracy: " + str(
+                (correct / len(self.outputTest)) * 100)
 
         self.saveModel()
 
         self.logger("Trained " + self.frame + " model saved correctly!")
+
+        return result
 
 
 class torchModel(nn.Module):
@@ -206,6 +209,7 @@ class torchModel(nn.Module):
         """In this function every block and arch module is created and saved in self.nodes and self.activs ModuleDicts accordingly."""
         super(torchModel, self).__init__()
         self.parent = parent
+        self.ready = False
         self.structure = parent.structure
         # node and archs modules are saved here
         self.activs = nn.ModuleDict()
@@ -217,8 +221,8 @@ class torchModel(nn.Module):
             # Check if layer type is valid
             if self.parent.nodeSupport(self.structure[node]["type"]) is False:
                 self.parent.logger("Layer type " + self.structure[node][
-                    "name"] + " not supported in " + self.parent.frame + ". Skipping layer")
-                continue
+                    "name"] + " not supported in " + self.parent.frame + ".")
+                return
 
             # If it is not a mult sum or sub block
             if self.structure[node]["type"] != "SUM" and self.structure[node]["type"] != "SUB" and \
@@ -264,11 +268,13 @@ class torchModel(nn.Module):
             if self.parent.functionSupport(self.structure[arch]["activFunc"]) is False:
                 if self.structure[arch]["activFunc"] != "None":
                     self.parent.logger("Activation function " + str(self.structure[arch]["activFunc"]) +
-                                       " not supported in " + self.parent.frame + ". Skipping layer")
-                continue
+                                       " not supported in " + self.parent.frame + ".")
+                return
 
             tempActiv = self.parent.chooseActivation(self.structure[arch]["activFunc"])()
             self.activs.add_module(self.structure[arch]["name"], tempActiv)
+
+        self.ready = True
 
     def forward(self, x):
         initBlockIndex = self.parent.returnFirstCompleteDiagram(self.structure)
@@ -306,6 +312,10 @@ class torchModel(nn.Module):
                     tempBlock = nodes[self.structure[block]["name"]]
                     outputBlock = self.parent.chooseNode(layerType=self.structure[specIndex]["type"],
                                                          inputNode1=merge[specBlock], inputNode2=tempBlock)
+                    if outputBlock is None:
+                        self.logger("Aborting creation of model with " + self.frame)
+                        return None
+
                     merge.pop(specBlock)
                     nodes[specBlock] = outputBlock
                     continue

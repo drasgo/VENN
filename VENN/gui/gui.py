@@ -215,11 +215,12 @@ def frameworkRunTest(button, parent):
         return
 
     if button is parent.RunNN:
-        result = structure.runAs()
-        logger(result)
+        result, color = structure.runAs()
+        logger(result, color)
     else:
         resultTrain, resultTest = structure.runAs(True)
         logger(resultTrain, resultTest)
+    logger()
 
 
 def frameworkCommit(parent):
@@ -227,11 +228,12 @@ def frameworkCommit(parent):
     global structure
 
     if structureCommit(parent, True) is False:
-        logger("Error exporting model with framework. Check the structure correctness.")
+        logger("Error creating model structure for framework export. Check the structure correctness.")
         logger()
         return False
 
     structure.exportAs()
+    logger()
 
 
 def structureCommit(parent, called=False):
@@ -251,9 +253,9 @@ def structureCommit(parent, called=False):
 
     else:
         logger("Structure error. Check that the structure follows the rules.", "red")
-        logger()
         if called is True:
             return False
+    logger()
 
 
 def structureLoad(parent):
@@ -285,7 +287,6 @@ def structureLoad(parent):
 
     if loadedData is None:
         logger("Error  opening previous structure")
-        logger()
     else:
         # Uncomment if previous blocks need to be deleted before loading other blocks
         for comp in layers:
@@ -310,7 +311,7 @@ def structureLoad(parent):
         CheckNumbOfLayers(parent)
 
         logger("Model loaded!")
-        logger()
+    logger()
 
 
 def setupNNStructure(parent, name=""):
@@ -384,7 +385,7 @@ def logger(text="", color="black"):
         loggerCounter = loggerCounter + 1
         text = str(loggerCounter) + ".  _____________________________________________"
     loggerWindow.setTextColor(QtGui.QColor(color))
-    loggerWindow.append(text)
+    loggerWindow.append(str(text))
 
 
 def clearLogger():
@@ -533,10 +534,10 @@ class Arrow(QtWidgets.QFrame):
             self.setObjectName(temp)
 
             self.color = costants.ACTIVATION_FUNCTIONS[self.name]
+            self.activationFunc.setText(self.name)
 
         self.setStyleSheet(self.stylesheet)
 
-        self.activationFunc.setText(self.name)
         self.activationFunc.setEnabled(False)
         self.activationFunc.setAlignment(Qt.AlignTop | Qt.AlignCenter)
         self.activationFunc.setAttribute(QtCore.Qt.WA_TranslucentBackground)
@@ -571,13 +572,18 @@ class Arrow(QtWidgets.QFrame):
         self.resize(loaded["size"][0], loaded["size"][1])
         self.move(loaded["pos"][0], loaded["pos"][1])
 
-        tempName = ""
-        for activ in costants.ACTIVATION_FUNCTIONS:
-            if self.name in activ:
-                tempName = activ
-                break
+        tempName = self.name
 
-        self.color = costants.ACTIVATION_FUNCTIONS[tempName]
+        if any(activ == self.name for activ in costants.ACTIVATION_FUNCTIONS):
+            if "(" in self.name or ")" in self.name:
+                tempName = re.search("\(([^)]+)", self.name).group(1)
+        else:
+            logger("Error Loading structure: activation function of arch " + self.objectName() + " not supported", "red")
+            self.__del__()
+
+        self.activationFunc.setText(tempName)
+
+        self.color = costants.ACTIVATION_FUNCTIONS[self.name]
         self.stylesheet = costants.arrow_stylesheet(self.color)
         self.checkOrientation()
 
@@ -608,10 +614,11 @@ class Arrow(QtWidgets.QFrame):
             name = ""
 
         self.color = str(costants.ACTIVATION_FUNCTIONS[name])
+        text = name
         if "(" in name or ")" in name:
-            name = re.search("\(([^)]+)", name).group(1)
+            text = re.search("\(([^)]+)", name).group(1)
         self.name = name
-        self.activationFunc.setText(self.name)
+        self.activationFunc.setText(text)
         self.stylesheet = "border-color: black; background-color: " + self.color + ";"
         self.setStyleSheet(self.stylesheet)
         self.repaint()

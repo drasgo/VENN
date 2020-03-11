@@ -203,7 +203,6 @@ class WrapperTemplate:
                 # For each exiting arch exiting the current block
                 for tempArchName in self.structure[index]["SuccArch"]:
                     archIndex, blockIndex = self.getArchBlock(tempArchName)
-                    # print("STILL IN MERGGE")
                     # If the next block from the current block is a special block (aka mult/add/sub) then return
                     # to the wrapper arch=None, the current index, the name of the special block.
                     # The wrapper is expected to put a control for checking if specName is not none, in which case it
