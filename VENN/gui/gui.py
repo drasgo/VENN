@@ -408,7 +408,7 @@ def resizeEvent(main):
          main.MainStruct, main.ChooseArrow, main.Delete, main.InsertFirstBlock, main.Loss,
          main.LossFunction, main.Log, main.LogWindow, main.Framework, main.label, main.FrameworkCommit,
          main.NumberInputs, main.NumberOutputs, main.nInputs, main.nOutputs, main.StructureFilename,
-         main.Epochs, main.numberEpochs, main.Optmizer, main.OptimizerFunction, main.InputFile, main.OutputFile,
+         main.Epochs, main.numberEpochs, main.Optimizer, main.OptimizerFunction, main.InputFile, main.OutputFile,
          main.line_2, main.line_3, main.line_4, main.line_5, main.line_6, main.ClearLogger], main.oldMax, newVal)
     # Resize every procedurally created componenent (aka blocks and arrows)
     resizeElement(layers + archs + [main.Blocks], main.oldMax, newVal)
@@ -612,6 +612,8 @@ class Arrow(QtWidgets.QFrame):
         if self.finalBlock.layer.currentText() == "SUM" or self.finalBlock.layer.currentText() == "SUB" or \
                 self.finalBlock.layer.currentText() == "MULT":
             name = ""
+            logger("Careful, arches before SUM, SUB or MULT blocks must be blank!")
+            logger()
 
         self.color = str(costants.ACTIVATION_FUNCTIONS[name])
         text = name

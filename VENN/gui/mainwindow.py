@@ -35,7 +35,7 @@ class Ui_MainWindow(object):
         self.Epochs = None
         self.numberEpochs = None
         self.OptimizerFunction = None
-        self.Optmizer = None
+        self.Optimizer = None
         self.InputFile = None
         self.OutputFile = None
         self.AdvancedOptions = None
@@ -220,16 +220,16 @@ class Ui_MainWindow(object):
                                         "border-radius: 10px;\n"
                                         "")
         self.numberEpochs.setObjectName("numberEpochs")
-        self.Optmizer = QtWidgets.QLabel(self.centralwidget)
-        self.Optmizer.setGeometry(QtCore.QRect(6, 398, 141, 51))
+        self.Optimizer = QtWidgets.QLabel(self.centralwidget)
+        self.Optimizer.setGeometry(QtCore.QRect(6, 398, 141, 51))
         font = QtGui.QFont()
         font.setFamily("Cantarell")
         font.setPointSize(11)
         font.setBold(False)
         font.setItalic(False)
         font.setWeight(50)
-        self.Optmizer.setFont(font)
-        self.Optmizer.setObjectName("Optmizer")
+        self.Optimizer.setFont(font)
+        self.Optimizer.setObjectName("Optimizer")
         self.OptimizerFunction = QtWidgets.QComboBox(self.centralwidget)
         self.OptimizerFunction.setGeometry(QtCore.QRect(153, 409, 141, 23))
         self.OptimizerFunction.setStyleSheet("border: 1px solid black; \n"
@@ -330,6 +330,6 @@ class Ui_MainWindow(object):
         self.TestNN.setText(_translate("MainWindow", "Train + Test Model"))
         self.Epochs.setText(_translate("MainWindow", "<b>Number of epochs:</b>"))
         self.numberEpochs.setText(_translate("MainWindow", "1"))
-        self.Optmizer.setText(_translate("MainWindow", "<b>Optimizer Function:</b>"))
+        self.Optimizer.setText(_translate("MainWindow", "<b>Optimizer Function:</b>"))
         self.AdvancedOptions.setText(_translate("MainWindow", "Advanced Options"))
         self.ClearLogger.setText(_translate("MainWindow", "Clear Logger"))

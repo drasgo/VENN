@@ -104,9 +104,8 @@ class WrapperTemplate:
                 tempPrevArch = next(key for key in self.structure if self.structure[key]["name"] == tempNamePrevArch)
 
                 for arch in tempNameSuccArch:
-                    tempSuccArch = next(key for key in self.structure if self.structure[key]["name"] == arch)
+                    tempSuccArch, nextBlock = self.getArchBlock(arch)
                     nextBlockName = self.structure[tempSuccArch]["finalBlock"]
-                    nextBlock = next(key for key in self.structure if self.structure[key]["name"] == nextBlockName)
                     self.structure[tempPrevArch]["finalBlock"] = nextBlockName
                     self.structure[nextBlock]["PrevArch"].remove(arch)
                     self.structure[nextBlock]["PrevArch"].append(tempNamePrevArch)

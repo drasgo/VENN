@@ -296,11 +296,7 @@ class NNStructure:
         return True
 
     def runAs(self, test=False):
-        if self.frameStruct is None:
-            if self.exportAs(run=True) is False:
-                return "Error preparing structure pre-run with " + self.framework, "red"
-
-        elif len(self.finalInput) == 0 and len(self.finalOutput) == 0:
+        if len(self.finalInput) == 0 and len(self.finalOutput) == 0:
             if self.prepareIOData() == 0:
                 return "Error preparing input/output data", "red"
 
@@ -310,6 +306,10 @@ class NNStructure:
             self.frameStruct.setEpochs(epochs=self.epochs)
         else:
             return "Error setting parameters. Check loss function, optimizer function and/or number of epochs", "red"
+
+        if self.frameStruct is None:
+            if self.exportAs(run=True) is False:
+                return "Error preparing structure pre-run with " + self.framework, "red"
 
         self.frameStruct.setInputOutput(inputData=self.finalInput, outputData=self.finalOutput, test=test)
 
