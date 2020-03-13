@@ -331,9 +331,11 @@ def setupNNStructure(parent, name=""):
         structure.setInputOutput(parent.InputFile.text(), parent.OutputFile.text())
 
     # Set input output data quantity (Note: if input/output files are available, the dimension in those file will rule)
-    elif (parent.NumberInputs.text() != "" and parent.NumberInputs.text().isdigit()) and \
-            (parent.NumberOutputs.text() != "" and parent.NumberOutputs.text().isdigit()):
-        structure.setInputOutputNumber(int(parent.NumberInputs.text()), int(parent.NumberOutputs.text()))
+    elif any(x in costants.NUMBERS for x in parent.NumberInputs.text()) \
+            and any(x in costants.NUMBERS for x in parent.NumberInputs.text()):
+        nInput = "".join(list(filter(lambda x: x in costants.NUMBERS, parent.NumberInputs.text())))
+        nOutput = "".join(list(filter(lambda x: x in costants.NUMBERS, parent.NumberInputs.text())))
+        structure.setInputOutputNumber(int(nInput), int(nOutput))
 
     # Set which frameworks needs to be used for commit with/run/test
     if parent.Framework.currentText() != "":
@@ -351,8 +353,9 @@ def setupNNStructure(parent, name=""):
         structure.setOptimizer(parent.Optimizer.currentText())
 
     # Set the number of epochs for the run/test options (if available)
-    if parent.numberEpochs.text() != "" and isinstance(parent.numberEpochs.text(), int):
-        structure.setEpoch(int(parent.numberEpochs.currentText()))
+    if any(x in costants.NUMBERS for x in parent.NumberInputs.text()):
+        nEpochs = "".join(list(filter(lambda x: x in costants.NUMBERS, list(y for y in parent.numberEpochs.text()))))
+        structure.setEpochs(int(nEpochs))
 
 
 def inputData(parent, button):
@@ -578,7 +581,8 @@ class Arrow(QtWidgets.QFrame):
             if "(" in self.name or ")" in self.name:
                 tempName = re.search("\(([^)]+)", self.name).group(1)
         else:
-            logger("Error Loading structure: activation function of arch " + self.objectName() + " not supported", "red")
+            logger("Error Loading structure: activation function of arch " + self.objectName() + " not supported",
+                   "red")
             self.__del__()
 
         self.activationFunc.setText(tempName)

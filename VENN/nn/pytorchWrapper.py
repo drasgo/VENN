@@ -79,23 +79,23 @@ class FrameStructure(WrapperTemplate):
 
     def chooseActivation(self, activ):
         if activ == "Hyperbolic Tangent (Tanh)":
-            return nn.Tanh
+            return nn.Tanh()
         elif activ == "Softmax":
-            return nn.Softmax
+            return nn.Softmax()
         elif activ == "Rectified Linear (ReLu)":
-            return torch.nn.ReLU
+            return torch.nn.ReLU()
         elif activ == "Exponential Linear (Elu)":
-            return torch.nn.ELU
+            return torch.nn.ELU()
         elif activ == "Log Softmax":
-            return nn.LogSoftmax
+            return nn.LogSoftmax()
         elif activ == "Sigmoid":
-            return nn.Sigmoid
+            return nn.Sigmoid()
         elif activ == "Softplus":
-            return nn.Softplus
+            return nn.Softplus()
         elif activ == "Linear":
-            return nn.Linear
+            return nn.Threshold(-9999999, 0)
         elif activ == "Hard Hyperbolic Tangent (HardTanh)":
-            return nn.Hardtanh
+            return nn.Hardtanh()
         else:
             return None
 
@@ -270,7 +270,7 @@ class torchModel(nn.Module):
                                    " not supported in " + self.parent.frame + ".")
                 return
 
-            tempActiv = self.parent.chooseActivation(self.structure[arch]["activFunc"])()
+            tempActiv = self.parent.chooseActivation(self.structure[arch]["activFunc"])
             self.activs.add_module(self.structure[arch]["name"], tempActiv)
 
         self.ready = True

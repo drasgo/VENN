@@ -83,5 +83,8 @@ KERAS_EXTENSION = ".ke"
 IMAGE_EXTENSION = ".png"
 
 
+NUMBERS = ["1", "2", "3", "4", "5", "6", "7", "8", "9", "0"]
+
+
 def arrow_stylesheet(color=ACTIVATION_FUNCTIONS[ARROW_DEFAULT_FUNC]):
     return "border-color: black; background-color: " + color + ";"
