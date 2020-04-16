@@ -182,7 +182,7 @@ class NNStructure:
             temp["PrevArch"] = [bl.objectName() for bl in block.PrevArch]
             temp["SuccArch"] = [bl.objectName() for bl in block.SuccArch]
             temp["type"] = str(block.layer.currentText())
-            if str(block.layer.currentText()) == "DENSE":
+            if str(block.layer.currentText()) in costants.BLOCK_LABELS:
                 temp["neurons"] = str([int(s) for s in block.neurons.text().split() if s.isdigit()][0])
             temp["size"] = [block.width(), block.height()]
             temp["pos"] = [block.x(), block.y()]
@@ -273,7 +273,7 @@ class NNStructure:
                                                                         costants.KERAS_EXTENSION)
 
         # elif self.framework.lower() == "fastai":
-        #     import ViCreNN.nn.fastaiWrapper as frameChosen
+        #     import VENN.nn.fastaiWrapper as frameChosen
         #     nomeFile = self.framework.lower() + "-" + self.file.replace(costants.STRUCTURE_EXTENSION,
         #                                                                 costants.FASTAI_EXTENSION)
 

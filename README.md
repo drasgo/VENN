@@ -127,6 +127,7 @@ Finally a great deal of importance was given to the freedom of choice of the use
 
 
 ### <a name="todo"></a>TODO
+- Add Theano support
 - Add multiple inputs support
 - add recursive support
 - add convolution support

@@ -18,7 +18,8 @@ FRAMEWORKS = {"TensorFlow": "tensorflow",
 # , "FastAI": "fastai"}
 
 BOX_PROPERTIES = ["DENSE",
-                  "CNN",
+                  "CONV2D",
+                  "CONV3D",
                   "POOLING",
                   "DROPOUT",
                   "INPUT",
@@ -26,6 +27,7 @@ BOX_PROPERTIES = ["DENSE",
                   "SUM",
                   "SUB",
                   "MULT",
+                  "CONC",
                   "BLANK"]
 
 COST_FUNCTION = ["",
@@ -56,6 +58,11 @@ OPTIMIZERS = ["",
               "RMSprop",
               "Ftrl",
               "SDG"]
+
+BLOCK_LABELS = {"DENSE": "Neurons: ",
+                "CNN": "Kernel: ",
+                "POOLING": "Pooling: ",
+                "DROPOUT": "Dropout: "}
 
 INPUT_TYPE = ["normal", "cnn", "rnn"]
 

@@ -444,24 +444,45 @@ class BlockProperties(QtWidgets.QComboBox):
         self.setFixedWidth(self.parent().width() - self.parent().width() / 4)
         self.parent = parent
 
-        for item in costants.BOX_PROPERTIES:
-            self.addItem(item)
+        for prop in costants.BOX_PROPERTIES:
+            # self.resizeFont()
+            # self.addItem(item)
+            item = QtGui.QStandardItem(str(prop))
+            # item.setForeground(QtGui.QColor(str(costants.ACTIVATION_FUNCTIONS[transFunc])))
+
+            self.resizeFont(item)
+            mod = self.model()
+            mod.appendRow(item)
 
         self.currentIndexChanged.connect(self.textChanged)
 
+    def resizeFont(self, bl):
+        if self.currentText() == "":
+            return 1
+
+        size = 1
+        while True:
+            font = QtGui.QFont()
+            font.setPointSize(size)
+            rect = QtGui.QFontMetrics(font).boundingRect(self.currentText())
+
+            if rect.height() <= self.height() * 0.6 and rect.width() <= self.width() * 0.5:
+                size = size + 1
+
+            else:
+                break
+
+        font.setPointSize(size)
+        bl.setFont(font)
+
     def textChanged(self):
         """ Defines what happens when block property changes"""
-
-        # if self.text != "DENSE" and self.text != "BLANK" and self.text != "INPUT"\
-        #         and (self.currentText() == "DENSE" or self.currentText() == "BLANK" or self.currentText() == "INPUT"):
+        # self.resizeFont(self)
 
         if self.currentText() == "DENSE" or self.currentText() == "CNN" or self.currentText() == "POOLING" or \
-                self.currentText() == "DROPOUT" or self.currentText() == "BLANK":
-
-            if self.currentText() != "BLANK":
-                self.parent.neurons.show()
-            else:
-                self.parent.neurons.hide()
+                self.currentText() == "DROPOUT":
+            self.parent.neurons.changeText(self.currentText())
+            self.parent.neurons.show()
 
             if len(self.parent.PrevArch) > 1:
                 for arch in self.parent.PrevArch:
@@ -484,15 +505,19 @@ class BlockProperties(QtWidgets.QComboBox):
 
 class TextInStructBox(QtWidgets.QLineEdit):
     """ Class for the two labels (layer number * and number of neurons) in each "DENSE" block"""
-    defaultText = "** "
 
-    def __init__(self, parent, text=defaultText):
-        super().__init__(self.defaultText + text, parent)
-
+    def __init__(self, parent, text=costants.BLOCK_LABELS["DENSE"]):
+        super().__init__(text, parent)
         self.setObjectName(text)
         self.setEnabled(False)
         self.setAlignment(Qt.AlignCenter)
         self.show()
+
+    def changeText(self, text, num=""):
+        try:
+            self.setText(costants.BLOCK_LABELS[text] + str(num))
+        except KeyError:
+            logger("Error setting text in block", "red")
 
 
 class Arrow(QtWidgets.QFrame):
@@ -723,7 +748,7 @@ class StructBlock(QtWidgets.QFrame):
         self.initRecursion = None
 
         self.layer = BlockProperties(self)
-        self.neurons = TextInStructBox(self, "Neurons")
+        self.neurons = TextInStructBox(self)
 
         if loaded is not None:
             self.loaded(loaded)
@@ -758,8 +783,8 @@ class StructBlock(QtWidgets.QFrame):
         self.resize(loaded["size"][0], loaded["size"][1])
         self.move(loaded["pos"][0], loaded["pos"][1])
         self.layer.setCurrentText(loaded["type"])
-        if loaded["type"] == "DENSE":
-            self.neurons.setText(loaded["neurons"] + self.neurons.text().replace("**", ""))
+        if loaded["type"] in costants.BLOCK_LABELS:
+            self.neurons.changeText(loaded["type"], loaded["neurons"])
         else:
             self.neurons.hide()
 
@@ -950,7 +975,8 @@ class MainW(QtWidgets.QMainWindow, Ui_MainWindow):
         # elements from costants.py
         for frame in costants.FRAMEWORKS:
 
-            if importlib.util.find_spec(costants.FRAMEWORKS[frame]) is None:
+            if importlib.util.find_spec(costants.FRAMEWORKS[frame]) is None or \
+                    os.path.isfile("../nn/otherFrameworks/" + costants.FRAMEWORKS[frame]):
                 continue
 
             if self.Framework.currentText() == "No Framework Found":
