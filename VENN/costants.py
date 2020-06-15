@@ -17,6 +17,7 @@ FRAMEWORKS = {"TensorFlow": "tensorflow",
               "Keras": "keras"}
 # , "FastAI": "fastai"}
 
+# TODO implement concat
 BOX_PROPERTIES = ["DENSE",
                   "CONV2D",
                   "CONV3D",
@@ -59,12 +60,34 @@ OPTIMIZERS = ["",
               "Ftrl",
               "SDG"]
 
-BLOCK_LABELS = {"DENSE": "Neurons: ",
-                "CNN": "Kernel: ",
-                "POOLING": "Pooling: ",
-                "DROPOUT": "Dropout: "}
+
+BLOCK_LABELS = {"DENSE": "Neurons:",
+                "CONV2D": "Kernel:",
+                "CONV3D": "Kernel:",
+                "POOLING": "Pooing:",
+                "DROPOUT": "Dropout:",
+                "INPUT": "N° input:",
+                "OUTPUT": "N° output:"}
+
+
+BLOCK_LABELS_NO_IOFILE = ["DENSE",
+                          "POOLING",
+                          "DROPOUT",
+                          "CONV2D",
+                          "CONV3D"]
+
+
+BLOCK_LABELS_YES_IOFILE = ["INPUT",
+                           "OUTPUT"]
+
+BLOCK_LABELS_OTHERS = ["SUM",
+                       "MULT",
+                       "SUB",
+                       "CONC"]
+
 
 INPUT_TYPE = ["normal", "cnn", "rnn"]
+
 
 ARROW_DEFAULT_FUNC = ""
 
@@ -89,8 +112,15 @@ KERAS_EXTENSION = ".ke"
 
 IMAGE_EXTENSION = ".png"
 
-
 NUMBERS = ["1", "2", "3", "4", "5", "6", "7", "8", "9", "0"]
+
+LABELS_IN_BLOCK_STYLESHEET = "border: 1px solid black;" \
+                             "border-radius: 5px;" \
+                             "font: 8pt 'Cantarell';"
+
+
+STANDARD_LABELS_IN_BLOCK_STYLESHEET = "border-color: rgb(114, 159, 207);" \
+                                     "font: 8pt 'Cantarell';"
 
 
 def arrow_stylesheet(color=ACTIVATION_FUNCTIONS[ARROW_DEFAULT_FUNC]):

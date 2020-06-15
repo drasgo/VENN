@@ -3,8 +3,8 @@ from PyQt5.QtCore import Qt, QMimeData
 from PyQt5.QtGui import QDrag
 from PyQt5 import QtGui
 from PyQt5 import QtCore
+from importlib import util
 import os
-import importlib
 import re
 import VENN.costants as costants
 from VENN.gui.mainwindow import Ui_MainWindow
@@ -129,7 +129,7 @@ def dragMoveMainStruct(self, event):
      It updates the position of the block moved inside the widget (again mainly MainStruct)"""
     global tempBlock
     global insideMainStruct
-
+    assert isinstance(tempBlock, QtWidgets.QFrame)
     tempPos = event.pos() - QtCore.QPoint(int(tempBlock.width() / 2), int(tempBlock.height() / 2))
     tempPos2 = event.pos() + QtCore.QPoint(int(tempBlock.width() / 2), int(tempBlock.height() / 2))
     if tempBlock.objectName() == "Blocks" and (
@@ -154,7 +154,7 @@ def dropMainStruct(self, event, parent):
      Then it sets the checker variable of the used block to Null
      Lastly, it checks if the number of generated blocks is greater than 0 and in that case it removes the Inser First Block text"""
     global tempBlock
-
+    assert isinstance(tempBlock, QtWidgets.QFrame)
     if tempBlock.objectName() == "Blocks":
         global posit
         position = event.pos()
@@ -189,6 +189,7 @@ def changeArchChangeComboBox(name):
     """ When selected an arch which is different from what is selected in the activation function combobox, the selected
      item in the combobox changes to what the arch is"""
     global comboBox
+    assert isinstance(comboBox, QtWidgets.QComboBox)
     for activ in costants.ACTIVATION_FUNCTIONS:
         if name in activ:
             comboBox.setCurrentText(activ)
@@ -214,6 +215,7 @@ def frameworkRunTest(button, parent):
     if frameworkCommit(parent) is False:
         return
 
+    assert isinstance(structure, mainNN.NNStructure)
     if button is parent.RunNN:
         result, color = structure.runAs()
         logger(result, color)
@@ -232,6 +234,7 @@ def frameworkCommit(parent):
         logger()
         return False
 
+    assert isinstance(structure, mainNN.NNStructure)
     structure.exportAs()
     logger()
 
@@ -316,73 +319,53 @@ def structureLoad(parent):
 
 def setupNNStructure(parent, name=""):
     global structure
+    if structure is not None:
+        assert isinstance(structure, mainNN.NNStructure)
+        structure.setBlocksArrows(layers, archs)
 
-    structure.setBlocksArrows(layers, archs)
+        # Set the name of the current structure (the name of how it is going to be saved)
+        if parent.StructureFilename.text() != "":
+            structure.setStructureFilename(parent.StructureFilename.text())
 
-    # Set the name of the current structure (the name of how it is going to be saved)
-    if parent.StructureFilename.text() != "":
-        structure.setStructureFilename(parent.StructureFilename.text())
+        if name != "":
+            structure.setLoadingStructureFilename(name)
 
-    if name != "":
-        structure.setLoadingStructureFilename(name)
+        # Set input output files
+        if parent.InputFile.text() != "" and parent.OutputFile.text() != "":
+            structure.setInputOutput(parent.InputFile.text(), parent.OutputFile.text())
 
-    # Set input output files
-    if parent.InputFile.text() != "" and parent.OutputFile.text() != "":
-        structure.setInputOutput(parent.InputFile.text(), parent.OutputFile.text())
+        # Set input output data quantity (Note: if input/output files are available, the dimension in those file will rule)
+        elif any(x in costants.NUMBERS for x in parent.NumberInputs.text()) \
+                and any(x in costants.NUMBERS for x in parent.NumberInputs.text()):
+            nInput = "".join(list(filter(lambda x: x in costants.NUMBERS, parent.NumberInputs.text())))
+            nOutput = "".join(list(filter(lambda x: x in costants.NUMBERS, parent.NumberInputs.text())))
+            structure.setInputOutputNumber(int(nInput), int(nOutput))
 
-    # Set input output data quantity (Note: if input/output files are available, the dimension in those file will rule)
-    elif any(x in costants.NUMBERS for x in parent.NumberInputs.text()) \
-            and any(x in costants.NUMBERS for x in parent.NumberInputs.text()):
-        nInput = "".join(list(filter(lambda x: x in costants.NUMBERS, parent.NumberInputs.text())))
-        nOutput = "".join(list(filter(lambda x: x in costants.NUMBERS, parent.NumberInputs.text())))
-        structure.setInputOutputNumber(int(nInput), int(nOutput))
+        # Set which frameworks needs to be used for commit with/run/test
+        if parent.Framework.currentText() != "":
+            structure.setFramework(parent.Framework.currentText())
 
-    # Set which frameworks needs to be used for commit with/run/test
-    if parent.Framework.currentText() != "":
-        structure.setFramework(parent.Framework.currentText())
+        # Set the logger reference
+        structure.setLogger(logger)
 
-    # Set the logger reference
-    structure.setLogger(logger)
+        # Set the loss function for the run/test options (if available)
+        if parent.LossFunction.currentText() != "":
+            structure.setLossFunction(parent.LossFunction.currentText())
 
-    # Set the loss function for the run/test options (if available)
-    if parent.LossFunction.currentText() != "":
-        structure.setLossFunction(parent.LossFunction.currentText())
+        # Set the optimizer function for the run/test options (if available)
+        if parent.OptimizerFunction.currentText() != "":
+            structure.setOptimizer(parent.Optimizer.currentText())
 
-    # Set the optimizer function for the run/test options (if available)
-    if parent.OptimizerFunction.currentText() != "":
-        structure.setOptimizer(parent.Optimizer.currentText())
-
-    # Set the number of epochs for the run/test options (if available)
-    if any(x in costants.NUMBERS for x in parent.NumberInputs.text()):
-        nEpochs = "".join(list(filter(lambda x: x in costants.NUMBERS, list(y for y in parent.numberEpochs.text()))))
-        structure.setEpochs(int(nEpochs))
-
-
-def inputData(parent, button):
-    """ Open the input/output file specified and loads the data into the input/output textbox"""
-    name = "Input File" if button is parent.InputFi else "Output File"
-    fileDial = QtWidgets.QFileDialog.getOpenFileName(button, name, os.path.curdir,
-                                                     costants.INPUT_OUTPUT_DATA_FILE_EXTENSION)
-    if fileDial[0] == "":
-        if button is parent.InputFi:
-            logger("No input file chosen")
-            logger()
-        else:
-            logger("No output file chosen")
-            logger()
-        return
-
-    if os.path.exists(fileDial[0]):
-
-        if button is parent.InputFi:
-            parent.InputFile.setText(fileDial[0])
-        else:
-            parent.OutputFile.setText(fileDial[0])
+        # Set the number of epochs for the run/test options (if available)
+        if any(x in costants.NUMBERS for x in parent.NumberInputs.text()):
+            nEpochs = "".join(list(filter(lambda x: x in costants.NUMBERS, list(y for y in parent.numberEpochs.text()))))
+            structure.setEpochs(int(nEpochs))
 
 
 def logger(text="", color="black"):
     """ Hook the Log window for all the log printing"""
     global loggerWindow
+    assert isinstance(loggerWindow, QtWidgets.QTextEdit)
     if text == "":
         global loggerCounter
         loggerCounter = loggerCounter + 1
@@ -394,6 +377,7 @@ def logger(text="", color="black"):
 def clearLogger():
     global loggerWindow
     global loggerCounter
+    assert isinstance(loggerWindow, QtWidgets.QTextEdit)
     loggerCounter = 0
     loggerWindow.setText("")
 
@@ -441,14 +425,11 @@ class BlockProperties(QtWidgets.QComboBox):
 
     def __init__(self, parent):
         super().__init__(parent=parent)
-        self.setFixedWidth(self.parent().width() - self.parent().width() / 4)
+        self.setFixedWidth(self.parent().width() - int(self.parent().width() / 4))
         self.parent = parent
 
         for prop in costants.BOX_PROPERTIES:
-            # self.resizeFont()
-            # self.addItem(item)
             item = QtGui.QStandardItem(str(prop))
-            # item.setForeground(QtGui.QColor(str(costants.ACTIVATION_FUNCTIONS[transFunc])))
 
             self.resizeFont(item)
             mod = self.model()
@@ -477,47 +458,142 @@ class BlockProperties(QtWidgets.QComboBox):
 
     def textChanged(self):
         """ Defines what happens when block property changes"""
-        # self.resizeFont(self)
 
-        if self.currentText() == "DENSE" or self.currentText() == "CNN" or self.currentText() == "POOLING" or \
-                self.currentText() == "DROPOUT":
-            self.parent.neurons.changeText(self.currentText())
+        if self.currentText() in costants.BLOCK_LABELS_NO_IOFILE:
+            self.parent.neurons.setText(self.currentText())
             self.parent.neurons.show()
+            self.parent.IOfile.hide()
 
             if len(self.parent.PrevArch) > 1:
                 for arch in self.parent.PrevArch:
                     arch.__del__()
         else:
-            self.parent.neurons.hide()
 
-            if self.currentText() == "OUTPUT":
-                for arch in self.parent.SuccArch:
+            if self.currentText() in costants.BLOCK_LABELS_YES_IOFILE:
+                self.parent.neurons.setText(self.currentText())
+                self.parent.neurons.show()
+                self.parent.IOfile.show()
+                for arch in (self.parent.SuccArch if self.currentText() == "OUTPUT" else self.parent.PrevArch):
                     arch.__del__()
 
-            elif self.currentText() == "INPUT":
-                for arch in self.parent.PrevArch:
-                    arch.__del__()
-
-            elif self.currentText() == "SUM" or self.currentText() == "SUB" or self.currentText() == "MULT":
+            elif self.currentText() in costants.BLOCK_LABELS_OTHERS:
+                self.parent.neurons.hide()
+                self.parent.IOfile.hide()
                 for arch in self.parent.PrevArch:
                     arch.changeColor()
 
+            else:
+                logger("Block not recognized")
 
-class TextInStructBox(QtWidgets.QLineEdit):
+        self.parent.adjustSize()
+
+
+class TextInStructBox(QtWidgets.QFrame):
     """ Class for the two labels (layer number * and number of neurons) in each "DENSE" block"""
 
-    def __init__(self, parent, text=costants.BLOCK_LABELS["DENSE"]):
-        super().__init__(text, parent)
-        self.setObjectName(text)
-        self.setEnabled(False)
-        self.setAlignment(Qt.AlignCenter)
-        self.show()
+    def __init__(self, parent, text="DENSE", frameType=""):
+        QtWidgets.QFrame.__init__(self, parent)
+        self.setObjectName(frameType)
+        self.resize(parent.width(), int(parent.height() / 2))
+        self.text = text
+        self.setStyleSheet("border-color: rgb(114, 159, 207);")
 
-    def changeText(self, text, num=""):
-        try:
-            self.setText(costants.BLOCK_LABELS[text] + str(num))
-        except KeyError:
-            logger("Error setting text in block", "red")
+        self.layout = QtWidgets.QHBoxLayout(self)
+
+        self.setContentsMargins(0, 0, 0, 0)
+        self.layout.setContentsMargins(0, 0, 0, 0)
+        self.layout.setSpacing(0)
+
+        # Label + form for inserting data
+        if frameType != "IO":
+            self.label = QtWidgets.QLabel(self)
+            self.entries = QtWidgets.QLineEdit(self)
+
+            self.label.setObjectName("label")
+            self.entries.setObjectName("entries")
+
+            self.label.setStyleSheet(costants.STANDARD_LABELS_IN_BLOCK_STYLESHEET)
+            self.entries.setStyleSheet(costants.LABELS_IN_BLOCK_STYLESHEET)
+
+            self.label.setText(costants.BLOCK_LABELS[text])
+            self.entries.setText("Entries!")
+
+            self.label.setContentsMargins(0, 0, 0, 0)
+            self.entries.setContentsMargins(0, 0, 0, 0)
+
+            self.layout.addWidget(self.label, alignment=Qt.AlignLeft)
+            self.layout.addWidget(self.entries, alignment=Qt.AlignLeft)
+
+            self.show()
+        # File dialog
+        else:
+            self.button = QtWidgets.QPushButton(self)
+            self.IOfile = QtWidgets.QFrame(self)
+            self.file = QtWidgets.QLineEdit(self.IOfile)
+            self.button2 = QtWidgets.QPushButton(self.IOfile)
+            self.IOlayout = QtWidgets.QHBoxLayout(self.IOfile)
+
+            self.button.setStyleSheet(costants.LABELS_IN_BLOCK_STYLESHEET)
+            self.IOfile.setStyleSheet(costants.LABELS_IN_BLOCK_STYLESHEET)
+            self.file.setStyleSheet(costants.STANDARD_LABELS_IN_BLOCK_STYLESHEET)
+            self.button2.setStyleSheet(costants.LABELS_IN_BLOCK_STYLESHEET)
+
+            self.button.setObjectName("File")
+            self.button2.setObjectName("Cancel")
+
+            self.button.setText("File")
+            self.file.setText("File!")
+            self.button2.setText("X")
+
+            self.button.setEnabled(True)
+            self.file.setReadOnly(True)
+
+            self.button.clicked.connect(self.inputData)
+            self.button2.clicked.connect(lambda: self.delete(line=self.file))
+
+            self.button.setCursor(QtGui.QCursor(QtCore.Qt.PointingHandCursor))
+            self.button2.setCursor(QtGui.QCursor(QtCore.Qt.PointingHandCursor))
+
+            self.file.setContentsMargins(0, 0, 0, 0)
+            self.button.setContentsMargins(0, 0, 0, 0)
+            self.IOlayout.setContentsMargins(0, 0, 0, 0)
+            self.button2.setContentsMargins(0, 0, 0, 0)
+            self.IOfile.setContentsMargins(0, 0, 0, 0)
+
+            self.IOlayout.addWidget(self.file, alignment=Qt.AlignLeft)
+            self.IOlayout.addWidget(self.button2, alignment=Qt.AlignRight)
+
+            self.layout.addWidget(self.IOfile, alignment=Qt.AlignLeft)
+            self.layout.addWidget(self.button, alignment=Qt.AlignRight)
+
+            self.IOfile.show()
+            self.hide()
+
+    def inputData(self):
+        """ Open the input/output file specified and loads the data into the input/output textbox"""
+        fileDial = QtWidgets.QFileDialog.getOpenFileName(self.button, "IO File", os.path.curdir,
+                                                         costants.INPUT_OUTPUT_DATA_FILE_EXTENSION)
+        if fileDial[0] == "":
+            logger("No file chosen")
+            logger()
+            return
+
+        if os.path.exists(fileDial[0]):
+            self.file.setText(fileDial[0])
+
+    def delete(self, line):
+        """ Deletes what's written in a generic label inside the QFrame"""
+        line.setText("")
+
+    def setText(self, text):
+        """Modifiable only if frameType is not IO, meaning that this frame is for inserting data,
+            such as neurons number, kernel infos, etc"""
+        self.text = text
+        self.delete(self.label)
+        self.label.setText(costants.BLOCK_LABELS[self.text])
+
+    def getFileName(self):
+        return self.file.text()
 
 
 class Arrow(QtWidgets.QFrame):
@@ -740,7 +816,12 @@ class StructBlock(QtWidgets.QFrame):
         self.setStyleSheet(MainBlock.styleSheet())
         self.layout = QtWidgets.QVBoxLayout(self)
         self.resize(MainBlock.width(), MainBlock.height())
+        self.predefWidth = MainBlock.width()
+        self.predefHeight = MainBlock.height()
+        self.setFixedWidth(self.predefWidth)
 
+        self.predefWidth = MainBlock.width()
+        self.predefHeight = MainBlock.height()
         self.block = True
         self.PrevArch = []
         self.SuccArch = []
@@ -749,6 +830,7 @@ class StructBlock(QtWidgets.QFrame):
 
         self.layer = BlockProperties(self)
         self.neurons = TextInStructBox(self)
+        self.IOfile = TextInStructBox(self, frameType="IO")
 
         if loaded is not None:
             self.loaded(loaded)
@@ -761,8 +843,10 @@ class StructBlock(QtWidgets.QFrame):
             self.setObjectName(temp)
 
         self.layout.addWidget(self.layer, alignment=Qt.AlignCenter)
+        self.layout.addWidget(self.IOfile, alignment=Qt.AlignCenter)
         self.layout.addWidget(self.neurons, alignment=Qt.AlignCenter)
-
+        self.layout.setContentsMargins(5, 5, 5, 5)
+        self.adjustSize()
         layers.append(self)
         self.show()
 
@@ -798,8 +882,10 @@ class StructBlock(QtWidgets.QFrame):
                 self.SuccArch.append([ar for ar in archs if ar.objectName() == arrow][0])
 
     def mousePressEvent(self, e):
-        """ Mouse Press Event function: if its right button or double-click left button it allows changing label for the number of neurons
-         If it's single left button it starts saving itself as moving block, because it is starting the dragging event"""
+        """
+        Mouse Press Event function: if its right button or double-click left button it allows changing label for the number of neurons
+         If it's single left button it starts saving itself as moving block, because it is starting the dragging event
+        """
         self.unselect()
 
         if e.type() == QtCore.QEvent.MouseButtonDblClick and e.buttons() == Qt.LeftButton:
@@ -813,8 +899,10 @@ class StructBlock(QtWidgets.QFrame):
             self.selected()
 
     def mouseMoveEvent(self, e):
-        """ Mouse Move Event function: if it single left button it calls the original block Mouse Move Event function
-         Unless it does nothing"""
+        """
+        Mouse Move Event function: if it single left button it calls the original block Mouse Move Event function
+         Unless it does nothing
+         """
         if e.buttons() != Qt.LeftButton:
             return
 
@@ -903,7 +991,9 @@ class StructBlock(QtWidgets.QFrame):
             self.removeArches(arch)
 
     def updateArches(self, succ=False, arch=None, split=False):
-        """ It updates the next or the previous arch"""
+        """
+         It updates the next or the previous arch
+         """
         # Called if block is moved and there are no more succ blocks
         if succ is False:
             for arch in self.PrevArch:
@@ -962,9 +1052,6 @@ class MainW(QtWidgets.QMainWindow, Ui_MainWindow):
         self.CommSave.clicked.connect(lambda: structureCommit(parent=self))
         self.LoadStr.clicked.connect(lambda: structureLoad(parent=self))
 
-        self.InputFi.clicked.connect(lambda: inputData(parent=self, button=self.InputFi))
-        self.OutputFi.clicked.connect(lambda: inputData(parent=self, button=self.OutputFi))
-
         self.FrameworkCommit.clicked.connect(lambda: frameworkCommit(parent=self))
         self.RunNN.clicked.connect(lambda: frameworkRunTest(button=self.RunNN, parent=self))
         self.TestNN.clicked.connect(lambda: frameworkRunTest(button=self.TestNN, parent=self))
@@ -975,7 +1062,7 @@ class MainW(QtWidgets.QMainWindow, Ui_MainWindow):
         # elements from costants.py
         for frame in costants.FRAMEWORKS:
 
-            if importlib.util.find_spec(costants.FRAMEWORKS[frame]) is None or \
+            if util.find_spec(costants.FRAMEWORKS[frame]) is None or \
                     os.path.isfile("../nn/otherFrameworks/" + costants.FRAMEWORKS[frame]):
                 continue
 

@@ -128,5 +128,11 @@ test.*
 
 progettifuturi.txt
 
+# Used for building wheel application
+
+/dist
+/build
+VENN.*/
+
 # Ignore Documentation folder
 html/

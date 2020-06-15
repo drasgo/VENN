@@ -143,6 +143,7 @@ class Ui_MainWindow(object):
         self.Delete = QtWidgets.QPushButton(self.MainStruct)
         self.Delete.setGeometry(QtCore.QRect(490, 350, 41, 36))
         self.Delete.setObjectName("Delete")
+        self.Delete.setCursor(QtGui.QCursor(QtCore.Qt.PointingHandCursor))
         self.InsertFirstBlock = QtWidgets.QLineEdit(self.MainStruct)
         self.InsertFirstBlock.setEnabled(False)
         self.InsertFirstBlock.setGeometry(QtCore.QRect(280, 180, 381, 51))

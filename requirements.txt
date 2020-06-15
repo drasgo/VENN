@@ -1,0 +1,7 @@
+PyQt5
+tensorflow
+torch
+torchsummary
+keras
+pdoc
+torchsummary
