@@ -16,10 +16,14 @@ import VENN.nn.mainNN as mainNN
 # TODO
 # Implement Pooling, Dropout, CNN, RNN and multiple inputs
 
+
 def CheckMultipleSelection(self):
     """ Selects every block/arch in the rubber multiple selection. Everything else is unselected"""
     for widget in self.findChildren(QtWidgets.QFrame):
-        if widget.geometry() in MultipleSelect[0].geometry() and widget.objectName() != "Blocks":
+        if (
+            widget.geometry() in MultipleSelect[0].geometry()
+            and widget.objectName() != "Blocks"
+        ):
             SelectBlock(widget)
         else:
             UnselectBlock(widget)
@@ -27,7 +31,9 @@ def CheckMultipleSelection(self):
 
 def SelectBlock(widget):
     """ Performs the selection action: change color and add the block/arch to tu selectedMultipleLayer list"""
-    if widget not in selectedMultipleLayer and (isinstance(widget, Arrow) or isinstance(widget, StructBlock)):
+    if widget not in selectedMultipleLayer and (
+        isinstance(widget, Arrow) or isinstance(widget, StructBlock)
+    ):
         widget.setStyleSheet(costants.blockSelected)
         selectedMultipleLayer.append(widget)
 
@@ -63,7 +69,9 @@ def SelectionmouseMoveEvent(self, event):
     global MultipleSelect
 
     if not MultipleSelect[1].isNull():
-        MultipleSelect[0].setGeometry(QtCore.QRect(MultipleSelect[1], event.pos()).normalized())
+        MultipleSelect[0].setGeometry(
+            QtCore.QRect(MultipleSelect[1], event.pos()).normalized()
+        )
         CheckMultipleSelection(self)
 
 
@@ -130,10 +138,16 @@ def dragMoveMainStruct(self, event):
     global tempBlock
     global insideMainStruct
     assert isinstance(tempBlock, QtWidgets.QFrame)
-    tempPos = event.pos() - QtCore.QPoint(int(tempBlock.width() / 2), int(tempBlock.height() / 2))
-    tempPos2 = event.pos() + QtCore.QPoint(int(tempBlock.width() / 2), int(tempBlock.height() / 2))
+    tempPos = event.pos() - QtCore.QPoint(
+        int(tempBlock.width() / 2), int(tempBlock.height() / 2)
+    )
+    tempPos2 = event.pos() + QtCore.QPoint(
+        int(tempBlock.width() / 2), int(tempBlock.height() / 2)
+    )
     if tempBlock.objectName() == "Blocks" and (
-            self.rect().contains(tempPos) is False or self.rect().contains(tempPos2) is False):
+        self.rect().contains(tempPos) is False
+        or self.rect().contains(tempPos2) is False
+    ):
 
         global posit
         tempBlock.move(posit)
@@ -158,12 +172,21 @@ def dropMainStruct(self, event, parent):
     if tempBlock.objectName() == "Blocks":
         global posit
         position = event.pos()
-        if isinstance(tempBlock, StructBlock) or isinstance(tempBlock, QtWidgets.QFrame) and insideMainStruct is True:
+        if (
+            isinstance(tempBlock, StructBlock)
+            or isinstance(tempBlock, QtWidgets.QFrame)
+            and insideMainStruct is True
+        ):
             newBlock = StructBlock(self, MainBlock=tempBlock)
-            newBlock.move(position - QtCore.QPoint(int(newBlock.width() / 2), int(newBlock.height() / 2)))
+            newBlock.move(
+                position
+                - QtCore.QPoint(int(newBlock.width() / 2), int(newBlock.height() / 2))
+            )
 
     else:
-        posit = event.pos() - QtCore.QPoint(int(tempBlock.width() / 2), int(tempBlock.height() / 2))
+        posit = event.pos() - QtCore.QPoint(
+            int(tempBlock.width() / 2), int(tempBlock.height() / 2)
+        )
 
     tempBlock.move(posit)
     event.setDropAction(Qt.MoveAction)
@@ -230,7 +253,9 @@ def frameworkCommit(parent):
     global structure
 
     if structureCommit(parent, True) is False:
-        logger("Error creating model structure for framework export. Check the structure correctness.")
+        logger(
+            "Error creating model structure for framework export. Check the structure correctness."
+        )
         logger()
         return False
 
@@ -270,8 +295,9 @@ def structureLoad(parent):
     if structure is None:
         structure = mainNN.NNStructure()
 
-    fileDial = QtWidgets.QFileDialog.getOpenFileName(parent, "Load Structure", os.path.curdir,
-                                                     costants.STRUCTURE_DATA_FILE_EXTENSION)
+    fileDial = QtWidgets.QFileDialog.getOpenFileName(
+        parent, "Load Structure", os.path.curdir, costants.STRUCTURE_DATA_FILE_EXTENSION
+    )
     if fileDial[0] == "":
         logger("No structure file chosen")
         logger()
@@ -298,15 +324,21 @@ def structureLoad(parent):
         del layers[:]
         del archs[:]
 
-        for block in [loadedData[x] for x in loadedData if loadedData[x]["block"] is True]:
+        for block in [
+            loadedData[x] for x in loadedData if loadedData[x]["block"] is True
+        ]:
             StructBlock(parent.MainStruct, parent.Blocks, block)
 
-        for arrow in [loadedData[x] for x in loadedData if loadedData[x]["block"] is False]:
+        for arrow in [
+            loadedData[x] for x in loadedData if loadedData[x]["block"] is False
+        ]:
             Arrow(parent.MainStruct, loaded=arrow)
 
         # Grab every block in the gui and checks which of the newly created blocks in the loaded structure is.
         # For each block then attach the previous and following arches
-        for block in [loadedData[x] for x in loadedData if loadedData[x]["block"] is True]:
+        for block in [
+            loadedData[x] for x in loadedData if loadedData[x]["block"] is True
+        ]:
             for comp in [x for x in layers if block["name"] == x.objectName()]:
                 comp.addLoadedArchs(block["PrevArch"], prev=True)
                 comp.addLoadedArchs(block["SuccArch"], prev=False)
@@ -335,10 +367,19 @@ def setupNNStructure(parent, name=""):
             structure.setInputOutput(parent.InputFile.text(), parent.OutputFile.text())
 
         # Set input output data quantity (Note: if input/output files are available, the dimension in those file will rule)
-        elif any(x in costants.NUMBERS for x in parent.NumberInputs.text()) \
-                and any(x in costants.NUMBERS for x in parent.NumberInputs.text()):
-            nInput = "".join(list(filter(lambda x: x in costants.NUMBERS, parent.NumberInputs.text())))
-            nOutput = "".join(list(filter(lambda x: x in costants.NUMBERS, parent.NumberInputs.text())))
+        elif any(x in costants.NUMBERS for x in parent.NumberInputs.text()) and any(
+            x in costants.NUMBERS for x in parent.NumberInputs.text()
+        ):
+            nInput = "".join(
+                list(
+                    filter(lambda x: x in costants.NUMBERS, parent.NumberInputs.text())
+                )
+            )
+            nOutput = "".join(
+                list(
+                    filter(lambda x: x in costants.NUMBERS, parent.NumberInputs.text())
+                )
+            )
             structure.setInputOutputNumber(int(nInput), int(nOutput))
 
         # Set which frameworks needs to be used for commit with/run/test
@@ -358,7 +399,14 @@ def setupNNStructure(parent, name=""):
 
         # Set the number of epochs for the run/test options (if available)
         if any(x in costants.NUMBERS for x in parent.NumberInputs.text()):
-            nEpochs = "".join(list(filter(lambda x: x in costants.NUMBERS, list(y for y in parent.numberEpochs.text()))))
+            nEpochs = "".join(
+                list(
+                    filter(
+                        lambda x: x in costants.NUMBERS,
+                        list(y for y in parent.numberEpochs.text()),
+                    )
+                )
+            )
             structure.setEpochs(int(nEpochs))
 
 
@@ -391,12 +439,46 @@ def resizeEvent(main):
     newVal = main.geometry()
     # Resize every preexisting component created in qtcreator
     resizeElement(
-        [main.OutputFi, main.LoadStr, main.RunNN, main.TestNN, main.AdvancedOptions, main.InputFi, main.CommSave,
-         main.MainStruct, main.ChooseArrow, main.Delete, main.InsertFirstBlock, main.Loss,
-         main.LossFunction, main.Log, main.LogWindow, main.Framework, main.label, main.FrameworkCommit,
-         main.NumberInputs, main.NumberOutputs, main.nInputs, main.nOutputs, main.StructureFilename,
-         main.Epochs, main.numberEpochs, main.Optimizer, main.OptimizerFunction, main.InputFile, main.OutputFile,
-         main.line_2, main.line_3, main.line_4, main.line_5, main.line_6, main.ClearLogger], main.oldMax, newVal)
+        [
+            main.OutputFi,
+            main.LoadStr,
+            main.RunNN,
+            main.TestNN,
+            main.AdvancedOptions,
+            main.InputFi,
+            main.CommSave,
+            main.MainStruct,
+            main.ChooseArrow,
+            main.Delete,
+            main.InsertFirstBlock,
+            main.Loss,
+            main.LossFunction,
+            main.Log,
+            main.LogWindow,
+            main.Framework,
+            main.label,
+            main.FrameworkCommit,
+            main.NumberInputs,
+            main.NumberOutputs,
+            main.nInputs,
+            main.nOutputs,
+            main.StructureFilename,
+            main.Epochs,
+            main.numberEpochs,
+            main.Optimizer,
+            main.OptimizerFunction,
+            main.InputFile,
+            main.OutputFile,
+            main.line_2,
+            main.line_3,
+            main.line_4,
+            main.line_5,
+            main.line_6,
+            main.ClearLogger,
+        ],
+        main.oldMax,
+        newVal,
+    )
     # Resize every procedurally created componenent (aka blocks and arrows)
     resizeElement(layers + archs + [main.Blocks], main.oldMax, newVal)
     # Reset the current window size
@@ -447,7 +529,10 @@ class BlockProperties(QtWidgets.QComboBox):
             font.setPointSize(size)
             rect = QtGui.QFontMetrics(font).boundingRect(self.currentText())
 
-            if rect.height() <= self.height() * 0.6 and rect.width() <= self.width() * 0.5:
+            if (
+                rect.height() <= self.height() * 0.6
+                and rect.width() <= self.width() * 0.5
+            ):
                 size = size + 1
 
             else:
@@ -473,7 +558,11 @@ class BlockProperties(QtWidgets.QComboBox):
                 self.parent.neurons.setText(self.currentText())
                 self.parent.neurons.show()
                 self.parent.IOfile.show()
-                for arch in (self.parent.SuccArch if self.currentText() == "OUTPUT" else self.parent.PrevArch):
+                for arch in (
+                    self.parent.SuccArch
+                    if self.currentText() == "OUTPUT"
+                    else self.parent.PrevArch
+                ):
                     arch.__del__()
 
             elif self.currentText() in costants.BLOCK_LABELS_OTHERS:
@@ -571,8 +660,12 @@ class TextInStructBox(QtWidgets.QFrame):
 
     def inputData(self):
         """ Open the input/output file specified and loads the data into the input/output textbox"""
-        fileDial = QtWidgets.QFileDialog.getOpenFileName(self.button, "IO File", os.path.curdir,
-                                                         costants.INPUT_OUTPUT_DATA_FILE_EXTENSION)
+        fileDial = QtWidgets.QFileDialog.getOpenFileName(
+            self.button,
+            "IO File",
+            os.path.curdir,
+            costants.INPUT_OUTPUT_DATA_FILE_EXTENSION,
+        )
         if fileDial[0] == "":
             logger("No file chosen")
             logger()
@@ -671,8 +764,12 @@ class Arrow(QtWidgets.QFrame):
     def loaded(self, loaded):
         self.setObjectName(str(loaded["name"]))
         self.name = loaded["activFunc"]
-        self.initBlock = next(init for init in layers if init.objectName() == loaded["initBlock"])
-        self.finalBlock = next(fin for fin in layers if fin.objectName() == loaded["finalBlock"])
+        self.initBlock = next(
+            init for init in layers if init.objectName() == loaded["initBlock"]
+        )
+        self.finalBlock = next(
+            fin for fin in layers if fin.objectName() == loaded["finalBlock"]
+        )
         self.resize(loaded["size"][0], loaded["size"][1])
         self.move(loaded["pos"][0], loaded["pos"][1])
 
@@ -682,8 +779,12 @@ class Arrow(QtWidgets.QFrame):
             if "(" in self.name or ")" in self.name:
                 tempName = re.search("\(([^)]+)", self.name).group(1)
         else:
-            logger("Error Loading structure: activation function of arch " + self.objectName() + " not supported",
-                   "red")
+            logger(
+                "Error Loading structure: activation function of arch "
+                + self.objectName()
+                + " not supported",
+                "red",
+            )
             self.__del__()
 
         self.activationFunc.setText(tempName)
@@ -698,7 +799,10 @@ class Arrow(QtWidgets.QFrame):
         else:
             self.horizontalLayout = False
 
-        if self.initBlock.x() < self.finalBlock.x() or self.finalBlock.y() > self.initBlock.y():
+        if (
+            self.initBlock.x() < self.finalBlock.x()
+            or self.finalBlock.y() > self.initBlock.y()
+        ):
             self.upRightLayout = False
         else:
             self.upRightLayout = True
@@ -714,8 +818,11 @@ class Arrow(QtWidgets.QFrame):
 
     def changeColor(self, name=""):
         """ Changes the color of the arch depending the cactivation function combobox"""
-        if self.finalBlock.layer.currentText() == "SUM" or self.finalBlock.layer.currentText() == "SUB" or \
-                self.finalBlock.layer.currentText() == "MULT":
+        if (
+            self.finalBlock.layer.currentText() == "SUM"
+            or self.finalBlock.layer.currentText() == "SUB"
+            or self.finalBlock.layer.currentText() == "MULT"
+        ):
             name = ""
             logger("Careful, arches before SUM, SUB or MULT blocks must be blank!")
             logger()
@@ -742,57 +849,92 @@ class Arrow(QtWidgets.QFrame):
         if self.horizontalLayout is True:
             # If the arrow is pointing towards right
             if self.upRightLayout is False:
-                init.drawEllipse(QtCore.QPoint(0, int(self.height() / 2)), int(self.height() / 2), 15)
+                init.drawEllipse(
+                    QtCore.QPoint(0, int(self.height() / 2)), int(self.height() / 2), 15
+                )
             # If the arrow is pointing towards left
             else:
-                init.drawEllipse(QtCore.QPoint(self.width(), int(self.height() / 2)), int(self.height() / 2), 15)
+                init.drawEllipse(
+                    QtCore.QPoint(self.width(), int(self.height() / 2)),
+                    int(self.height() / 2),
+                    15,
+                )
         # If the arrow is vertical
         else:
             # If the arrow is pointing towards down
             if self.upRightLayout is False:
-                init.drawEllipse(QtCore.QPoint(int(self.width() / 2), 0), 15, int(self.width() / 2))
+                init.drawEllipse(
+                    QtCore.QPoint(int(self.width() / 2), 0), 15, int(self.width() / 2)
+                )
             # If the arrow is pointing towards up
             else:
-                init.drawEllipse(QtCore.QPoint(int(self.width() / 2), self.height()), 15, int(self.width() / 2))
+                init.drawEllipse(
+                    QtCore.QPoint(int(self.width() / 2), self.height()),
+                    15,
+                    int(self.width() / 2),
+                )
         init.end()
 
     def drawArrow(self, All=True, split=False):
         """ It checks the position of the initial and final blocks and it will be drawn relatively  to those two"""
         prevGeom = self.geometry()
-        if abs(self.initBlock.y() - self.finalBlock.y()) <= abs(self.initBlock.x() - self.finalBlock.x()):
+        if abs(self.initBlock.y() - self.finalBlock.y()) <= abs(
+            self.initBlock.x() - self.finalBlock.x()
+        ):
             self.lineWidth = costants.LINE_WIDTH
-            yIn = self.initBlock.y() + self.initBlock.height() / 2 - costants.LINE_WIDTH / 2
+            yIn = (
+                self.initBlock.y()
+                + self.initBlock.height() / 2
+                - costants.LINE_WIDTH / 2
+            )
             self.horizontalLayout = True
 
             if self.initBlock.x() < self.finalBlock.x():
                 self.upRightLayout = False
                 xIn = self.initBlock.x() + self.initBlock.width()
                 xFin = self.finalBlock.x() - xIn
-                self.endPoint = QtCore.QPoint(self.finalBlock.x(), yIn + self.lineWidth / 2)
+                self.endPoint = QtCore.QPoint(
+                    self.finalBlock.x(), yIn + self.lineWidth / 2
+                )
 
             else:
                 self.upRightLayout = True
                 xIn = self.finalBlock.x() + self.finalBlock.width()
                 xFin = self.initBlock.x() - xIn
-                self.endPoint = QtCore.QPoint(self.finalBlock.x() + self.finalBlock.width(), yIn + self.lineWidth / 2)
+                self.endPoint = QtCore.QPoint(
+                    self.finalBlock.x() + self.finalBlock.width(),
+                    yIn + self.lineWidth / 2,
+                )
 
         else:
             self.horizontalLayout = False
-            xIn = self.initBlock.x() + self.initBlock.width() / 2 - costants.LINE_WIDTH / 2
+            xIn = (
+                self.initBlock.x()
+                + self.initBlock.width() / 2
+                - costants.LINE_WIDTH / 2
+            )
             xFin = costants.LINE_WIDTH
 
             if self.initBlock.y() > self.finalBlock.y():
                 self.upRightLayout = True
                 yIn = self.finalBlock.y() + self.finalBlock.height()
-                self.lineWidth = self.initBlock.y() - (self.finalBlock.y() + self.finalBlock.height())
-                self.endPoint = QtCore.QPoint(xIn + costants.LINE_WIDTH / 2,
-                                              self.finalBlock.y() + self.finalBlock.height())
+                self.lineWidth = self.initBlock.y() - (
+                    self.finalBlock.y() + self.finalBlock.height()
+                )
+                self.endPoint = QtCore.QPoint(
+                    xIn + costants.LINE_WIDTH / 2,
+                    self.finalBlock.y() + self.finalBlock.height(),
+                )
 
             else:
                 self.upRightLayout = False
                 yIn = self.initBlock.y() + self.initBlock.height()
-                self.lineWidth = self.finalBlock.y() - (self.initBlock.y() + self.initBlock.height())
-                self.endPoint = QtCore.QPoint(xIn + costants.LINE_WIDTH / 2, self.finalBlock.y())
+                self.lineWidth = self.finalBlock.y() - (
+                    self.initBlock.y() + self.initBlock.height()
+                )
+                self.endPoint = QtCore.QPoint(
+                    xIn + costants.LINE_WIDTH / 2, self.finalBlock.y()
+                )
 
         self.startPoint = QtCore.QPoint(xIn, yIn)
 
@@ -800,7 +942,9 @@ class Arrow(QtWidgets.QFrame):
 
         UnselectBlock()
 
-        if (prevGeom != self.geometry() and All is True) or len(self.finalBlock.SuccArch) == 0:
+        if (prevGeom != self.geometry() and All is True) or len(
+            self.finalBlock.SuccArch
+        ) == 0:
             self.finalBlock.updatePosition(self, self.endPoint, split)
 
 
@@ -877,9 +1021,13 @@ class StructBlock(QtWidgets.QFrame):
         global archs
         for arrow in arch:
             if prev is True:
-                self.PrevArch.append([ar for ar in archs if ar.objectName() == arrow][0])
+                self.PrevArch.append(
+                    [ar for ar in archs if ar.objectName() == arrow][0]
+                )
             else:
-                self.SuccArch.append([ar for ar in archs if ar.objectName() == arrow][0])
+                self.SuccArch.append(
+                    [ar for ar in archs if ar.objectName() == arrow][0]
+                )
 
     def mousePressEvent(self, e):
         """
@@ -888,7 +1036,10 @@ class StructBlock(QtWidgets.QFrame):
         """
         self.unselect()
 
-        if e.type() == QtCore.QEvent.MouseButtonDblClick and e.buttons() == Qt.LeftButton:
+        if (
+            e.type() == QtCore.QEvent.MouseButtonDblClick
+            and e.buttons() == Qt.LeftButton
+        ):
             self.neurons.setEnabled(True)
 
         elif e.buttons() == Qt.LeftButton:
@@ -946,9 +1097,12 @@ class StructBlock(QtWidgets.QFrame):
 
             if block.objectName() != self.objectName() and block.isSelected():
 
-                if (len(self.PrevArch) == 0 and self.layer.currentText() != "INPUT") or \
-                        self.layer.currentText() == "SUM" or self.layer.currentText() == "SUB" or \
-                        self.layer.currentText() == "MULT":
+                if (
+                    (len(self.PrevArch) == 0 and self.layer.currentText() != "INPUT")
+                    or self.layer.currentText() == "SUM"
+                    or self.layer.currentText() == "SUB"
+                    or self.layer.currentText() == "MULT"
+                ):
                     prevArch = Arrow(self.parent(), block, self)
                     block.SuccArch.append(prevArch)
                     self.PrevArch.append(prevArch)
@@ -1022,11 +1176,15 @@ class MainW(QtWidgets.QMainWindow, Ui_MainWindow):
 
         self.oldMax = self.geometry()
         self.resizeEvent = lambda e: resizeEvent(self)
-        self.setStyleSheet("""QPushButton:hover {background-color: grey;
+        self.setStyleSheet(
+            """QPushButton:hover {background-color: grey;
                                 color: #fff;}
-                                QMainWindow {background-color:white;}""")
+                                QMainWindow {background-color:white;}"""
+        )
 
-        MultipleSelect[0] = QtWidgets.QRubberBand(QtWidgets.QRubberBand.Rectangle, self.MainStruct)
+        MultipleSelect[0] = QtWidgets.QRubberBand(
+            QtWidgets.QRubberBand.Rectangle, self.MainStruct
+        )
         MultipleSelect[1] = QtCore.QPoint()
 
         self.keyPressEvent = lambda event: keyPress(event=event)
@@ -1038,23 +1196,36 @@ class MainW(QtWidgets.QMainWindow, Ui_MainWindow):
         self.MainStruct.keyPressEvent = lambda event: keyPress(event=event)
         self.MainStruct.setAcceptDrops(True)
         self.MainStruct.dragEnterEvent = lambda event: dragEnterMainStruct(event)
-        self.MainStruct.dragMoveEvent = lambda event: dragMoveMainStruct(self.MainStruct, event)
-        self.MainStruct.dropEvent = lambda event: dropMainStruct(self.MainStruct, event, self)
+        self.MainStruct.dragMoveEvent = lambda event: dragMoveMainStruct(
+            self.MainStruct, event
+        )
+        self.MainStruct.dropEvent = lambda event: dropMainStruct(
+            self.MainStruct, event, self
+        )
         self.MainStruct.mousePressEvent = lambda event: SelectionmousePressEvent(event)
-        self.MainStruct.mouseMoveEvent = lambda event: SelectionmouseMoveEvent(self.MainStruct, event)
-        self.MainStruct.mouseReleaseEvent = lambda event: SelectionmouseReleaseEvent(event)
+        self.MainStruct.mouseMoveEvent = lambda event: SelectionmouseMoveEvent(
+            self.MainStruct, event
+        )
+        self.MainStruct.mouseReleaseEvent = lambda event: SelectionmouseReleaseEvent(
+            event
+        )
 
         self.Delete.clicked.connect(Cancel)
 
         self.ChooseArrow.currentIndexChanged.connect(
-            lambda: changeComboBox(self.ChooseArrow, self.ChooseArrow.currentIndex()))
+            lambda: changeComboBox(self.ChooseArrow, self.ChooseArrow.currentIndex())
+        )
 
         self.CommSave.clicked.connect(lambda: structureCommit(parent=self))
         self.LoadStr.clicked.connect(lambda: structureLoad(parent=self))
 
         self.FrameworkCommit.clicked.connect(lambda: frameworkCommit(parent=self))
-        self.RunNN.clicked.connect(lambda: frameworkRunTest(button=self.RunNN, parent=self))
-        self.TestNN.clicked.connect(lambda: frameworkRunTest(button=self.TestNN, parent=self))
+        self.RunNN.clicked.connect(
+            lambda: frameworkRunTest(button=self.RunNN, parent=self)
+        )
+        self.TestNN.clicked.connect(
+            lambda: frameworkRunTest(button=self.TestNN, parent=self)
+        )
 
         self.ClearLogger.clicked.connect(clearLogger)
 
@@ -1062,8 +1233,9 @@ class MainW(QtWidgets.QMainWindow, Ui_MainWindow):
         # elements from costants.py
         for frame in costants.FRAMEWORKS:
 
-            if util.find_spec(costants.FRAMEWORKS[frame]) is None or \
-                    os.path.isfile("../nn/otherFrameworks/" + costants.FRAMEWORKS[frame]):
+            if util.find_spec(costants.FRAMEWORKS[frame]) is None or os.path.isfile(
+                "../nn/otherFrameworks/" + costants.FRAMEWORKS[frame]
+            ):
                 continue
 
             if self.Framework.currentText() == "No Framework Found":
@@ -1075,7 +1247,9 @@ class MainW(QtWidgets.QMainWindow, Ui_MainWindow):
 
         for transFunc in costants.ACTIVATION_FUNCTIONS:
             item = QtGui.QStandardItem(str(transFunc))
-            item.setForeground(QtGui.QColor(str(costants.ACTIVATION_FUNCTIONS[transFunc])))
+            item.setForeground(
+                QtGui.QColor(str(costants.ACTIVATION_FUNCTIONS[transFunc]))
+            )
             mod = self.ChooseArrow.model()
             mod.appendRow(item)
 

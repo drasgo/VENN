@@ -4,4 +4,3 @@ torch
 torchsummary
 keras
 pdoc
-torchsummary

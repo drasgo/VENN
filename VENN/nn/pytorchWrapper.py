@@ -5,9 +5,10 @@ from VENN.nn.wrapperTemplate import WrapperTemplate
 
 
 class FrameStructure(WrapperTemplate):
-
     def __init__(self, numberInput, numberOutput, structure, structureName, logger):
-        WrapperTemplate.__init__(self, numberInput, numberOutput, structure, structureName, logger)
+        WrapperTemplate.__init__(
+            self, numberInput, numberOutput, structure, structureName, logger
+        )
         self.frame = "Pytorch"
 
     def prepareModel(self):
@@ -17,16 +18,33 @@ class FrameStructure(WrapperTemplate):
             return False
 
     def nodeSupport(self, node):
-        if node == "DENSE" or node == "SUM" or node == "SUB" or node == "MULT" or \
-                node == "DROPOUT" or node == "POOLING" or node == "CNN" or node == "INPUT" or node == "OUTPUT":
+        if (
+            node == "DENSE"
+            or node == "SUM"
+            or node == "SUB"
+            or node == "MULT"
+            or node == "DROPOUT"
+            or node == "POOLING"
+            or node == "CNN"
+            or node == "INPUT"
+            or node == "OUTPUT"
+        ):
             return True
         else:
             return False
 
     def functionSupport(self, activ):
-        if activ == "Hyperbolic Tangent (Tanh)" or activ == "Softmax" or activ == "Rectified Linear (ReLu)" or \
-                activ == "Exponential Linear (Elu)" or activ == "Log Softmax" or activ == "Sigmoid" or activ == "Softplus" \
-                or activ == "Linear" or activ == "Hard Hyperbolic Tangent(HardTanh)":
+        if (
+            activ == "Hyperbolic Tangent (Tanh)"
+            or activ == "Softmax"
+            or activ == "Rectified Linear (ReLu)"
+            or activ == "Exponential Linear (Elu)"
+            or activ == "Log Softmax"
+            or activ == "Sigmoid"
+            or activ == "Softplus"
+            or activ == "Linear"
+            or activ == "Hard Hyperbolic Tangent(HardTanh)"
+        ):
             return True
         else:
             return False
@@ -35,11 +53,17 @@ class FrameStructure(WrapperTemplate):
         if layerType == "DENSE" or layerType == "OUTPUT":
             return torch.nn.Linear(int(kwargs["inputDim"]), int(kwargs["outputDim"]))
         elif layerType == "SUM":
-            return self.sumNode(inputNode1=kwargs["inputNode1"], inputNode2=kwargs["inputNode2"])
+            return self.sumNode(
+                inputNode1=kwargs["inputNode1"], inputNode2=kwargs["inputNode2"]
+            )
         elif layerType == "SUB":
-            return self.subNode(inputNode1=kwargs["inputNode1"], inputNode2=kwargs["inputNode2"])
+            return self.subNode(
+                inputNode1=kwargs["inputNode1"], inputNode2=kwargs["inputNode2"]
+            )
         elif layerType == "MULT":
-            return self.multNode(inputNode1=kwargs["inputNode1"], inputNode2=kwargs["inputNode2"])
+            return self.multNode(
+                inputNode1=kwargs["inputNode1"], inputNode2=kwargs["inputNode2"]
+            )
         elif layerType == "DROPOUT":
             # return torch.nn.Dropout
             return None
@@ -60,22 +84,38 @@ class FrameStructure(WrapperTemplate):
         if done is False:
             return node.view(list(node.size())[0], list(node.size())[2], 1)
         else:
-            return node.reshape(list(node.size())[0], 1, list(node.size())[1] * list(node.size())[2])
+            return node.reshape(
+                list(node.size())[0], 1, list(node.size())[1] * list(node.size())[2]
+            )
 
     def sumNode(self, inputNode1, inputNode2, name=""):
         if inputNode1.size() != inputNode2.size():
-            self.logger("dimensionality error with " + str(inputNode1) + " and " + str(inputNode2) + " in pytorch")
+            self.logger(
+                "dimensionality error with "
+                + str(inputNode1)
+                + " and "
+                + str(inputNode2)
+                + " in pytorch"
+            )
             return None
         return inputNode1 + inputNode2
 
     def subNode(self, inputNode1, inputNode2, name=""):
         if inputNode1.size() != inputNode2.size():
-            self.logger("dimensionality error with " + str(inputNode1) + " and " + str(inputNode2) + " in pytorch")
+            self.logger(
+                "dimensionality error with "
+                + str(inputNode1)
+                + " and "
+                + str(inputNode2)
+                + " in pytorch"
+            )
             return None
         return inputNode1 - inputNode2
 
     def multNode(self, inputNode1, inputNode2, name=""):
-        return self.dimensionalityChangeforMultiply(self.dimensionalityChangeforMultiply(inputNode1) * inputNode2, True)
+        return self.dimensionalityChangeforMultiply(
+            self.dimensionalityChangeforMultiply(inputNode1) * inputNode2, True
+        )
 
     def chooseActivation(self, activ):
         if activ == "Hyperbolic Tangent (Tanh)":
@@ -155,9 +195,17 @@ class FrameStructure(WrapperTemplate):
         self.chooseOptimizer()
 
         if self.loss_object is None:
-            return "Error choosing cost function in PyTorch: " + self.loss + " not available in Pytorch"
+            return (
+                "Error choosing cost function in PyTorch: "
+                + self.loss
+                + " not available in Pytorch"
+            )
         if self.optimizer_object is None:
-            return "Error choosing optimizer in Pytorch: " + self.optimizer + " not available in Pytorch"
+            return (
+                "Error choosing optimizer in Pytorch: "
+                + self.optimizer
+                + " not available in Pytorch"
+            )
 
         optimizer = self.optimizer_object(self.model.parameters(), lr=0.01)
         self.model.train()
@@ -175,7 +223,12 @@ class FrameStructure(WrapperTemplate):
                 if pred == train:
                     correct = correct + 1
 
-        result = "Train --> Loss: " + str(modelLoss.item()) + ", Accuracy: " + str((correct / len(self.outputTrain)) * 100)
+        result = (
+            "Train --> Loss: "
+            + str(modelLoss.item())
+            + ", Accuracy: "
+            + str((correct / len(self.outputTrain)) * 100)
+        )
 
         if self.test is True:
             self.model.eval()
@@ -187,8 +240,13 @@ class FrameStructure(WrapperTemplate):
                 if pred == test:
                     correct = correct + 1
 
-            result = result + "Test --> Loss: " + str(after_train.item()) + ", Accuracy: " + str(
-                (correct / len(self.outputTest)) * 100)
+            result = (
+                result
+                + "Test --> Loss: "
+                + str(after_train.item())
+                + ", Accuracy: "
+                + str((correct / len(self.outputTest)) * 100)
+            )
 
         self.saveModel()
 
@@ -216,41 +274,62 @@ class torchModel(nn.Module):
         self.nodes = nn.ModuleDict()
 
         # Iters on every block in the structure
-        for node in list(elem for elem in self.structure if self.structure[elem]["block"] is True):
+        for node in list(
+            elem for elem in self.structure if self.structure[elem]["block"] is True
+        ):
 
             # Check if layer type is valid
             if self.parent.nodeSupport(self.structure[node]["type"]) is False:
-                self.parent.logger("Layer type " + self.structure[node][
-                    "name"] + " not supported in " + self.parent.frame + ".")
+                self.parent.logger(
+                    "Layer type "
+                    + self.structure[node]["name"]
+                    + " not supported in "
+                    + self.parent.frame
+                    + "."
+                )
                 return
 
             # If it is not a mult sum or sub block
-            if self.structure[node]["type"] != "SUM" and self.structure[node]["type"] != "SUB" and \
-                    self.structure[node]["type"] != "MULT":
+            if (
+                self.structure[node]["type"] != "SUM"
+                and self.structure[node]["type"] != "SUB"
+                and self.structure[node]["type"] != "MULT"
+            ):
 
                 # if it is not an input , which doesn't require proper block, create normal block
                 if self.structure[node]["type"] != "INPUT":
                     # Looks for the previous block (through the previous arch) to find the input dimension
-                    prevArchInd = next(elem for elem in self.structure if
-                                       self.structure[elem]["name"] in self.structure[node]["PrevArch"])
-                    prevBlockInd = next(elem for elem in self.structure if
-                                        self.structure[elem]["name"] == self.structure[prevArchInd][
-                                            "initBlock"])
+                    prevArchInd = next(
+                        elem
+                        for elem in self.structure
+                        if self.structure[elem]["name"]
+                        in self.structure[node]["PrevArch"]
+                    )
+                    prevBlockInd = next(
+                        elem
+                        for elem in self.structure
+                        if self.structure[elem]["name"]
+                        == self.structure[prevArchInd]["initBlock"]
+                    )
 
                     # If the previous block is input then the input dimension is equel to self.ninput
                     if self.structure[prevBlockInd]["type"] == "INPUT":
                         inputDim = self.parent.ninput
 
                     else:
-                        if self.structure[prevBlockInd]["type"] != "SUM" and \
-                                self.structure[prevBlockInd]["type"] != "SUB" and \
-                                self.structure[prevBlockInd]["type"] != "MULT":
+                        if (
+                            self.structure[prevBlockInd]["type"] != "SUM"
+                            and self.structure[prevBlockInd]["type"] != "SUB"
+                            and self.structure[prevBlockInd]["type"] != "MULT"
+                        ):
                             inputDim = self.structure[prevBlockInd]["neurons"]
                         # If the previous block is a special block than it calls the computeSpecBlockDim, which looks
                         # for the output dimension of that block, which differs accordingly if the special block is
                         # sub/sum or mult
                         else:
-                            inputDim = self.parent.computeSpecBlockDim(specBlockIndex=prevBlockInd)
+                            inputDim = self.parent.computeSpecBlockDim(
+                                specBlockIndex=prevBlockInd
+                            )
 
                     if self.structure[node]["type"] == "OUTPUT":
                         layerType = "DENSE"
@@ -260,14 +339,23 @@ class torchModel(nn.Module):
                         layerType = self.structure[node]["type"]
                         outputDim = self.structure[node]["neurons"]
 
-                    layerT = self.parent.chooseNode(layerType=layerType, inputDim=inputDim, outputDim=outputDim)
+                    layerT = self.parent.chooseNode(
+                        layerType=layerType, inputDim=inputDim, outputDim=outputDim
+                    )
                     self.nodes.add_module(self.structure[node]["name"], layerT)
 
-        for arch in list(elem for elem in self.structure if self.structure[elem]["block"] is False):
+        for arch in list(
+            elem for elem in self.structure if self.structure[elem]["block"] is False
+        ):
             # Check if Activation function is valid
             if self.parent.functionSupport(self.structure[arch]["activFunc"]) is False:
-                self.parent.logger("Activation function " + str(self.structure[arch]["activFunc"]) +
-                                   " not supported in " + self.parent.frame + ".")
+                self.parent.logger(
+                    "Activation function "
+                    + str(self.structure[arch]["activFunc"])
+                    + " not supported in "
+                    + self.parent.frame
+                    + "."
+                )
                 return
 
             tempActiv = self.parent.chooseActivation(self.structure[arch]["activFunc"])
@@ -307,10 +395,16 @@ class torchModel(nn.Module):
                 # block is removed from the dictionary in which it was saved with the previous block
                 else:
                     specIndex = next(
-                        ind for ind in self.structure if self.structure[ind]["name"] == specBlock)
+                        ind
+                        for ind in self.structure
+                        if self.structure[ind]["name"] == specBlock
+                    )
                     tempBlock = nodes[self.structure[block]["name"]]
-                    outputBlock = self.parent.chooseNode(layerType=self.structure[specIndex]["type"],
-                                                         inputNode1=merge[specBlock], inputNode2=tempBlock)
+                    outputBlock = self.parent.chooseNode(
+                        layerType=self.structure[specIndex]["type"],
+                        inputNode1=merge[specBlock],
+                        inputNode2=tempBlock,
+                    )
                     if outputBlock is None:
                         self.logger("Aborting creation of model with " + self.frame)
                         return None

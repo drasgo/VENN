@@ -1,5 +1,4 @@
 class WrapperTemplate:
-
     def __init__(self, numberInput, numberOutput, structure, structureName, logger):
         self.ninput = numberInput
         self.noutput = numberOutput
@@ -87,10 +86,10 @@ class WrapperTemplate:
             self.inputTrain = inputData
             self.outputTrain = outputData
         else:
-            self.inputTrain = inputData[:len(inputData) * 0.6]
-            self.inputTest = inputData[len(inputData) * 0.6:]
-            self.outputTrain = outputData[:len(inputData) * 0.6]
-            self.outputTest = outputData[len(inputData) * 0.6:]
+            self.inputTrain = inputData[: len(inputData) * 0.6]
+            self.inputTest = inputData[len(inputData) * 0.6 :]
+            self.outputTrain = outputData[: len(inputData) * 0.6]
+            self.outputTest = outputData[len(inputData) * 0.6 :]
 
     def prepareStructure(self):
         """ Removes any blank block and any arch associated (for example in case of curved branches). Don't touch it"""
@@ -98,10 +97,17 @@ class WrapperTemplate:
 
         for element in self.structure:
 
-            if self.structure[element]["block"] is True and self.structure[element]["type"] == "BLANK":
+            if (
+                self.structure[element]["block"] is True
+                and self.structure[element]["type"] == "BLANK"
+            ):
                 tempNameSuccArch = self.structure[element]["SuccArch"]
                 tempNamePrevArch = self.structure[element]["PrevArch"][0]
-                tempPrevArch = next(key for key in self.structure if self.structure[key]["name"] == tempNamePrevArch)
+                tempPrevArch = next(
+                    key
+                    for key in self.structure
+                    if self.structure[key]["name"] == tempNamePrevArch
+                )
 
                 for arch in tempNameSuccArch:
                     tempSuccArch, nextBlock = self.getArchBlock(arch)
@@ -130,9 +136,18 @@ class WrapperTemplate:
     def checkNumBranches(self, structure):
         """ Checks how many branches the structure has. Don't touch it. (NOTE: now it's useless, to be deleted)"""
         # Check the numebr of aggregation blocks (aka sum, mult, div, sub blocks). Every aggregation block is a branch unified
-        return len([block for block in structure if structure[block]["block"] is True and
-                    (structure[block]["type"] == "SUM" or structure[block]["type"] == "SUB" or
-                     structure[block]["type"] == "MULT")])
+        return len(
+            [
+                block
+                for block in structure
+                if structure[block]["block"] is True
+                and (
+                    structure[block]["type"] == "SUM"
+                    or structure[block]["type"] == "SUB"
+                    or structure[block]["type"] == "MULT"
+                )
+            ]
+        )
 
     def returnFirstCompleteDiagram(self, structure):
         """ Return first complete diagram input->output. Don't touch it"""
@@ -143,8 +158,11 @@ class WrapperTemplate:
             if index is not None:
                 break
 
-            tempInit = next(bl for bl in structure if
-                            structure[bl]["block"] is True and structure[bl]["type"] == "INPUT")
+            tempInit = next(
+                bl
+                for bl in structure
+                if structure[bl]["block"] is True and structure[bl]["type"] == "INPUT"
+            )
             # self.logger("nome: " + self.structure[tempInit]["name"])
             if tempInit is None:
                 self.logger("Error checking sequential structure for. Exiting")
@@ -160,21 +178,37 @@ class WrapperTemplate:
 
                 if structure[tempIndex]["block"] is True:
                     # self.logger("è blocco")
-                    tempIndex = next(block for block in structure if any(
-                        structure[block]["name"] == x for x in structure[tempIndex]["SuccArch"]))
+                    tempIndex = next(
+                        block
+                        for block in structure
+                        if any(
+                            structure[block]["name"] == x
+                            for x in structure[tempIndex]["SuccArch"]
+                        )
+                    )
 
                 else:
                     # self.logger("è arco")
-                    tempIndex = next(block for block in structure if
-                                     structure[block]["name"] == structure[tempIndex]["finalBlock"])
+                    tempIndex = next(
+                        block
+                        for block in structure
+                        if structure[block]["name"]
+                        == structure[tempIndex]["finalBlock"]
+                    )
 
-                if structure[tempIndex]["block"] is True and structure[tempIndex]["type"] == "OUTPUT":
+                if (
+                    structure[tempIndex]["block"] is True
+                    and structure[tempIndex]["type"] == "OUTPUT"
+                ):
                     # self.logger("finito con final block")
                     last = True
                     index = tempInit
 
-                elif structure[tempIndex]["block"] is True and structure[tempIndex]["type"] == "OUTPUT" and \
-                        len(structure[tempIndex]["SuccArch"]) == 0:
+                elif (
+                    structure[tempIndex]["block"] is True
+                    and structure[tempIndex]["type"] == "OUTPUT"
+                    and len(structure[tempIndex]["SuccArch"]) == 0
+                ):
                     # self.logger("finito senza final block")
                     break
 
@@ -206,9 +240,11 @@ class WrapperTemplate:
                     # to the wrapper arch=None, the current index, the name of the special block.
                     # The wrapper is expected to put a control for checking if specName is not none, in which case it
                     # saves the prev index with as one of the enteing nodes into the special block
-                    if self.structure[blockIndex]["type"] == "SUM" or \
-                            self.structure[blockIndex]["type"] == "SUB" or \
-                            self.structure[blockIndex]["type"] == "MULT":
+                    if (
+                        self.structure[blockIndex]["type"] == "SUM"
+                        or self.structure[blockIndex]["type"] == "SUB"
+                        or self.structure[blockIndex]["type"] == "MULT"
+                    ):
                         # print("next block is special block")
                         specIndex = blockIndex
                         specName = self.structure[blockIndex]["name"]
@@ -251,8 +287,11 @@ class WrapperTemplate:
             # This should be true just if this piece is part of the recursion (if the found next block is a special block
             # the function stops itself, sending back nextArchIndex = None, nextBlockIndex = index (which is the prev
             # index) and special block = nextBlockIndex
-            if self.structure[nextBlockIndex]["type"] == "SUM" or self.structure[nextBlockIndex]["type"] == "SUB" or \
-                    self.structure[nextBlockIndex]["type"] == "MULT":
+            if (
+                self.structure[nextBlockIndex]["type"] == "SUM"
+                or self.structure[nextBlockIndex]["type"] == "SUB"
+                or self.structure[nextBlockIndex]["type"] == "MULT"
+            ):
                 # print("in sub, mult o sum in get pair")
                 yield None, index, nextBlockIndex
                 break
@@ -264,9 +303,15 @@ class WrapperTemplate:
 
     def getArchBlock(self, archName):
         """Given an archName, it returns its index and its final block index. Don't touch it."""
-        nextArchIndex = next(key for key in self.structure if self.structure[key]["name"] == archName)
+        nextArchIndex = next(
+            key for key in self.structure if self.structure[key]["name"] == archName
+        )
         nextBlockName = self.structure[nextArchIndex]["finalBlock"]
-        nextBlockIndex = next(key for key in self.structure if self.structure[key]["name"] == nextBlockName)
+        nextBlockIndex = next(
+            key
+            for key in self.structure
+            if self.structure[key]["name"] == nextBlockName
+        )
         return nextArchIndex, nextBlockIndex
 
     def computeSpecBlockDim(self, specBlockIndex):
@@ -275,25 +320,49 @@ class WrapperTemplate:
         of the dimension of two input blocks. It also checks if one (or both) of the previous blocks is a
          special block itself and continues recurrently. Don't touch it.
         """
-        if self.structure[specBlockIndex]["type"] == "SUM" or self.structure[specBlockIndex]["type"] == "SUB" or \
-                self.structure[specBlockIndex]["type"] == "MULT":
+        if (
+            self.structure[specBlockIndex]["type"] == "SUM"
+            or self.structure[specBlockIndex]["type"] == "SUB"
+            or self.structure[specBlockIndex]["type"] == "MULT"
+        ):
             archName1 = [elem for elem in self.structure[specBlockIndex]["PrevArch"]][0]
-            archIndex1 = next(elem for elem in self.structure if self.structure[elem]["name"] == archName1)
+            archIndex1 = next(
+                elem
+                for elem in self.structure
+                if self.structure[elem]["name"] == archName1
+            )
             blockIndex1 = next(
-                elem for elem in self.structure if
-                self.structure[elem]["name"] == self.structure[archIndex1]["initBlock"])
+                elem
+                for elem in self.structure
+                if self.structure[elem]["name"]
+                == self.structure[archIndex1]["initBlock"]
+            )
 
-            if self.structure[specBlockIndex]["type"] == "SUM" or self.structure[specBlockIndex]["type"] == "SUB":
+            if (
+                self.structure[specBlockIndex]["type"] == "SUM"
+                or self.structure[specBlockIndex]["type"] == "SUB"
+            ):
                 return self.computeSpecBlockDim(blockIndex1)
 
             elif self.structure[specBlockIndex]["type"] == "MULT":
-                archName2 = [elem for elem in self.structure[specBlockIndex]["PrevArch"]][1]
-                archIndex2 = next(elem for elem in self.structure if self.structure[elem]["name"] == archName2)
+                archName2 = [
+                    elem for elem in self.structure[specBlockIndex]["PrevArch"]
+                ][1]
+                archIndex2 = next(
+                    elem
+                    for elem in self.structure
+                    if self.structure[elem]["name"] == archName2
+                )
                 blockIndex2 = next(
-                    elem for elem in self.structure if
-                    self.structure[elem]["name"] == self.structure[archIndex2]["initBlock"])
+                    elem
+                    for elem in self.structure
+                    if self.structure[elem]["name"]
+                    == self.structure[archIndex2]["initBlock"]
+                )
 
-                return self.computeSpecBlockDim(blockIndex1) * self.computeSpecBlockDim(blockIndex2)
+                return self.computeSpecBlockDim(blockIndex1) * self.computeSpecBlockDim(
+                    blockIndex2
+                )
         else:
 
             if self.structure[specBlockIndex]["type"] == "DENSE":

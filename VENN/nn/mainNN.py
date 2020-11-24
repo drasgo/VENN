@@ -4,7 +4,6 @@ import VENN.costants as costants
 
 
 class NNStructure:
-
     def __init__(self):
         self.logger = None
         self.topology = {}
@@ -105,8 +104,13 @@ class NNStructure:
             block1 = arch1.initBlock
             return self.restrictionSumSub(block1)
 
-        self.logger("Error checking sum dimensionality: block " + node.objectName() + " not recognized - type " +
-                    node.layer.currentText(), "red")
+        self.logger(
+            "Error checking sum dimensionality: block "
+            + node.objectName()
+            + " not recognized - type "
+            + node.layer.currentText(),
+            "red",
+        )
 
     def checkTopology(self):
         if len(self.blocks) < 2 or len(self.arrows) == 0:
@@ -115,12 +119,22 @@ class NNStructure:
 
         for layer in self.blocks:
 
-            if layer.layer.currentText() == "DENSE" and not any(ch.isdigit() for ch in layer.neurons.text()):
-                self.logger("Dense layers needs number of neurons.: " + layer.neurons.text(), "red")
+            if layer.layer.currentText() == "DENSE" and not any(
+                ch.isdigit() for ch in layer.neurons.text()
+            ):
+                self.logger(
+                    "Dense layers needs number of neurons.: " + layer.neurons.text(),
+                    "red",
+                )
                 return 0
 
             if len(layer.PrevArch) == 0 and len(layer.SuccArch) == 0:
-                self.logger("Block " + layer.objectName() + " has no incoming nor outcoming arrows", "red")
+                self.logger(
+                    "Block "
+                    + layer.objectName()
+                    + " has no incoming nor outcoming arrows",
+                    "red",
+                )
                 layer.__del__()
                 return 0
 
@@ -130,8 +144,14 @@ class NNStructure:
 
             if layer.layer.currentText() == "SUM" or layer.layer.currentText() == "SUB":
                 if self.restrictionSumSub(layer) is False:
-                    self.logger("Dimension of input blocks into " + layer.objectName() + " -type " +
-                                layer.layer.currentText() + "- are not the same", "red")
+                    self.logger(
+                        "Dimension of input blocks into "
+                        + layer.objectName()
+                        + " -type "
+                        + layer.layer.currentText()
+                        + "- are not the same",
+                        "red",
+                    )
                     return 0
 
         if not any(lay for lay in self.blocks if lay.layer.currentText() == "INPUT"):
@@ -141,8 +161,19 @@ class NNStructure:
 
         if len([lay for lay in self.blocks if lay.layer.currentText() == "INPUT"]) > 1:
             self.logger("Only one input block supported so far", "red")
-            self.logger("Number of input blocks: " + str(
-                len([lay for lay in self.blocks if lay.layer.currentText() == "INPUT"])), "red")
+            self.logger(
+                "Number of input blocks: "
+                + str(
+                    len(
+                        [
+                            lay
+                            for lay in self.blocks
+                            if lay.layer.currentText() == "INPUT"
+                        ]
+                    )
+                ),
+                "red",
+            )
             return 0
 
         if not any(lay for lay in self.blocks if lay.layer.currentText() == "OUTPUT"):
@@ -152,8 +183,19 @@ class NNStructure:
 
         if len([lay for lay in self.blocks if lay.layer.currentText() == "OUTPUT"]) > 1:
             self.logger("Only one output block supported", "red")
-            self.logger("Number of output blocks: " + str(
-                len([lay for lay in self.blocks if lay.layer.currentText() == "OUTPUT"])), "red")
+            self.logger(
+                "Number of output blocks: "
+                + str(
+                    len(
+                        [
+                            lay
+                            for lay in self.blocks
+                            if lay.layer.currentText() == "OUTPUT"
+                        ]
+                    )
+                ),
+                "red",
+            )
             return 0
 
         for arch in self.arrows:
@@ -163,7 +205,12 @@ class NNStructure:
             #     return 0
 
             if arch.initBlock is None or arch.finalBlock is None:
-                self.logger("Error with " + arch.objectName() + ": it's without previous or next block", "red")
+                self.logger(
+                    "Error with "
+                    + arch.objectName()
+                    + ": it's without previous or next block",
+                    "red",
+                )
                 return 0
 
         return 1
@@ -177,13 +224,23 @@ class NNStructure:
             temp = dict()
             temp["block"] = True
             temp["name"] = str(block.objectName())
-            temp["FirstBlock"] = True if len(block.PrevArch) == 0 else False and block.layer.currentText() == "INPUT"
-            temp["LastBlock"] = True if len(block.SuccArch) == 0 else False and block.layer.currentText() == "OUTPUT"
+            temp["FirstBlock"] = (
+                True
+                if len(block.PrevArch) == 0
+                else False and block.layer.currentText() == "INPUT"
+            )
+            temp["LastBlock"] = (
+                True
+                if len(block.SuccArch) == 0
+                else False and block.layer.currentText() == "OUTPUT"
+            )
             temp["PrevArch"] = [bl.objectName() for bl in block.PrevArch]
             temp["SuccArch"] = [bl.objectName() for bl in block.SuccArch]
             temp["type"] = str(block.layer.currentText())
             if str(block.layer.currentText()) in costants.BLOCK_LABELS:
-                temp["neurons"] = str([int(s) for s in block.neurons.text().split() if s.isdigit()][0])
+                temp["neurons"] = str(
+                    [int(s) for s in block.neurons.text().split() if s.isdigit()][0]
+                )
             temp["size"] = [block.width(), block.height()]
             temp["pos"] = [block.x(), block.y()]
             return temp
@@ -213,7 +270,10 @@ class NNStructure:
         def recursive(component):
             nonlocal initialIndex
 
-            if (initialIndex == 0 or self.topology[str(initialIndex - 1)]["block"] is False) and len(self.blocks) > 0:
+            if (
+                initialIndex == 0
+                or self.topology[str(initialIndex - 1)]["block"] is False
+            ) and len(self.blocks) > 0:
                 # self.logger(component.objectName())
                 self.topology[str(initialIndex)] = getBlockProperties(component)
                 # self.logger("index: " + str(initialIndex) + "; in block step")
@@ -225,7 +285,10 @@ class NNStructure:
                     # self.logger("In piu archi in uscita da blocco")
                     recursive(arch)
 
-            elif self.topology[str(initialIndex - 1)]["block"] is True and len(self.arrows) > 0:
+            elif (
+                self.topology[str(initialIndex - 1)]["block"] is True
+                and len(self.arrows) > 0
+            ):
                 self.topology[str(initialIndex)] = getArrowProperties(component)
                 # self.logger("index: " + str(initialIndex) + "; in arrow step")
                 # self.logger(self.topology)
@@ -246,8 +309,12 @@ class NNStructure:
         self.logger("Model saved!")
 
     def exportAs(self, run=False):
-        if len(self.finalInput) == 0 and len(
-                self.finalOutput) == 0 and self.numberInputs == 0 and self.numberOutputs == 0:
+        if (
+            len(self.finalInput) == 0
+            and len(self.finalOutput) == 0
+            and self.numberInputs == 0
+            and self.numberOutputs == 0
+        ):
             self.prepareIOData()
 
         if self.numberInputs == 0 and self.numberOutputs == 0:
@@ -259,18 +326,36 @@ class NNStructure:
 
         if self.framework.lower() == "tensorflow":
             import VENN.nn.tensorflowWrapper as frameChosen
-            nomeFile = self.framework.lower() + "-" + self.file.replace(costants.STRUCTURE_EXTENSION,
-                                                                        costants.TENSORFLOW_EXTENSION)
+
+            nomeFile = (
+                self.framework.lower()
+                + "-"
+                + self.file.replace(
+                    costants.STRUCTURE_EXTENSION, costants.TENSORFLOW_EXTENSION
+                )
+            )
 
         elif self.framework.lower() == "pytorch":
             import VENN.nn.pytorchWrapper as frameChosen
-            nomeFile = self.framework.lower() + "-" + self.file.replace(costants.STRUCTURE_EXTENSION,
-                                                                        costants.PYTORCH_EXTENSION)
+
+            nomeFile = (
+                self.framework.lower()
+                + "-"
+                + self.file.replace(
+                    costants.STRUCTURE_EXTENSION, costants.PYTORCH_EXTENSION
+                )
+            )
 
         elif self.framework.lower() == "keras":
             import VENN.nn.kerasWrapper as frameChosen
-            nomeFile = self.framework.lower() + "-" + self.file.replace(costants.STRUCTURE_EXTENSION,
-                                                                        costants.KERAS_EXTENSION)
+
+            nomeFile = (
+                self.framework.lower()
+                + "-"
+                + self.file.replace(
+                    costants.STRUCTURE_EXTENSION, costants.KERAS_EXTENSION
+                )
+            )
 
         # elif self.framework.lower() == "fastai":
         #     import VENN.nn.fastaiWrapper as frameChosen
@@ -281,13 +366,21 @@ class NNStructure:
             self.logger("Error choosing framework: " + self.framework.lower(), "red")
             return False
 
-        self.frameStruct = frameChosen.FrameStructure(self.numberInputs, self.numberOutputs, structure=self.topology,
-                                                      structureName=nomeFile, logger=self.logger)
+        self.frameStruct = frameChosen.FrameStructure(
+            self.numberInputs,
+            self.numberOutputs,
+            structure=self.topology,
+            structureName=nomeFile,
+            logger=self.logger,
+        )
 
         if self.frameStruct.prepareModel() is False:
             self.logger(
-                "Error preparing the Neural Network model with " + self.framework.lower() + " framework. Aborted",
-                "red")
+                "Error preparing the Neural Network model with "
+                + self.framework.lower()
+                + " framework. Aborted",
+                "red",
+            )
             return False
 
         if run is False:
@@ -300,18 +393,28 @@ class NNStructure:
             if self.prepareIOData() == 0:
                 return "Error preparing input/output data", "red"
 
-        if self.loss != "" and self.optimizer != "" and isinstance(self.epochs, int) and self.epochs > 0:
+        if (
+            self.loss != ""
+            and self.optimizer != ""
+            and isinstance(self.epochs, int)
+            and self.epochs > 0
+        ):
             self.frameStruct.setLoss(cost=self.loss)
             self.frameStruct.setOptimizer(optim=self.optimizer)
             self.frameStruct.setEpochs(epochs=self.epochs)
         else:
-            return "Error setting parameters. Check loss function, optimizer function and/or number of epochs", "red"
+            return (
+                "Error setting parameters. Check loss function, optimizer function and/or number of epochs",
+                "red",
+            )
 
         if self.frameStruct is None:
             if self.exportAs(run=True) is False:
                 return "Error preparing structure pre-run with " + self.framework, "red"
 
-        self.frameStruct.setInputOutput(inputData=self.finalInput, outputData=self.finalOutput, test=test)
+        self.frameStruct.setInputOutput(
+            inputData=self.finalInput, outputData=self.finalOutput, test=test
+        )
 
         return self.frameStruct.run(), ""
 
@@ -336,19 +439,33 @@ class NNStructure:
             return 0
 
         if self.checkInputOutput(len(self.finalInput), len(self.finalOutput)) is False:
-            self.logger("Number of input data is different of number of target data: Input:" +
-                        str(len(self.finalInput)) + ", Output: " + str(len(self.finalOutput)), "red")
+            self.logger(
+                "Number of input data is different of number of target data: Input:"
+                + str(len(self.finalInput))
+                + ", Output: "
+                + str(len(self.finalOutput)),
+                "red",
+            )
             return 0
 
         elif self.finalInput.count("[") != self.finalInput.count("]"):
-            self.logger("Inconsistency with paretheses in input data. Numebr of [: " + str(self.finalInput.count("[")) +
-                        "; number of ]:" + str(self.finalInput.count("]")), "red")
+            self.logger(
+                "Inconsistency with paretheses in input data. Numebr of [: "
+                + str(self.finalInput.count("["))
+                + "; number of ]:"
+                + str(self.finalInput.count("]")),
+                "red",
+            )
             return 0
 
         elif self.finalOutput.count("[") != self.finalOutput.count("]"):
             self.logger(
-                "Inconsistency with paretheses in output data. Numebr of [: " + str(self.finalOutput.count("[")) +
-                "; number of ]:" + str(self.finalOutput.count("]")), "red")
+                "Inconsistency with paretheses in output data. Numebr of [: "
+                + str(self.finalOutput.count("["))
+                + "; number of ]:"
+                + str(self.finalOutput.count("]")),
+                "red",
+            )
             return 0
 
         elif len(self.finalInput) == 0 or len(self.finalOutput) == 0:

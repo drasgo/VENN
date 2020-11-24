@@ -71,7 +71,7 @@ To use this project you have to install:
 <br /><br />
 - (Optional) Documentation:
 
-<b>pip3 install pdoc --user</b>
+<b>pip3 install pdoc3 --user</b>
 <br /><br />
 
 <b>pip3 install torchsummary --user</b>
@@ -104,7 +104,7 @@ However it should potentially work on every machine that supports at least Pytho
 
 To automatically generate the documentation run on the terminal the following command:
 
-<b>pdoc --html path/to/project/directory</b>
+<b>pdoc3 --html path/to/project/directory</b>
 
 This will generate a folder called html with the documentation. Note: this can be done only if you already installed the pdoc package through pip3.
 
