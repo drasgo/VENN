@@ -1,0 +1,7 @@
+PyQt5==5.14.1
+tensorflow
+torch
+torchsummary
+keras
+pdoc
+torchsummary

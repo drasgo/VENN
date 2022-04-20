@@ -114,9 +114,9 @@ def NumberofGeneratedArchs():
 def CheckNumbOfLayers(parent):
     """ If number of generated layer blocks is greater than 0 it sets the Insert First Block to hidden"""
     if NumberofGeneratedBlocks() > 0:
-        parent.InsertFirstBlock.hide()
+        parent.ui.InsertFirstBlock.hide()
     else:
-        parent.InsertFirstBlock.show()
+        parent.ui.InsertFirstBlock.show()
 
 
 def dragEnterMainStruct(event):
@@ -214,7 +214,7 @@ def frameworkRunTest(button, parent):
     if frameworkCommit(parent) is False:
         return
 
-    if button is parent.RunNN:
+    if button is parent.ui.RunNN:
         result, color = structure.runAs()
         logger(result, color)
     else:
@@ -296,10 +296,10 @@ def structureLoad(parent):
         del archs[:]
 
         for block in [loadedData[x] for x in loadedData if loadedData[x]["block"] is True]:
-            StructBlock(parent.MainStruct, parent.Blocks, block)
+            StructBlock(parent.ui.MainStruct, parent.ui.Blocks, block)
 
         for arrow in [loadedData[x] for x in loadedData if loadedData[x]["block"] is False]:
-            Arrow(parent.MainStruct, loaded=arrow)
+            Arrow(parent.ui.MainStruct, loaded=arrow)
 
         # Grab every block in the gui and checks which of the newly created blocks in the loaded structure is.
         # For each block then attach the previous and following arches
@@ -320,51 +320,51 @@ def setupNNStructure(parent, name=""):
     structure.setBlocksArrows(layers, archs)
 
     # Set the name of the current structure (the name of how it is going to be saved)
-    if parent.StructureFilename.text() != "":
-        structure.setStructureFilename(parent.StructureFilename.text())
+    if parent.ui.StructureFilename.text() != "":
+        structure.setStructureFilename(parent.ui.StructureFilename.text())
 
     if name != "":
         structure.setLoadingStructureFilename(name)
 
     # Set input output files
-    if parent.InputFile.text() != "" and parent.OutputFile.text() != "":
-        structure.setInputOutput(parent.InputFile.text(), parent.OutputFile.text())
+    if parent.ui.InputFile.text() != "" and parent.ui.OutputFile.text() != "":
+        structure.setInputOutput(parent.ui.InputFile.text(), parent.ui.OutputFile.text())
 
     # Set input output data quantity (Note: if input/output files are available, the dimension in those file will rule)
-    elif any(x in costants.NUMBERS for x in parent.NumberInputs.text()) \
-            and any(x in costants.NUMBERS for x in parent.NumberInputs.text()):
-        nInput = "".join(list(filter(lambda x: x in costants.NUMBERS, parent.NumberInputs.text())))
-        nOutput = "".join(list(filter(lambda x: x in costants.NUMBERS, parent.NumberInputs.text())))
+    elif any(x in costants.NUMBERS for x in parent.ui.NumberInputs.text()) \
+            and any(x in costants.NUMBERS for x in parent.ui.NumberInputs.text()):
+        nInput = "".join(list(filter(lambda x: x in costants.NUMBERS, parent.ui.NumberInputs.text())))
+        nOutput = "".join(list(filter(lambda x: x in costants.NUMBERS, parent.ui.NumberInputs.text())))
         structure.setInputOutputNumber(int(nInput), int(nOutput))
 
     # Set which frameworks needs to be used for commit with/run/test
-    if parent.Framework.currentText() != "":
-        structure.setFramework(parent.Framework.currentText())
+    if parent.ui.Framework.currentText() != "":
+        structure.setFramework(parent.ui.Framework.currentText())
 
     # Set the logger reference
     structure.setLogger(logger)
 
     # Set the loss function for the run/test options (if available)
-    if parent.LossFunction.currentText() != "":
-        structure.setLossFunction(parent.LossFunction.currentText())
+    if parent.ui.LossFunction.currentText() != "":
+        structure.setLossFunction(parent.ui.LossFunction.currentText())
 
     # Set the optimizer function for the run/test options (if available)
-    if parent.OptimizerFunction.currentText() != "":
-        structure.setOptimizer(parent.Optimizer.currentText())
+    if parent.ui.OptimizerFunction.currentText() != "":
+        structure.setOptimizer(parent.ui.Optimizer.currentText())
 
     # Set the number of epochs for the run/test options (if available)
-    if any(x in costants.NUMBERS for x in parent.NumberInputs.text()):
-        nEpochs = "".join(list(filter(lambda x: x in costants.NUMBERS, list(y for y in parent.numberEpochs.text()))))
+    if any(x in costants.NUMBERS for x in parent.ui.NumberInputs.text()):
+        nEpochs = "".join(list(filter(lambda x: x in costants.NUMBERS, list(y for y in parent.ui.numberEpochs.text()))))
         structure.setEpochs(int(nEpochs))
 
 
 def inputData(parent, button):
     """ Open the input/output file specified and loads the data into the input/output textbox"""
-    name = "Input File" if button is parent.InputFi else "Output File"
+    name = "Input File" if button is parent.ui.InputFi else "Output File"
     fileDial = QtWidgets.QFileDialog.getOpenFileName(button, name, os.path.curdir,
                                                      costants.INPUT_OUTPUT_DATA_FILE_EXTENSION)
     if fileDial[0] == "":
-        if button is parent.InputFi:
+        if button is parent.ui.InputFi:
             logger("No input file chosen")
             logger()
         else:
@@ -374,10 +374,10 @@ def inputData(parent, button):
 
     if os.path.exists(fileDial[0]):
 
-        if button is parent.InputFi:
-            parent.InputFile.setText(fileDial[0])
+        if button is parent.ui.InputFi:
+            parent.ui.InputFile.setText(fileDial[0])
         else:
-            parent.OutputFile.setText(fileDial[0])
+            parent.ui.OutputFile.setText(fileDial[0])
 
 
 def logger(text="", color="black"):
@@ -407,14 +407,14 @@ def resizeEvent(main):
     newVal = main.geometry()
     # Resize every preexisting component created in qtcreator
     resizeElement(
-        [main.OutputFi, main.LoadStr, main.RunNN, main.TestNN, main.AdvancedOptions, main.InputFi, main.CommSave,
-         main.MainStruct, main.ChooseArrow, main.Delete, main.InsertFirstBlock, main.Loss,
-         main.LossFunction, main.Log, main.LogWindow, main.Framework, main.label, main.FrameworkCommit,
-         main.NumberInputs, main.NumberOutputs, main.nInputs, main.nOutputs, main.StructureFilename,
-         main.Epochs, main.numberEpochs, main.Optimizer, main.OptimizerFunction, main.InputFile, main.OutputFile,
-         main.line_2, main.line_3, main.line_4, main.line_5, main.line_6, main.ClearLogger], main.oldMax, newVal)
+        [main.ui.OutputFi, main.ui.LoadStr, main.ui.RunNN, main.ui.TestNN, main.ui.AdvancedOptions, main.ui.InputFi, main.ui.CommSave,
+         main.ui.MainStruct, main.ui.ChooseArrow, main.ui.Delete, main.ui.InsertFirstBlock, main.ui.Loss,
+         main.ui.LossFunction, main.ui.Log, main.ui.LogWindow, main.ui.Framework, main.ui.label, main.ui.FrameworkCommit,
+         main.ui.NumberInputs, main.ui.NumberOutputs, main.ui.nInputs, main.ui.nOutputs, main.ui.StructureFilename,
+         main.ui.Epochs, main.ui.numberEpochs, main.ui.Optimizer, main.ui.OptimizerFunction, main.ui.InputFile, main.ui.OutputFile,
+         main.ui.line_2, main.ui.line_3, main.ui.line_4, main.ui.line_5, main.ui.line_6, main.ui.ClearLogger], main.oldMax, newVal)
     # Resize every procedurally created componenent (aka blocks and arrows)
-    resizeElement(layers + archs + [main.Blocks], main.oldMax, newVal)
+    resizeElement(layers + archs + [main.ui.Blocks], main.oldMax, newVal)
     # Reset the current window size
     main.oldMax = newVal
 
@@ -919,12 +919,20 @@ class StructBlock(QtWidgets.QFrame):
                     arch1.drawArrow(All=False)
 
 
-class MainW(QtWidgets.QMainWindow, Ui_MainWindow):
+class MainW(QtWidgets.QMainWindow):
     """ It loads everything up"""
 
     def __init__(self):
-        super(MainW, self).__init__()
-        self.setupUi(self)
+        QtWidgets.QMainWindow.__init__(self)
+        self.setObjectName("MainWindow")
+        self.resize(1261, 607)
+        self.setMinimumSize(QtCore.QSize(1261, 607))
+        # self.setWindowOpacity(0.0)
+        self.setAutoFillBackground(False)
+        self.setStyleSheet("background-color: rgb(255, 255, 255);")
+
+        self.ui = Ui_MainWindow(self)
+        self.ui.setupUi()
 
         global loggerWindow
         global MultipleSelect
@@ -936,40 +944,40 @@ class MainW(QtWidgets.QMainWindow, Ui_MainWindow):
                                 color: #fff;}
                                 QMainWindow {background-color:white;}""")
 
-        MultipleSelect[0] = QtWidgets.QRubberBand(QtWidgets.QRubberBand.Rectangle, self.MainStruct)
+        MultipleSelect[0] = QtWidgets.QRubberBand(QtWidgets.QRubberBand.Rectangle, self.ui.MainStruct)
         MultipleSelect[1] = QtCore.QPoint()
 
         self.keyPressEvent = lambda event: keyPress(event=event)
 
-        self.Blocks.mouseMoveEvent = lambda event: mouseMove(event, self.MainStruct)
-        self.Blocks.mousePressEvent = lambda event: mousePress(self.Blocks)
-        self.Blocks.setObjectName("Blocks")
+        self.ui.Blocks.mouseMoveEvent = lambda event: mouseMove(event, self.ui.MainStruct)
+        self.ui.Blocks.mousePressEvent = lambda event: mousePress(self.ui.Blocks)
+        self.ui.Blocks.setObjectName("Blocks")
 
-        self.MainStruct.keyPressEvent = lambda event: keyPress(event=event)
-        self.MainStruct.setAcceptDrops(True)
-        self.MainStruct.dragEnterEvent = lambda event: dragEnterMainStruct(event)
-        self.MainStruct.dragMoveEvent = lambda event: dragMoveMainStruct(self.MainStruct, event)
-        self.MainStruct.dropEvent = lambda event: dropMainStruct(self.MainStruct, event, self)
-        self.MainStruct.mousePressEvent = lambda event: SelectionmousePressEvent(event)
-        self.MainStruct.mouseMoveEvent = lambda event: SelectionmouseMoveEvent(self.MainStruct, event)
-        self.MainStruct.mouseReleaseEvent = lambda event: SelectionmouseReleaseEvent(event)
+        self.ui.MainStruct.keyPressEvent = lambda event: keyPress(event=event)
+        self.ui.MainStruct.setAcceptDrops(True)
+        self.ui.MainStruct.dragEnterEvent = lambda event: dragEnterMainStruct(event)
+        self.ui.MainStruct.dragMoveEvent = lambda event: dragMoveMainStruct(self.ui.MainStruct, event)
+        self.ui.MainStruct.dropEvent = lambda event: dropMainStruct(self.ui.MainStruct, event, self)
+        self.ui.MainStruct.mousePressEvent = lambda event: SelectionmousePressEvent(event)
+        self.ui.MainStruct.mouseMoveEvent = lambda event: SelectionmouseMoveEvent(self.ui.MainStruct, event)
+        self.ui.MainStruct.mouseReleaseEvent = lambda event: SelectionmouseReleaseEvent(event)
 
-        self.Delete.clicked.connect(Cancel)
+        self.ui.Delete.clicked.connect(Cancel)
 
-        self.ChooseArrow.currentIndexChanged.connect(
-            lambda: changeComboBox(self.ChooseArrow, self.ChooseArrow.currentIndex()))
+        self.ui.ChooseArrow.currentIndexChanged.connect(
+            lambda: changeComboBox(self.ui.ChooseArrow, self.ui.ChooseArrow.currentIndex()))
 
-        self.CommSave.clicked.connect(lambda: structureCommit(parent=self))
-        self.LoadStr.clicked.connect(lambda: structureLoad(parent=self))
+        self.ui.CommSave.clicked.connect(lambda: structureCommit(parent=self))
+        self.ui.LoadStr.clicked.connect(lambda: structureLoad(parent=self))
 
-        self.InputFi.clicked.connect(lambda: inputData(parent=self, button=self.InputFi))
-        self.OutputFi.clicked.connect(lambda: inputData(parent=self, button=self.OutputFi))
+        self.ui.InputFi.clicked.connect(lambda: inputData(parent=self, button=self.ui.InputFi))
+        self.ui.OutputFi.clicked.connect(lambda: inputData(parent=self, button=self.ui.OutputFi))
 
-        self.FrameworkCommit.clicked.connect(lambda: frameworkCommit(parent=self))
-        self.RunNN.clicked.connect(lambda: frameworkRunTest(button=self.RunNN, parent=self))
-        self.TestNN.clicked.connect(lambda: frameworkRunTest(button=self.TestNN, parent=self))
+        self.ui.FrameworkCommit.clicked.connect(lambda: frameworkCommit(parent=self))
+        self.ui.RunNN.clicked.connect(lambda: frameworkRunTest(button=self.ui.RunNN, parent=self))
+        self.ui.TestNN.clicked.connect(lambda: frameworkRunTest(button=self.ui.TestNN, parent=self))
 
-        self.ClearLogger.clicked.connect(clearLogger)
+        self.ui.ClearLogger.clicked.connect(clearLogger)
 
         # Setting up combo boxes (frameworks, activation functions, loss functions and optimizer functions) with
         # elements from costants.py
@@ -979,31 +987,31 @@ class MainW(QtWidgets.QMainWindow, Ui_MainWindow):
                     os.path.isfile("../nn/otherFrameworks/" + costants.FRAMEWORKS[frame]):
                 continue
 
-            if self.Framework.currentText() == "No Framework Found":
-                self.Framework.removeItem(0)
+            if self.ui.Framework.currentText() == "No Framework Found":
+                self.ui.Framework.removeItem(0)
 
             item = QtGui.QStandardItem(str(frame))
-            mod = self.Framework.model()
+            mod = self.ui.Framework.model()
             mod.appendRow(item)
 
         for transFunc in costants.ACTIVATION_FUNCTIONS:
             item = QtGui.QStandardItem(str(transFunc))
             item.setForeground(QtGui.QColor(str(costants.ACTIVATION_FUNCTIONS[transFunc])))
-            mod = self.ChooseArrow.model()
+            mod = self.ui.ChooseArrow.model()
             mod.appendRow(item)
 
         for cost in costants.COST_FUNCTION:
             item = QtGui.QStandardItem(str(cost))
-            mod = self.LossFunction.model()
+            mod = self.ui.LossFunction.model()
             mod.appendRow(item)
 
         for optim in costants.OPTIMIZERS:
             item = QtGui.QStandardItem(str(optim))
-            mod = self.OptimizerFunction.model()
+            mod = self.ui.OptimizerFunction.model()
             mod.appendRow(item)
 
-        loggerWindow = self.LogWindow
-        comboBox = self.ChooseArrow
+        loggerWindow = self.ui.LogWindow
+        comboBox = self.ui.ChooseArrow
 
 
 # Global variables for original position of a moved widget and block which is dropped after a drag event

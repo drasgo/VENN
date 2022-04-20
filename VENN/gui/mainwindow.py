@@ -7,7 +7,8 @@ from PyQt5 import QtCore, QtGui, QtWidgets
 
 class Ui_MainWindow(object):
 
-    def __init__(self):
+    def __init__(self, main_window):
+        self.MainWindow = main_window
         self.centralwidget = None
         self.LoadStr = None
         self.RunNN = None
@@ -48,14 +49,8 @@ class Ui_MainWindow(object):
         self.line_6 = None
         self.ClearLogger = None
 
-    def setupUi(self, MainWindow):
-        MainWindow.setObjectName("MainWindow")
-        MainWindow.resize(1261, 607)
-        MainWindow.setMinimumSize(QtCore.QSize(1261, 607))
-        MainWindow.setWindowOpacity(0.0)
-        MainWindow.setAutoFillBackground(False)
-        MainWindow.setStyleSheet("background-color: rgb(255, 255, 255);")
-        self.centralwidget = QtWidgets.QWidget(MainWindow)
+    def setupUi(self):
+        self.centralwidget = QtWidgets.QWidget(self.MainWindow)
         self.centralwidget.setObjectName("centralwidget")
         self.FrameworkCommit = QtWidgets.QPushButton(self.centralwidget)
         self.FrameworkCommit.setGeometry(QtCore.QRect(850, 430, 171, 31))
@@ -304,14 +299,14 @@ class Ui_MainWindow(object):
         font.setPointSize(10)
         self.ClearLogger.setFont(font)
         self.ClearLogger.setObjectName("ClearLogger")
-        MainWindow.setCentralWidget(self.centralwidget)
+        self.MainWindow.setCentralWidget(self.centralwidget)
 
-        self.retranslateUi(MainWindow)
-        QtCore.QMetaObject.connectSlotsByName(MainWindow)
+        self.retranslateUi()
+        QtCore.QMetaObject.connectSlotsByName(self.MainWindow)
 
-    def retranslateUi(self, MainWindow):
+    def retranslateUi(self):
         _translate = QtCore.QCoreApplication.translate
-        MainWindow.setWindowTitle(_translate("MainWindow", "VENN- Visual Editor of Neural Networks"))
+        self.MainWindow.setWindowTitle(_translate("MainWindow", "VENN- Visual Editor of Neural Networks"))
         self.FrameworkCommit.setText(_translate("MainWindow", "Commit Model with"))
         self.Log.setText(_translate("MainWindow", "Logger:"))
         self.nOutputs.setText(_translate("MainWindow", "<b>or insert number of outputs</b>"))
